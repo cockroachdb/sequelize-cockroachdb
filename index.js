@@ -14,9 +14,11 @@
 
 'use strict';
 
+var util = require('util');
 var Sequelize = require('sequelize');
 var QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator.js');
 var QueryTypes = require('sequelize/lib/query-types.js');
+var DataTypes = require('sequelize/lib/data-types.js');
 
 var upsertIssueURL = "https://github.com/cockroachdb/cockroach/issues/6637";
 
@@ -59,7 +61,30 @@ QueryGenerator.upsertQuery = function(tableName, insertValues, updateValues, whe
 
   console.log(insert + " ON CONFlICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";");
   return insert + " ON CONFlICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";";
-}
+};
+
+// The JavaScript number type cannot represent all 64-bit integers--it can only
+// exactly represent integers in the range [-2^53 + 1, 2^53 - 1]. Notably,
+// CockroachDB's unique_rowid() function returns values outside the
+// representable range.
+//
+// We must teach Sequelize's INTEGER and BIGINT types to accept stringified
+// numbers instead of just raw JavaScript numbers; it's otherwise impossible to
+// store a number outside the representable range into a CockroachDB INT column.
+[DataTypes.postgres.INTEGER, DataTypes.postgres.BIGINT].forEach(function (intType) {
+  // Disable escaping so that the returned string is not wrapped in quotes
+  // downstream. Valid integers cannot be dangerous, and we take care to reject
+  // invalid integers.
+  intType.prototype.escape = false;
+
+  intType.prototype.$stringify = function stringify(value) {
+    var rep = String(value);
+    if (!/^[-+]?[0-9]+$/.test(rep)) {
+      throw new Sequelize.ValidationError(util.format("%j is not a valid integer", value));
+    }
+    return rep;
+  }
+});
 
 Sequelize.supportsCockroachDB = true;
 

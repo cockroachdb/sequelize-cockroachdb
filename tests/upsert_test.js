@@ -12,39 +12,16 @@
 // implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-// These tests run against a local instance of CockroachDB that meets the
-// following requirements:
-//
-// 1. Running with the --insecure flag.
-// 2. Contains a database named "sequelize_test".
+require('./helper');
 
-// To override the CockroachDB port, set the COCKROACH_PORT environment
-// variable.
-
-var chai = require('chai');
-var expect = chai.expect;
+var expect = require('chai').expect;
 var Sequelize = require('..');
-
-chai.use(require('chai-datetime'));
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-describe ('upsert', function () {
-  var cockroach_port = process.env.COCKROACH_PORT;
-  if (cockroach_port === undefined) {
-    cockroach_port = 26257;
-  }
-
-  before(function() {
-    this.sequelize = new Sequelize('sequelize_test', 'root', '', {
-      dialect: "postgres",
-      port: cockroach_port,
-      logging: false
-    });
-  });
-
+describe('upsert', function () {
   it('supports CockroachDB', function () {
     expect(Sequelize.supportsCockroachDB).to.be.true;
   });

@@ -59,8 +59,8 @@ QueryGenerator.upsertQuery = function(tableName, insertValues, updateValues, whe
     return key + ' = excluded.'+key;
   }, this).join(', ');
 
-  console.log(insert + " ON CONFlICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";");
-  return insert + " ON CONFlICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";";
+  console.log(insert + " ON CONFLICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";");
+  return insert + " ON CONFLICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";";
 };
 
 // The JavaScript number type cannot represent all 64-bit integers--it can only

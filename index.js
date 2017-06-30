@@ -77,7 +77,7 @@ QueryGenerator.upsertQuery = function(tableName, insertValues, updateValues, whe
   // invalid integers.
   intType.prototype.escape = false;
 
-  intType.prototype.$stringify = function stringify(value) {
+  intType.prototype.$stringify = intType.prototype._stringify = function stringify(value) {
     var rep = String(value);
     if (!/^[-+]?[0-9]+$/.test(rep)) {
       throw new Sequelize.ValidationError(util.format("%j is not a valid integer", value));

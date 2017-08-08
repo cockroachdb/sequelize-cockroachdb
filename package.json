@@ -3,6 +3,9 @@
   "version": "1.0.3",
   "description": "Support using Sequelize with CockroachDB.",
   "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
   "scripts": {
     "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/*_test.js\""
   },

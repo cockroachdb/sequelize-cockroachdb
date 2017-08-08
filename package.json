@@ -6,6 +6,10 @@
   "scripts": {
     "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/*_test.js\""
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cockroachdb/sequelize-cockroachdb.git"
+  },
   "keywords": [
     "database",
     "sequelize",
@@ -16,6 +20,10 @@
   ],
   "author": "Cuong Do <cdo@cockroachlabs.com>",
   "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/cockroachdb/sequelize-cockroachdb/issues"
+  },
+  "homepage": "https://www.cockroachlabs.com/docs/stable/build-a-nodejs-app-with-cockroachdb-sequelize.html",
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",

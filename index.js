@@ -18,6 +18,7 @@ var semver = require('semver');
 var util = require('util');
 var Sequelize = require('sequelize');
 var QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator.js');
+var QueryInterface = require('sequelize/lib/query-interface.js');
 var QueryTypes = require('sequelize/lib/query-types.js');
 var DataTypes = require('sequelize/lib/data-types.js');
 
@@ -139,6 +140,28 @@ if (semver.satisfies(sequelizeVersion, '4.x')) {
     return rep;
   }
 });
+
+// By default, Sequelize does not run ID in `WHERE primaryKey = ID` through
+// `$stringify` when said WHERE clause is generated via `model.update` or
+// `model.save`. ID is the exact object returned from the Postgres driver from
+// an earlier call to `model.findAll`, so it's reasonable for Sequelize to
+// assume ID could be handed back to the database directly--and it Postgres, it
+// always can. CockroachDB won't accept a stringified integer, though, so the
+// query will fail with "unsupported comparison: <int> = <string>".
+//
+// By hooking into every update query and setting `options.model` appropriately,
+// we enable the slightly-less-efficient code path that calls `$stringify` on
+// ID.
+QueryInterface.prototype.update = (function (oldUpdate) {
+  return function update(instance, tableName, values, identifier, options) {
+    // The value we need for `options.model` is thankfully passed to this
+    // function as the `instance` argument.
+    //
+    // Use Object.assign to avoid mutating the provided options.
+    options = Object.assign({}, options, { model: instance });
+    return oldUpdate.call(this, instance, tableName, values, identifier, options);
+  };
+})(QueryInterface.prototype.update);
 
 Sequelize.supportsCockroachDB = true;
 

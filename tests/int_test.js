@@ -54,3 +54,23 @@ var Sequelize = require('..');
     })
   })
 });
+
+it('supports int foreign key insertion and update', function () {
+  var Post = this.sequelize.define('post', { body: Sequelize.STRING });
+  var Comment = this.sequelize.define('comment', { body: Sequelize.STRING });
+  Post.hasOne(Comment, { onDelete: 'RESTRICT', onUpdate: 'RESTRICT' });
+  return this.sequelize.sync({ force: true }).then(function () {
+    return Post.create({
+      body: 'Hello, world',
+      comment: { body: 'Why, hello!' }
+    }, { include: [Comment] });
+  }).then(function (post) {
+    return post.comment.update({ body: 'Goodbye!' });
+  }).then(function () {
+    return Post.findAll({ include: [Comment] });
+  }).then(function (posts) {
+    expect(posts).to.have.lengthOf(1);
+    expect(posts[0].body).to.equal('Hello, world');
+    expect(posts[0].comment.body).to.equal('Goodbye!');
+  });
+});

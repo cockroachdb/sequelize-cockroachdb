@@ -16,10 +16,17 @@
 
 var semver = require('semver');
 var util = require('util');
+var _ = require('lodash');
 var Sequelize = require('sequelize');
 var QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator.js');
 var QueryTypes = require('sequelize/lib/query-types.js');
 var DataTypes = require('sequelize/lib/data-types.js');
+
+// Copied from Sequelize.
+function inherits(constructor, superConstructor) {
+  util.inherits(constructor, superConstructor); // Instance (prototype) methods
+  _.extend(constructor, superConstructor); // Static methods
+}
 
 var upsertIssueURL = "https://github.com/cockroachdb/cockroach/issues/6637";
 
@@ -139,6 +146,43 @@ if (semver.satisfies(sequelizeVersion, '4.x')) {
     return rep;
   }
 });
+
+// Semi-cribbed from sequelize/lib/dialects/sqlite/data-types.js which also
+// implements a TEXT-based alternative to ENUM.
+// Since this is just TEXT, the only thing this really gives a user is an
+// assertion that an inserted value is a member of the enum upon insertion, but
+// even then, this check is only performed if the user opts in to type
+// validation when initializing Sequelize.
+let enumType = function() {
+  if (!(this instanceof enumType)) {
+    const obj = Object.create(enumType.prototype);
+    enumType.apply(obj, arguments);
+    return obj;
+  }
+  // We can't just defer to DataTypes.ENUM(...) here because it would like its
+  // argument to be an instanceof ENUM, which we can't provide since that would
+  // opt us into Postgres-specific ENUM codepaths, so this is largely an
+  // inlining of DataTypes.ENUM(...).
+  let value = arguments[0];
+  const options = typeof value === 'object' && !Array.isArray(value) && value || {
+    values: Array.prototype.slice.call(arguments).reduce((result, element) => {
+      return result.concat(Array.isArray(element) ? element : [element]);
+    }, [])
+  };
+  this.values = options.values;
+  this.options = options;
+}
+
+enumType.extend = oldType => new enumType(oldType.options);
+enumType.prototype.toSql = function toSql() { return 'TEXT'; };
+enumType.prototype.key = 'ENUM';
+enumType.prototype.validate = DataTypes.ENUM.prototype.validate;
+
+// If we inherit from ENUM then Sequelize does a bunch of extra stuff because
+// it thinks that we're Postgres.
+inherits(enumType, DataTypes.TEXT);
+
+DataTypes.postgres.ENUM = enumType;
 
 Sequelize.supportsCockroachDB = true;
 

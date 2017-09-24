@@ -18,6 +18,7 @@ var expect = require('chai').expect;
 var Sequelize = require('..');
 
 [Sequelize.DataTypes.INTEGER, Sequelize.DataTypes.BIGINT].forEach(function (intType) {
+  let name = intType === Sequelize.DataTypes.INTEGER ? 'integer' : 'bigint';
   describe('DataTypes.' + intType.key, function () {
     before(function () {
       this.Foo = this.sequelize.define('foo', {
@@ -46,11 +47,11 @@ var Sequelize = require('..');
 
     it('rejects garbage', function () {
       expect(this.Foo.create({ i: "102.3" }))
-        .to.be.rejectedWith('"102.3" is not a valid integer');
+        .to.be.rejectedWith(`"102.3" is not a valid ${name}`);
     });
 
     it('rejects dangerous input', function () {
-      expect(this.Foo.create({ i: "'" })).to.be.rejectedWith('"\'" is not a valid integer');
+      expect(this.Foo.create({ i: "'" })).to.be.rejectedWith(`"\'" is not a valid ${name}`);
     })
   })
 });

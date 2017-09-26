@@ -12,26 +12,27 @@
 // implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
-// These tests run against a local instance of CockroachDB that meets the
-// following requirements:
-//
-// 1. Running with the --insecure flag.
-// 2. Contains a database named "sequelize_test".
-
-// To override the CockroachDB port, set the COCKROACH_PORT environment
-// variable.
-
-var chai = require('chai');
+require('./helper');
+var expect = require('chai').expect;
 var Sequelize = require('..');
 
-chai.use(require('chai-as-promised'));
-chai.use(require('chai-datetime'));
+describe('Enum', function () {
+  before(function() {
+    this.Bar = this.sequelize.define('bar', {
+      enum: Sequelize.ENUM('A', 'B')
+    });
+    return this.Bar.sync({ force: true });
+  });
 
-before(function() {
-  this.sequelize = new Sequelize('sequelize_test', 'root', '', {
-    dialect: 'postgres',
-    port: process.env.COCKROACH_PORT || 26257,
-    logging: false,
-    typeValidation: true
+  it('accepts valid values', function () {
+    this.Bar.create({ enum: 'A' }).then(function (bar) {
+      expect(bar.enum).to.equal('A');
+    });
+  });
+
+  it('rejects invalid values', function () {
+    expect(this.Bar.create({ enum: 'C' }))
+        .to.be.rejectedWith('"C" is not a valid choice in ["A","B"]');
   });
 });
+

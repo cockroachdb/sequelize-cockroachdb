@@ -118,7 +118,7 @@ describe('upsert', function () {
     });
   });
 
-  it('throws error with RETURNING', function () {
+  it('works with RETURNING', function () {
     var User = this.sequelize.define('user', {
       id: {
         type: Sequelize.INTEGER,
@@ -135,13 +135,17 @@ describe('upsert', function () {
         name: "original",
       });
     }).then(function(user) {
-      var options = {returning: "*"};
-      return User.upsert({
-        id: 1,
-        name: "UPDATED"
-      }, options).catch(function(e) {
-        expect(e.message).to.contain("https://github.com/cockroachdb/cockroach/issues/6637");
-      });
+        var options = {returning: "*"};
+        return User.upsert({
+            id: 1,
+            name: "UPDATED"
+        }, options);
+    }).then(function() {
+        return User.findOne(
+            {where: {id: 1}}
+        ).then(function(user) {
+            expect(user.name).to.equal("UPDATED");
+        });
     });
   });
 });

@@ -28,8 +28,6 @@ function inherits(constructor, superConstructor) {
   _.extend(constructor, superConstructor); // Static methods
 }
 
-var upsertIssueURL = "https://github.com/cockroachdb/cockroach/issues/6637";
-
 // upsertQueryV3 provides upsert support for Sequelize 3.x., using INSERT with
 // an ON CONFLICT clause. This overrides the Sequelize implementation for
 // Postgres, which uses a temporary stored procedure to handle upserts.
@@ -38,14 +36,18 @@ var upsertIssueURL = "https://github.com/cockroachdb/cockroach/issues/6637";
 // no return value.
 var upsertQueryV3 = function(tableName, insertValues, updateValues, where, rawAttributes, options) {
   var self = this;
-  if (options.returning) {
-    throw new Error("RETURNING not supported with INSERT .. ON CONFLICT. See " + upsertIssueURL);
-  }
 
   // Though this is an upsert, we want Sequelize to treat this as an INSERT.
   // Sequelize treats upserts in Postgres as a call to a temporary stored
   // procedure, which has a different return type than an INSERT.
   options.type = QueryTypes.INSERT;
+
+  var returning = "";
+  if (options.returning) {
+    returning = " RETURNING *";
+  }
+  // We remove the RETURNING option so that the INSERT query does
+  // not get it populated (we're appending clauses below).
   delete options.returning;
 
   // Create base INSERT query.
@@ -67,7 +69,12 @@ var upsertQueryV3 = function(tableName, insertValues, updateValues, where, rawAt
     return key + ' = excluded.'+key;
   }, this).join(', ');
 
-  return insert + " ON CONFLICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";";
+  var returning = "";
+  if (options.returning) {
+    returning = " RETURNING *";
+  }
+
+  return insert + " ON CONFLICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + returning + ";";
 };
 
 // upsertQueryV4 provides upsert support for Sequelize 4.x., using INSERT with
@@ -81,14 +88,18 @@ var upsertQueryV3 = function(tableName, insertValues, updateValues, where, rawAt
 // independently of the V3 version.
 var upsertQueryV4 = function(tableName, insertValues, updateValues, where, model, options) {
   var self = this;
-  if (options.returning) {
-    throw new Error("RETURNING not supported with INSERT .. ON CONFLICT. See " + upsertIssueURL);
-  }
 
   // Though this is an upsert, we want Sequelize to treat this as an INSERT.
   // Sequelize treats upserts in Postgres as a call to a temporary stored
   // procedure, which has a different return type than an INSERT.
   options.type = QueryTypes.INSERT;
+
+  var returning = "";
+  if (options.returning) {
+    returning = " RETURNING *";
+  }
+  // We remove the RETURNING option so that the INSERT query does
+  // not get it populated (we're appending clauses below).
   delete options.returning;
 
   // Create base INSERT query.
@@ -110,7 +121,7 @@ var upsertQueryV4 = function(tableName, insertValues, updateValues, where, model
     return key + ' = excluded.'+key;
   }, this).join(', ');
 
-  return insert + " ON CONFLICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";";
+  return insert + " ON CONFLICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + returning + ";";
 }
 
 // Install the right version of upsertQuery for the Sequelize version we're

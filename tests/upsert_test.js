@@ -65,12 +65,12 @@ describe('upsert', function () {
         name: updatedName1
       });
     }).then(function() {
-      return User.findById(id1);
+      return User.findByPk(id1);
     }).then(function(user) {
       expect(user.name).to.equal(updatedName1);
       expect(user.updatedAt).afterTime(user.createdAt);
 
-      return User.findById(id2);
+      return User.findByPk(id2);
     }).then(function(user) {
       // Verify that the other row is unmodified.
       expect(user.name).to.equal(name2);

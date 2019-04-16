@@ -116,7 +116,9 @@ var upsertQueryV4 = function(tableName, insertValues, updateValues, where, model
 // Install the right version of upsertQuery for the Sequelize version we're
 // running with.
 var sequelizeVersion = require('sequelize/package.json').version;
-if (semver.satisfies(sequelizeVersion, '4.x')) {
+if (semver.satisfies(sequelizeVersion, '5.x')) {
+  QueryGenerator.upsertQuery = upsertQueryV4;
+} else if (semver.satisfies(sequelizeVersion, '4.x')) {
   QueryGenerator.upsertQuery = upsertQueryV4;
 } else if (semver.satisfies(sequelizeVersion, '3.x')) {
   QueryGenerator.upsertQuery = upsertQueryV3;

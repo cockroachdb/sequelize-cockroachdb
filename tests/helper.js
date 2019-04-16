@@ -35,3 +35,7 @@ before(function() {
     typeValidation: true
   });
 });
+
+after(function() {
+  this.sequelize.close();
+})

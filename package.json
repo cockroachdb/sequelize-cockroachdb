@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/*_test.js\""
   },
+  "types": "types",
   "keywords": [
     "database",
     "sequelize",

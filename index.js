@@ -18,6 +18,7 @@ var semver = require('semver');
 var util = require('util');
 var _ = require('lodash');
 var Sequelize = require('sequelize');
+var PostgresDialect = require('sequelize/lib/dialects/postgres')
 var QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator.js');
 var QueryTypes = require('sequelize/lib/query-types.js');
 var DataTypes = require('sequelize/lib/data-types.js');
@@ -125,6 +126,9 @@ if (semver.satisfies(sequelizeVersion, '5.x')) {
 } else {
   throw new Error("Sequelize version " + sequelizeVersion + " is unsupported");
 }
+
+// Prevents usage of CREATE/REPLACE FUNCTION when using Model.findOrCreate().
+PostgresDialect.prototype.supports.EXCEPTION = false;
 
 // The JavaScript number type cannot represent all 64-bit integers--it can only
 // exactly represent integers in the range [-2^53 + 1, 2^53 - 1]. Notably,

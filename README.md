@@ -1,6 +1,6 @@
-# sequelize-cockroach
+# sequelize-cockroachdb
 
-This package makes Sequelize compatible with CockroachDB.
+[This NPM package](https://www.npmjs.com/package/sequelize-cockroachdb) makes Sequelize compatible with CockroachDB.
 
 [Learn how to build a Node.js app with CockroachDB.](https://www.cockroachlabs.com/docs/build-a-nodejs-app-with-cockroachdb-sequelize.html)
 

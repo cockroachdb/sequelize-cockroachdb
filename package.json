@@ -23,6 +23,7 @@
     "index.js"
   ],
   "scripts": {
+    "test-upsert": "node tests/see-upsert-working.js",
     "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/*_test.js\""
   },
   "dependencies": {

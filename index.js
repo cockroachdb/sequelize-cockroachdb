@@ -33,49 +33,12 @@ if (semver.satisfies(sequelizeVersion, '<=4')) {
 //// [1] Override the `upsert` query method from Sequelize v5 to make it work with CockroachDB
 
 if (semver.satisfies(sequelizeVersion, '5.x')) {
-  const upsertIssueURL = "https://github.com/cockroachdb/cockroach/issues/6637";
-
-  const upsertQueryV5 = function(tableName, insertValues, updateValues, where, model, options) {
-    var self = this;
-    if (options.returning) {
-      throw new Error("RETURNING not supported with INSERT .. ON CONFLICT. See " + upsertIssueURL);
-    }
-
-    // Though this is an upsert, we want Sequelize to treat this as an INSERT.
-    // Sequelize treats upserts in Postgres as a call to a temporary stored
-    // procedure, which has a different return type than an INSERT.
-    options.type = QueryTypes.INSERT;
-    delete options.returning;
-
-    // Create base INSERT query.
-    var insert = this.insertQuery(tableName, insertValues, model.rawAttributes, options);
-    if (insert.slice(-1) !== ";") {
-      throw new Error("expected but did not find terminating semicolon in INSERT query");
-    }
-    insert = insert.slice(0, -1);
-
-    // Create the ON CONFLICT clause, using the primary key as the target.
-    var pkCols = [];
-    Object.keys(model.rawAttributes).forEach(function(key) {
-      if (model.rawAttributes[key].primaryKey) {
-        pkCols.push(self.quoteIdentifier(model.rawAttributes[key].field));
-      }
-    });
-    var onConflictSet = Object.keys(updateValues).map(function (key) {
-      key = this.quoteIdentifier(key);
-      return key + ' = excluded.'+key;
-    }, this).join(', ');
-
-    return insert + " ON CONFLICT (" + pkCols.join(',') + ") DO UPDATE SET " + onConflictSet + ";";
-  }
-
-  // Replace the implementation
-  const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator.js');
-  QueryGenerator.upsertQuery = upsertQueryV5;
+  require('./patch-upsert-v5');
 }
 
-//// [2] Prevent usage of CREATE/REPLACE FUNCTION when using Model.findOrCreate()
+//// [2] Disable `EXCEPTION` support
 
+// This prevents, for example, usage of CREATE/REPLACE FUNCTION when using Model.findOrCreate()
 const PostgresDialect = require('sequelize/lib/dialects/postgres');
 PostgresDialect.prototype.supports.EXCEPTION = false;
 

@@ -1,0 +1,31 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        sequelize-version: [5, 6]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    container: cockroachdb/cockroach:latest
+    name: Sequelize v${{ matrix.sequelize-version }}
+    steps:
+      -
+        uses: actions/checkout@v2
+      -
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      -
+        run: cockroach version
+      -
+        run: cockroach start-single-node --background --insecure
+      -
+        run: echo "CREATE DATABASE sequelize_test;" | cockroach sql --insecure
+      -
+        run: npm install
+      -
+        run: npm install --save sequelize@${{ matrix.sequelize-version }}
+      -
+        run: npm test

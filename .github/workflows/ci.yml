@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         sequelize-version: [5, 6]
-        cockroachdb-version: [latest, v20.2.2, v19.2.11]
+        cockroachdb-version: [v20.2.4]
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -77,10 +77,10 @@ jobs:
       SEQ_PW: ''
       SEQ_DB: sequelize_test
     steps:
-      - name: Start a single CockroachDB instance (v20.2.2) with docker
+      - name: Start a single CockroachDB instance (v20.2.4) with docker
         run: |
-          docker pull cockroachdb/cockroach:v20.2.2
-          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 cockroachdb/cockroach:v20.2.2 start-single-node --insecure
+          docker pull cockroachdb/cockroach:v20.2.4
+          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 cockroachdb/cockroach:v20.2.4 start-single-node --insecure
           sudo apt update && sudo apt install wait-for-it -y
           wait-for-it -h localhost -p 26257
           docker exec roach bash -c 'echo "CREATE DATABASE sequelize_test;" | cockroach sql --insecure'

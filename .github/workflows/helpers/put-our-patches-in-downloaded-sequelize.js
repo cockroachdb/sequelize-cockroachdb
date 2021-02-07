@@ -34,6 +34,6 @@ function copyFileWrapping(sourcePath, destinationPath) {
 }
 
 // Wrap our source code files and write the wrapped versions into `.downloaded-sequelize/.cockroachdb-patches/`
-for (const file of ['index.js', 'patch-upsert-v5.js']) {
-  copyFileWrapping(file, `.downloaded-sequelize/.cockroachdb-patches/${file}`);
+for (const filename of jetpack.list('source')) {
+  copyFileWrapping(`source/${filename}`, `.downloaded-sequelize/.cockroachdb-patches/${filename}`);
 }

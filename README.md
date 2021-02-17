@@ -17,7 +17,7 @@ will validate values if `typeValidation` is enabled).
 
 First make sure you have CockroachDB installed. You can run `cockroach version` to see if is installed or you can [download here](https://www.cockroachlabs.com/docs/stable/install-cockroachdb.html)
 
-Run `cockroach start-single-node --insecure --logtostderr` to start the database
+Run `cockroach start-single-node --insecure --logtostderr` to start the database. If this returns `ERROR: cockroach server exited with error: unable to lookup hostname` run with `--host localhost` flag.
 
 Run `cockroach sql --insecure` to enter in SQL mode and type `CREATE DATABASE sequelize_test;`
 

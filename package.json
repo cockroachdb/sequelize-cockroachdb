@@ -37,7 +37,8 @@
     "chai-as-promised": "^7.1.1",
     "chai-datetime": "^1.7.0",
     "mocha": "^8.2.0",
-    "sequelize": "^6.3.5"
+    "sequelize": "^6.3.5",
+    "sinon": "^9.2.4"
   },
   "peerDependencies": {
     "sequelize": "5 - 6"

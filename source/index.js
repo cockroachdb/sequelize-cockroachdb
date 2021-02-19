@@ -81,15 +81,26 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
 
 // [5] Patch drop constraint query
 // [6] Drop all tables except the crdb_internal
-const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
-
-PostgresQueryInterface.prototype.__dropSchema = PostgresQueryInterface.prototype.dropSchema;
-
-PostgresQueryInterface.prototype.dropSchema = async function (tableName, options) {
-  if(tableName === 'crdb_internal') return;
-
-  await this.__dropSchema(tableName, options);
-};
+if(semver.satisfies(sequelizeVersion, '5.x')) {
+  const { QueryInterface } = require('sequelize/lib/query-interface');
+  QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
+  
+  QueryInterface.prototype.dropSchema = async function (tableName, options) {
+    if(tableName === 'crdb_internal') return;
+    
+    await this.__dropSchema(tableName, options);
+  };
+} else {
+  const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+  
+  PostgresQueryInterface.prototype.__dropSchema = PostgresQueryInterface.prototype.dropSchema;
+  
+  PostgresQueryInterface.prototype.dropSchema = async function (tableName, options) {
+    if(tableName === 'crdb_internal') return;
+    
+    await this.__dropSchema(tableName, options);
+  };
+}
 
 // [7] Patch drop constraint query
 const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');

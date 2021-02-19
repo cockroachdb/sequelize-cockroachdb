@@ -50,7 +50,8 @@ describe('Model', () => {
       expect(data).not.to.have.ownProperty('height');
     });
 
-    it('should not remove columns if drop is set to false in alter configuration', async function() {
+    // on v5 this test doesn't exist
+    it.skip('should not remove columns if drop is set to false in alter configuration', async function() {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
         age: Sequelize.INTEGER

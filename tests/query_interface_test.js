@@ -16,7 +16,7 @@ describe('QueryInterface', () => {
     await this.queryInterface.dropAllSchemas();
   });
 
-  describe.only('dropAllSchema', () => {
+  describe('dropAllSchema', () => {
     it('should drop all schema', async function() {
       await this.queryInterface.dropAllSchemas({
         skip: [this.sequelize.config.database]
@@ -431,7 +431,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  describe.only('constraints', () => {
+  describe('constraints', () => {
     beforeEach(async function() {
       this.User = this.sequelize.define('users', {
         username: DataTypes.STRING,

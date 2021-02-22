@@ -69,7 +69,7 @@ describe('QueryInterface', () => {
   });
 
   // already working
-  describe.skip('dropAllTables', () => {
+  describe('dropAllTables', () => {
     it('should drop all tables', async function() {
 
       // MSSQL includes `spt_values` table which is system defined, hence can't be dropped
@@ -359,7 +359,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  describe.skip('describeForeignKeys', () => {
+  describe('describeForeignKeys', () => {
     beforeEach(async function() {
       await this.queryInterface.createTable('users', {
         id: {
@@ -418,7 +418,7 @@ describe('QueryInterface', () => {
     });
 
     // alredy works
-    it.skip('should get a list of foreign key references details for the table', async function() {
+    it('should get a list of foreign key references details for the table', async function() {
       const references = await this.queryInterface.getForeignKeyReferencesForTable('hosts', this.sequelize.options);
       expect(references).to.have.length(3);
       for (const ref of references) {

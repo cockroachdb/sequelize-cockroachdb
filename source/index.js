@@ -26,10 +26,10 @@ const { Sequelize, DataTypes, QueryTypes } = require('sequelize');
 // Ensure Sequelize version compatibility.
 const semver = require('semver');
 const { version, release } = require('sequelize/package.json');
-const sequelizeVersion = version === '0.0.0-development' ? release.branches[0] : version;
+const branchVersion = release.branches ? release.branches[0] : release.branch;
+const sequelizeVersion = version === '0.0.0-development' ? branchVersion : version;
 
 console.log('VVV: ', sequelizeVersion)
-console.log('VVV coerce: ', semver.coerce(sequelizeVersion))
 console.log('below v4: ', semver.satisfies(sequelizeVersion, '<=4'))
 if (semver.satisfies(sequelizeVersion, '<=4')) {
   throw new Error(`Sequelize versions 4 and below are not supported by sequelize-cockroachdb. Detected version is ${sequelizeVersion}.`);

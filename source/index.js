@@ -37,6 +37,7 @@ if (semver.satisfies(sequelizeVersion, '<=4')) {
 
 //// [1] Override the `upsert` query method from Sequelize v5 to make it work with CockroachDB
 
+console.log('is v5:: ', semver.satisfies(sequelizeVersion, '5.x'))
 if (semver.satisfies(sequelizeVersion, '5.x')) {
   require('./patch-upsert-v5');
 }

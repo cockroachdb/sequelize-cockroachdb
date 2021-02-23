@@ -71,3 +71,4 @@ PostgresDialect.prototype.supports.EXCEPTION = false;
 
 Sequelize.supportsCockroachDB = true;
 module.exports = require('sequelize');
+require('pg').defaults.parseInt8 = true;

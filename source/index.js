@@ -81,30 +81,46 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
 
 // [5] Patch drop constraint query
 // [6] Drop all tables except the crdb_internal
-try {
+  console.log('Sequelize Version: ', sequelizeVersion)
+  console.log('Sequelize Version is v5: ', semver.satisfies(sequelizeVersion, '5.x'))
+  
 if(semver.satisfies(sequelizeVersion, '5.x')) {
-  console.log('Drop tables: V5')
-  const { QueryInterface } = require('sequelize/lib/query-interface');
-  QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
-  
-  QueryInterface.prototype.dropSchema = async function (tableName, options) {
-    if(tableName === 'crdb_internal') return;
+  try{
     
-    await this.__dropSchema(tableName, options);
-  };
+    console.log('Drop tables: V5')
+    const { QueryInterface } = require('sequelize/lib/query-interface');
+    QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
+    
+    QueryInterface.prototype.dropSchema = async function (tableName, options) {
+      if(tableName === 'crdb_internal') return;
+      
+      await this.__dropSchema(tableName, options);
+    };
+  }catch(error) {
+    console.log('Error in Drop tables v5')
+    console.log(error)
+    console.log(JSON.stringify(error))
+  }
 } else {
-  console.log('CV6')
-  // const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
-  const { QueryInterface } = require('sequelize/lib/dialects/abstract/query-interface');
-  console.log(QueryInterface)
-  
-  QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
-  
-  QueryInterface.prototype.dropSchema = async function (tableName, options) {
-    if(tableName === 'crdb_internal') return;
+  try{
+
+    console.log('Drop tables: V6')
+    // const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+    const { QueryInterface } = require('sequelize/lib/dialects/abstract/query-interface');
+    console.log(QueryInterface)
     
-    await this.__dropSchema(tableName, options);
-  };
+    QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
+    
+    QueryInterface.prototype.dropSchema = async function (tableName, options) {
+      if(tableName === 'crdb_internal') return;
+      
+      await this.__dropSchema(tableName, options);
+    };
+  }catch(error) {
+    console.log('Error in Drop tables v6')
+    console.log(error)
+    console.log(JSON.stringify(error))
+  }
 }
 
 // [7] Patch drop constraint query
@@ -129,52 +145,61 @@ QueryGenerator.prototype.removeConstraintQuery = function (...args) {
 //
 const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
 if(semver.satisfies(sequelizeVersion, '5.x')) {
-  console.log('Drop constraint: V5')
-  const { QueryInterface } = require('sequelize/lib/query-interface');
-  const QueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
-  QueryInterface.prototype.__removeConstraint = QueryInterface.prototype.removeConstraint;
-  
-  QueryInterface.prototype.removeConstraint = async function (tableName, constraintName, options) {
-    try {
-      await this.__removeConstraint(tableName, constraintName, options);
-    } catch(error) {
-      if(error.message.includes('use DROP INDEX CASCADE instead')) {
-        const query = QueryGenerator.prototype.removeConstraintQuery.call(this, tableName, constraintName);
-        const [, queryConstraintName] = query.split('DROP CONSTRAINT');
-        const newQuery = `DROP INDEX ${queryConstraintName} CASCADE;`;
-  
-        return this.sequelize.query(newQuery, options);
-      }
-      else 
-        throw error;
-    }
-  };
-} else {
-  const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
-  PostgresQueryInterface.prototype.__removeConstraint = PostgresQueryInterface.prototype.removeConstraint;
-  
-  PostgresQueryInterface.prototype.removeConstraint = async function (tableName, constraintName, options) {
-    try {
-      await this.__removeConstraint(tableName, constraintName, options);
-    } catch(error) {
-      if(error.message.includes('use DROP INDEX CASCADE instead')) {
-        const query = this.queryGenerator.removeConstraintQuery(tableName, constraintName);
-        const [, queryConstraintName] = query.split('DROP CONSTRAINT');
-        const newQuery = `DROP INDEX ${queryConstraintName} CASCADE;`;
-  
-        return this.sequelize.query(newQuery, options);
-      }
-      else 
-        throw error;
-    }
-  };
-}
-}
-catch(error) {
-  console.log(error)
-  console.log(JSON.stringify(error))
-}
+  try {
 
+    console.log('Drop constraint: V5')
+    const { QueryInterface } = require('sequelize/lib/query-interface');
+    const QueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
+    QueryInterface.prototype.__removeConstraint = QueryInterface.prototype.removeConstraint;
+    
+    QueryInterface.prototype.removeConstraint = async function (tableName, constraintName, options) {
+      try {
+        await this.__removeConstraint(tableName, constraintName, options);
+      } catch(error) {
+        if(error.message.includes('use DROP INDEX CASCADE instead')) {
+          const query = QueryGenerator.prototype.removeConstraintQuery.call(this, tableName, constraintName);
+          const [, queryConstraintName] = query.split('DROP CONSTRAINT');
+          const newQuery = `DROP INDEX ${queryConstraintName} CASCADE;`;
+          
+          return this.sequelize.query(newQuery, options);
+        }
+        else 
+        throw error;
+      }
+    };
+  }catch(error) {
+    console.log('Error in Drop constraint v5')
+    console.log(error)
+    console.log(JSON.stringify(error))
+  }
+} else {
+  try{
+
+    console.log('Drop constraint: V6')
+    const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+    PostgresQueryInterface.prototype.__removeConstraint = PostgresQueryInterface.prototype.removeConstraint;
+    
+    PostgresQueryInterface.prototype.removeConstraint = async function (tableName, constraintName, options) {
+      try {
+        await this.__removeConstraint(tableName, constraintName, options);
+      } catch(error) {
+        if(error.message.includes('use DROP INDEX CASCADE instead')) {
+          const query = this.queryGenerator.removeConstraintQuery(tableName, constraintName);
+          const [, queryConstraintName] = query.split('DROP CONSTRAINT');
+          const newQuery = `DROP INDEX ${queryConstraintName} CASCADE;`;
+          
+          return this.sequelize.query(newQuery, options);
+        }
+        else 
+        throw error;
+      }
+    };
+  }catch(error) {
+    console.log('Error in Drop constraint v6')
+    console.log(error)
+    console.log(JSON.stringify(error))
+  }
+}
 
 //// Done!
 

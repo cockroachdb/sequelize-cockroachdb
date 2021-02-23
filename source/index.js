@@ -81,6 +81,7 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
 
 // [5] Patch drop constraint query
 // [6] Drop all tables except the crdb_internal
+try {
 if(semver.satisfies(sequelizeVersion, '5.x')) {
   const { QueryInterface } = require('sequelize/lib/query-interface');
   QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
@@ -124,6 +125,7 @@ QueryGenerator.prototype.removeConstraintQuery = function (...args) {
 //
 const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
 if(semver.satisfies(sequelizeVersion, '5.x')) {
+  console.log('Drop constraint: V5')
   const { QueryInterface } = require('sequelize/lib/query-interface');
   const QueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
   QueryInterface.prototype.__removeConstraint = QueryInterface.prototype.removeConstraint;
@@ -163,6 +165,12 @@ if(semver.satisfies(sequelizeVersion, '5.x')) {
     }
   };
 }
+}
+catch(error) {
+  console.log(error)
+  console.log(JSON.stringify(error))
+}
+
 
 //// Done!
 

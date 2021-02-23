@@ -83,6 +83,7 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
 // [6] Drop all tables except the crdb_internal
 try {
 if(semver.satisfies(sequelizeVersion, '5.x')) {
+  console.log('Drop tables: V5')
   const { QueryInterface } = require('sequelize/lib/query-interface');
   QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
   
@@ -92,11 +93,14 @@ if(semver.satisfies(sequelizeVersion, '5.x')) {
     await this.__dropSchema(tableName, options);
   };
 } else {
-  const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+  console.log('CV6')
+  // const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+  const { QueryInterface } = require('sequelize/lib/dialects/abstract/query-interface');
+  console.log(QueryInterface)
   
-  PostgresQueryInterface.prototype.__dropSchema = PostgresQueryInterface.prototype.dropSchema;
+  QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
   
-  PostgresQueryInterface.prototype.dropSchema = async function (tableName, options) {
+  QueryInterface.prototype.dropSchema = async function (tableName, options) {
     if(tableName === 'crdb_internal') return;
     
     await this.__dropSchema(tableName, options);

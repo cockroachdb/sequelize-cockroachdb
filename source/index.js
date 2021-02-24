@@ -80,7 +80,10 @@ const { ConnectionManager } = require('sequelize/lib/dialects/abstract/connectio
 ConnectionManager.prototype.__loadDialectModule = ConnectionManager.prototype._loadDialectModule;
 ConnectionManager.prototype._loadDialectModule = function (...args) {
   const pg = this.__loadDialectModule(...args);
-  pg.defaults.parseInt8 = true;
+  pg.types.setTypeParser(20, function (val) {
+    if (val > Number.MAX_SAFE_INTEGER) return BigInt(val);
+    else return parseInt(val, 10);
+  });
   return pg;
 }
 

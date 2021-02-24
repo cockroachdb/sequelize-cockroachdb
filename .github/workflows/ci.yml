@@ -122,5 +122,5 @@ jobs:
 
       - name: Run integration tests at '${{ matrix.test-path }}' for Sequelize ${{ matrix.sequelize-branch }}
         working-directory: ./.downloaded-sequelize
-        run: npx mocha --require ./.cockroachdb-patches/index.js --timeout 30000 --reporter spec --exit "test/integration/${{ matrix.test-path }}.test.js" --grep "adds, reads and removes an index to the table","works with schemas","should get a list of foreign keys for the table","should add, read & remove primary key constraint","should add, read & remove foreign key constraint","should throw non existent constraints as UnknownConstraintError" --invert
+        run: npx mocha --require ./.cockroachdb-patches/index.js --timeout 30000 --reporter spec --exit "test/integration/${{ matrix.test-path }}.test.js" --grep "$(sed --null-data "s/\n/|/g" test_names.txt)" --invert
 

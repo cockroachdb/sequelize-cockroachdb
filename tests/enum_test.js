@@ -24,6 +24,12 @@ describe('Enum', function () {
     return this.Bar.sync({ force: true });
   });
 
+  after(async function() {
+    this.queryInterface = this.sequelize.getQueryInterface();
+    await this.queryInterface.dropTable('bars', {});
+    await this.queryInterface.dropEnum('enum_bars_enum');
+  });
+
   it('accepts valid values', function () {
     this.Bar.create({ enum: 'A' }).then(function (bar) {
       expect(bar.enum).to.equal('A');

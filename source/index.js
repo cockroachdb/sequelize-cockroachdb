@@ -25,20 +25,13 @@ const { Sequelize, DataTypes, QueryTypes } = require('sequelize');
 
 // Ensure Sequelize version compatibility.
 const semver = require('semver');
-const { version, release } = require('sequelize/package.json');
-const branchVersion = release.branches ? release.branches[0] : release.branch;
-const sequelizeVersion = version === '0.0.0-development' ? branchVersion : version;
-
-console.log('VVV: ', sequelizeVersion)
-console.log('below v4: ', semver.satisfies(sequelizeVersion, '<=4'))
+const sequelizeVersion = require('sequelize/package.json').version;
 if (semver.satisfies(sequelizeVersion, '<=4')) {
   throw new Error(`Sequelize versions 4 and below are not supported by sequelize-cockroachdb. Detected version is ${sequelizeVersion}.`);
 }
 
 //// [1] Override the `upsert` query method from Sequelize v5 to make it work with CockroachDB
 
-console.log('is v5:: ', semver.satisfies(sequelizeVersion, '5.x'))
-console.log('is v5 coerced:: ', semver.satisfies(semver.coerce(sequelizeVersion), '5.x'))
 if (semver.satisfies(sequelizeVersion, '5.x')) {
   require('./patch-upsert-v5');
 }

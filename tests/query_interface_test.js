@@ -509,7 +509,7 @@ describe('QueryInterface', () => {
       });
     });
 
-    // cockroach rejects this. Must enable SET sql_safe_updates = false; for this to work
+    // skipping because cockroach doesn't support removing the primary key outside of a transaction
     describe.skip('primary key', () => {
       it('should add, read & remove primary key constraint', async function() {
         await this.queryInterface.removeColumn('users', 'id');
@@ -534,7 +534,7 @@ describe('QueryInterface', () => {
       });
     });
 
-    // cockroach rejects this. Must enable SET sql_safe_updates = false; for this to work
+    // skipping because cockroach doesn't support removing the primary key outside of a transaction
     describe.skip('foreign key', () => {
       it('should add, read & remove foreign key constraint', async function() {
         await this.queryInterface.removeColumn('users', 'id');

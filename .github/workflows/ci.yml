@@ -122,4 +122,5 @@ jobs:
 
       - name: Run integration tests at '${{ matrix.test-path }}' for Sequelize ${{ matrix.sequelize-branch }}
         working-directory: ./.downloaded-sequelize
-        run: npx mocha --require ./.cockroachdb-patches/index.js --timeout 30000 --reporter spec --exit "test/integration/${{ matrix.test-path }}.test.js"
+        run: npx mocha --require ./.cockroachdb-patches/index.js --timeout 30000 --reporter spec --exit "test/integration/${{ matrix.test-path }}.test.js" --grep "$(sed --null-data "s/\n/|/g" ../.github/workflows/test_names.txt)" --invert
+

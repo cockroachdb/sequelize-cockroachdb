@@ -21,11 +21,18 @@ try {
   throw new Error('Failed to load Sequelize. Have you installed it? Run `npm install sequelize`');
 }
 
-const { Sequelize, DataTypes, QueryTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 
 // Ensure Sequelize version compatibility.
 const semver = require('semver');
-const sequelizeVersion = require('sequelize/package.json').version;
+const { version, release } = require('sequelize/package.json');
+// In v4 and v5 package.json files, have a property 'release: { branch: 'v5' }'
+// but in v6 it has 'release: { branches: ['v6'] }'
+const branchVersion = release.branches ? release.branches[0] : release.branch;
+// When executing the tests on Github Actions the version it gets from sequelize is from the repository which has a development version '0.0.0-development'
+// in that case we fallback to a branch version
+const sequelizeVersion = semver.coerce(version === '0.0.0-development' ? branchVersion : version);
+
 if (semver.satisfies(sequelizeVersion, '<=4')) {
   throw new Error(`Sequelize versions 4 and below are not supported by sequelize-cockroachdb. Detected version is ${sequelizeVersion}.`);
 }
@@ -34,6 +41,9 @@ if (semver.satisfies(sequelizeVersion, '<=4')) {
 
 if (semver.satisfies(sequelizeVersion, '5.x')) {
   require('./patch-upsert-v5');
+  require('./patches-v5');
+} else {
+  require('./patches-v6');
 }
 
 //// [2] Disable `EXCEPTION` support
@@ -67,8 +77,7 @@ PostgresDialect.prototype.supports.EXCEPTION = false;
   }
 });
 
-
-// [5] Fix int to string conversion
+// [4] Fix int to string conversion
 const { ConnectionManager } = require('sequelize/lib/dialects/abstract/connection-manager');
 ConnectionManager.prototype.__loadDialectModule = ConnectionManager.prototype._loadDialectModule;
 ConnectionManager.prototype._loadDialectModule = function (...args) {

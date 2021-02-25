@@ -1,0 +1,6 @@
+adds, reads and removes an index to the table
+works with schemas
+should get a list of foreign keys for the table
+should add, read & remove primary key constraint
+should add, read & remove foreign key constraint
+should throw non existent constraints as UnknownConstraintError

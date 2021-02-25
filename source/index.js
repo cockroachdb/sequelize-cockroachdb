@@ -67,8 +67,7 @@ PostgresDialect.prototype.supports.EXCEPTION = false;
   }
 });
 
-
-// [5] Fix int to string conversion
+// [4] Fix int to string conversion
 const { ConnectionManager } = require('sequelize/lib/dialects/abstract/connection-manager');
 ConnectionManager.prototype.__loadDialectModule = ConnectionManager.prototype._loadDialectModule;
 ConnectionManager.prototype._loadDialectModule = function (...args) {
@@ -78,6 +77,27 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
     else return parseInt(val, 10);
   });
   return pg;
+}
+
+// [5] Patch drop constraint query
+const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
+
+QueryGenerator.prototype.__removeConstraintQuery = QueryGenerator.prototype.removeConstraintQuery;
+QueryGenerator.prototype.removeConstraintQuery = function (...args) {
+  const query = this.__removeConstraintQuery(...args)
+  const [, constraintName] = query.split('DROP CONSTRAINT')
+
+  return `DROP INDEX ${constraintName} CASCADE;`
+}
+
+// [6] Patch unknown constraint error, undefined table
+const { Query } = require('sequelize/lib/dialects/postgres/query');
+Query.prototype.__formatError = Query.prototype.formatError;
+
+Query.prototype.formatError = function (err) {
+  const [,tableName] = err.sql.match(/alter table "(.+?)"/i);
+  err.message = err.message + ` in relation "${tableName}"`
+  this.__formatError(err)
 }
 
 //// Done!

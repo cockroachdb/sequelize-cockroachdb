@@ -29,7 +29,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  // Reason: this test doesn't work well locally
+  // Reason: this test doesn't work locally because it expects to have one table but other tests creates some tables
   describe.skip('showAllTables', () => {
     it('should not contain views', async function() {
       async function cleanup() {

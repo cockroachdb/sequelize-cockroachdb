@@ -21,11 +21,14 @@ try {
   throw new Error('Failed to load Sequelize. Have you installed it? Run `npm install sequelize`');
 }
 
-const { Sequelize, DataTypes, QueryTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 
 // Ensure Sequelize version compatibility.
 const semver = require('semver');
-const sequelizeVersion = require('sequelize/package.json').version;
+const { version, release } = require('sequelize/package.json');
+const branchVersion = release.branches ? release.branches[0] : release.branch;
+const sequelizeVersion = semver.coerce(version === '0.0.0-development' ? branchVersion : version);
+
 if (semver.satisfies(sequelizeVersion, '<=4')) {
   throw new Error(`Sequelize versions 4 and below are not supported by sequelize-cockroachdb. Detected version is ${sequelizeVersion}.`);
 }
@@ -79,15 +82,8 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
   return pg;
 }
 
-// [5] Patch drop constraint query
-// [6] Drop all tables except the crdb_internal
-  console.log('Sequelize Version: ', sequelizeVersion)
-  console.log('Sequelize Version is v5: ', semver.satisfies(sequelizeVersion, '5.x'))
-  
+// [5] Drop all tables except the crdb_internal
 if(semver.satisfies(sequelizeVersion, '5.x')) {
-  try{
-    
-    console.log('Drop tables: V5')
     const { QueryInterface } = require('sequelize/lib/query-interface');
     QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
     
@@ -96,31 +92,15 @@ if(semver.satisfies(sequelizeVersion, '5.x')) {
       
       await this.__dropSchema(tableName, options);
     };
-  }catch(error) {
-    console.log('Error in Drop tables v5')
-    console.log(error)
-    console.log(JSON.stringify(error))
-  }
 } else {
-  try{
-
-    console.log('Drop tables: V6')
-    // const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
-    const { QueryInterface } = require('sequelize/lib/dialects/abstract/query-interface');
-    console.log(QueryInterface)
+    const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+    PostgresQueryInterface.prototype.__dropSchema = PostgresQueryInterface.prototype.dropSchema;
     
-    QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
-    
-    QueryInterface.prototype.dropSchema = async function (tableName, options) {
+    PostgresQueryInterface.prototype.dropSchema = async function (tableName, options) {
       if(tableName === 'crdb_internal') return;
       
       await this.__dropSchema(tableName, options);
     };
-  }catch(error) {
-    console.log('Error in Drop tables v6')
-    console.log(error)
-    console.log(JSON.stringify(error))
-  }
 }
 
 // [7] Patch drop constraint query
@@ -144,10 +124,8 @@ QueryGenerator.prototype.removeConstraintQuery = function (...args) {
 //   this.__formatError(err)
 //
 const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+// [6] Patch drop constraint query
 if(semver.satisfies(sequelizeVersion, '5.x')) {
-  try {
-
-    console.log('Drop constraint: V5')
     const { QueryInterface } = require('sequelize/lib/query-interface');
     const QueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
     QueryInterface.prototype.__removeConstraint = QueryInterface.prototype.removeConstraint;
@@ -167,15 +145,7 @@ if(semver.satisfies(sequelizeVersion, '5.x')) {
         throw error;
       }
     };
-  }catch(error) {
-    console.log('Error in Drop constraint v5')
-    console.log(error)
-    console.log(JSON.stringify(error))
-  }
 } else {
-  try{
-
-    console.log('Drop constraint: V6')
     const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
     PostgresQueryInterface.prototype.__removeConstraint = PostgresQueryInterface.prototype.removeConstraint;
     
@@ -194,11 +164,6 @@ if(semver.satisfies(sequelizeVersion, '5.x')) {
         throw error;
       }
     };
-  }catch(error) {
-    console.log('Error in Drop constraint v6')
-    console.log(error)
-    console.log(JSON.stringify(error))
-  }
 }
 
 //// Done!

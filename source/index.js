@@ -37,6 +37,9 @@ if (semver.satisfies(sequelizeVersion, '<=4')) {
 
 if (semver.satisfies(sequelizeVersion, '5.x')) {
   require('./patch-upsert-v5');
+  require('./patches-v5');
+} else {
+  require('./patches-v6');
 }
 
 //// [2] Disable `EXCEPTION` support
@@ -80,90 +83,6 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
     else return parseInt(val, 10);
   });
   return pg;
-}
-
-// [5] Drop all tables except the crdb_internal
-if(semver.satisfies(sequelizeVersion, '5.x')) {
-    const { QueryInterface } = require('sequelize/lib/query-interface');
-    QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
-    
-    QueryInterface.prototype.dropSchema = async function (tableName, options) {
-      if(tableName === 'crdb_internal') return;
-      
-      await this.__dropSchema(tableName, options);
-    };
-} else {
-    const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
-    PostgresQueryInterface.prototype.__dropSchema = PostgresQueryInterface.prototype.dropSchema;
-    
-    PostgresQueryInterface.prototype.dropSchema = async function (tableName, options) {
-      if(tableName === 'crdb_internal') return;
-      
-      await this.__dropSchema(tableName, options);
-    };
-}
-
-// [7] Patch drop constraint query
-const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
-
-QueryGenerator.prototype.__removeConstraintQuery = QueryGenerator.prototype.removeConstraintQuery;
-QueryGenerator.prototype.removeConstraintQuery = function (...args) {
-  const query = this.__removeConstraintQuery(...args)
-  const [, constraintName] = query.split('DROP CONSTRAINT')
-
-  return `DROP INDEX ${constraintName} CASCADE;`
-}
-
-// [6] Patch unknown constraint error, undefined table
-// const { Query } = require('sequelize/lib/dialects/postgres/query');
-// Query.prototype.__formatError = Query.prototype.formatError;
-
-// Query.prototype.formatError = function (err) {
-//   const [,tableName] = err.sql.match(/alter table "(.+?)"/i);
-//   err.message = err.message + ` in relation "${tableName}"`
-//   this.__formatError(err)
-//
-const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
-// [6] Patch drop constraint query
-if(semver.satisfies(sequelizeVersion, '5.x')) {
-    const { QueryInterface } = require('sequelize/lib/query-interface');
-    const QueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
-    QueryInterface.prototype.__removeConstraint = QueryInterface.prototype.removeConstraint;
-    
-    QueryInterface.prototype.removeConstraint = async function (tableName, constraintName, options) {
-      try {
-        await this.__removeConstraint(tableName, constraintName, options);
-      } catch(error) {
-        if(error.message.includes('use DROP INDEX CASCADE instead')) {
-          const query = QueryGenerator.prototype.removeConstraintQuery.call(this, tableName, constraintName);
-          const [, queryConstraintName] = query.split('DROP CONSTRAINT');
-          const newQuery = `DROP INDEX ${queryConstraintName} CASCADE;`;
-          
-          return this.sequelize.query(newQuery, options);
-        }
-        else 
-        throw error;
-      }
-    };
-} else {
-    const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
-    PostgresQueryInterface.prototype.__removeConstraint = PostgresQueryInterface.prototype.removeConstraint;
-    
-    PostgresQueryInterface.prototype.removeConstraint = async function (tableName, constraintName, options) {
-      try {
-        await this.__removeConstraint(tableName, constraintName, options);
-      } catch(error) {
-        if(error.message.includes('use DROP INDEX CASCADE instead')) {
-          const query = this.queryGenerator.removeConstraintQuery(tableName, constraintName);
-          const [, queryConstraintName] = query.split('DROP CONSTRAINT');
-          const newQuery = `DROP INDEX ${queryConstraintName} CASCADE;`;
-          
-          return this.sequelize.query(newQuery, options);
-        }
-        else 
-        throw error;
-      }
-    };
 }
 
 //// Done!

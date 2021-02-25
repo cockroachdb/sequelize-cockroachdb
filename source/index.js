@@ -80,6 +80,18 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
 }
 
 // [5] Patch drop constraint query
+// [6] Drop all tables except the crdb_internal
+const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+
+PostgresQueryInterface.prototype.__dropSchema = PostgresQueryInterface.prototype.dropSchema;
+
+PostgresQueryInterface.prototype.dropSchema = async function (tableName, options) {
+  if(tableName === 'crdb_internal') return;
+
+  await this.__dropSchema(tableName, options);
+};
+
+// [7] Patch drop constraint query
 const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
 
 QueryGenerator.prototype.__removeConstraintQuery = QueryGenerator.prototype.removeConstraintQuery;
@@ -91,14 +103,14 @@ QueryGenerator.prototype.removeConstraintQuery = function (...args) {
 }
 
 // [6] Patch unknown constraint error, undefined table
-const { Query } = require('sequelize/lib/dialects/postgres/query');
-Query.prototype.__formatError = Query.prototype.formatError;
+// const { Query } = require('sequelize/lib/dialects/postgres/query');
+// Query.prototype.__formatError = Query.prototype.formatError;
 
-Query.prototype.formatError = function (err) {
-  const [,tableName] = err.sql.match(/alter table "(.+?)"/i);
-  err.message = err.message + ` in relation "${tableName}"`
-  this.__formatError(err)
-}
+// Query.prototype.formatError = function (err) {
+//   const [,tableName] = err.sql.match(/alter table "(.+?)"/i);
+//   err.message = err.message + ` in relation "${tableName}"`
+//   this.__formatError(err)
+//
 
 //// Done!
 

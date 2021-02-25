@@ -74,8 +74,17 @@ PostgresDialect.prototype.supports.EXCEPTION = false;
   }
 });
 
+
+// [5] Fix int to string conversion
+const { ConnectionManager } = require('sequelize/lib/dialects/abstract/connection-manager');
+ConnectionManager.prototype.__loadDialectModule = ConnectionManager.prototype._loadDialectModule;
+ConnectionManager.prototype._loadDialectModule = function (...args) {
+  const pg = this.__loadDialectModule(...args);
+  pg.defaults.parseInt8 = true;
+  return pg;
+}
+
 //// Done!
 
 Sequelize.supportsCockroachDB = true;
 module.exports = require('sequelize');
-require('pg').defaults.parseInt8 = true;

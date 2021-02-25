@@ -29,7 +29,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  // Skip only local, on CI it works
+  // Reason: this test doesn't work well locally
   describe.skip('showAllTables', () => {
     it('should not contain views', async function() {
       async function cleanup() {
@@ -55,7 +55,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  // solved in another PR
+  // Reason: fixed in another PR
   describe.skip('renameTable', () => {
     it('should rename table', async function() {
       await this.queryInterface.createTable('my_test_table', {
@@ -68,7 +68,6 @@ describe('QueryInterface', () => {
     });
   });
 
-  // already working
   describe('dropAllTables', () => {
     it('should drop all tables', async function() {
 
@@ -107,8 +106,8 @@ describe('QueryInterface', () => {
     });
   });
 
-  // Not a bug, cockroach always have a primary index
-  describe.skip('indexes', () => {
+  // Reason: CockroachDB always have a primary index on the table which makes this test fail
+  describe('indexes', () => {
     beforeEach(async function() {
       await this.queryInterface.dropTable('Group');
       await this.queryInterface.createTable('Group', {
@@ -118,7 +117,7 @@ describe('QueryInterface', () => {
       });
     });
 
-    // Not a bug, cockroach always have a primary index
+    // Reason: CockroachDB always have a primary index on the table which makes this test fail
     it.skip('adds, reads and removes an index to the table', async function() {
       await this.queryInterface.addIndex('Group', ['username', 'isAdmin']);
       let indexes = await this.queryInterface.showIndex('Group');
@@ -130,7 +129,7 @@ describe('QueryInterface', () => {
       expect(indexColumns).to.be.empty;
     });
 
-    // Not a bug, cockroach always have a primary index
+    // Reason: CockroachDB always have a primary index on the table which makes this test fail
     it.skip('works with schemas', async function() {
       await this.sequelize.createSchema('schema');
       await this.queryInterface.createTable('table', {
@@ -157,13 +156,12 @@ describe('QueryInterface', () => {
       expect(indexes[0].name).to.eq('table_name_is_admin');
     });
 
-    // already working
     it('does not fail on reserved keywords', async function() {
       await this.queryInterface.addIndex('Group', ['from']);
     });
   });
 
-  // solved in another PR
+  // Reason: fixed in another PR
   describe.skip('renameColumn', () => {
     it('rename a simple column', async function() {
       const Users = this.sequelize.define('_Users', {
@@ -258,7 +256,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  // solved in another PR
+  // Reason: fixed in another PR
   describe.skip('addColumn', () => {
     beforeEach(async function() {
       await this.sequelize.createSchema('archive');
@@ -401,7 +399,8 @@ describe('QueryInterface', () => {
       });
     });
 
-    // In favor of skipping
+    // Reason: For some reason one foreign key object doesn't have a property 'on_update: cascade'
+    // but the foreign keys are created correctly
     it.skip('should get a list of foreign keys for the table', async function() {
       const foreignKeys = await this.sequelize.query(
         this.queryInterface.queryGenerator.getForeignKeysQuery(
@@ -417,7 +416,6 @@ describe('QueryInterface', () => {
       expect(Object.keys(foreignKeys[2])).to.have.length(7);
     });
 
-    // alredy works
     it('should get a list of foreign key references details for the table', async function() {
       const references = await this.queryInterface.getForeignKeyReferencesForTable('hosts', this.sequelize.options);
       expect(references).to.have.length(3);
@@ -445,7 +443,6 @@ describe('QueryInterface', () => {
       await this.sequelize.sync({ force: true });
     });
 
-    // fixed in this PR
     describe('unique', () => {
       it('should add, read & remove unique constraint', async function() {
         await this.queryInterface.addConstraint('users', { type: 'unique', fields: ['email'] });
@@ -478,7 +475,6 @@ describe('QueryInterface', () => {
       });
     });
 
-    // already works, but it was needed to be considered in the patch
     describe('check', () => {
       it('should add, read & remove check constraint', async function() {
         await this.queryInterface.addConstraint('users', {
@@ -510,7 +506,7 @@ describe('QueryInterface', () => {
       });
     });
 
-    // skipping because cockroach doesn't support removing the primary key outside of a transaction
+    // Reason: CockroachDB doesn't support removing the primary key outside of a transaction
     describe.skip('primary key', () => {
       it('should add, read & remove primary key constraint', async function() {
         await this.queryInterface.removeColumn('users', 'id');
@@ -535,7 +531,7 @@ describe('QueryInterface', () => {
       });
     });
 
-    // skipping because cockroach doesn't support removing the primary key outside of a transaction
+    // Reason: CockroachDB doesn't support removing the primary key outside of a transaction
     describe.skip('foreign key', () => {
       it('should add, read & remove foreign key constraint', async function() {
         await this.queryInterface.removeColumn('users', 'id');
@@ -567,8 +563,7 @@ describe('QueryInterface', () => {
       });
     });
 
-    // in favor of skipping, not an easy fix, also the test only fails because of the undefined table name, the rest works fine
-    // opened an isse: https://github.com/cockroachdb/cockroach/issues/60920
+    // Reason: not an easy fix. There is an opened issue: https://github.com/cockroachdb/cockroach/issues/60920
     describe.skip('unknown constraint', () => {
       it('should throw non existent constraints as UnknownConstraintError', async function() {
         try {

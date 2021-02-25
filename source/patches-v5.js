@@ -2,14 +2,12 @@ const { QueryInterface } = require('sequelize/lib/query-interface');
 
 QueryInterface.prototype.__dropSchema = QueryInterface.prototype.dropSchema;
 
-// Drop all tables except the crdb_internal
 QueryInterface.prototype.dropSchema = async function (tableName, options) {
   if(tableName === 'crdb_internal') return;
   
   await this.__dropSchema(tableName, options);
 };
 
-// Patch drop constraint query
 const QueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
 QueryInterface.prototype.__removeConstraint = QueryInterface.prototype.removeConstraint;
 

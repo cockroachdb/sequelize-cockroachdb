@@ -478,8 +478,8 @@ describe('QueryInterface', () => {
       });
     });
 
-    // already works
-    describe.skip('check', () => {
+    // already works, but it was needed to be considered in the patch
+    describe('check', () => {
       it('should add, read & remove check constraint', async function() {
         await this.queryInterface.addConstraint('users', {
           type: 'check',
@@ -567,6 +567,7 @@ describe('QueryInterface', () => {
     });
 
     // in favor of skipping, not an easy fix, also the test only fails because of the undefined table name, the rest works fine
+    // opened an isse: https://github.com/cockroachdb/cockroach/issues/60920
     describe.skip('unknown constraint', () => {
       it('should throw non existent constraints as UnknownConstraintError', async function() {
         try {

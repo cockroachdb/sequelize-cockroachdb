@@ -122,6 +122,25 @@ QueryGenerator.prototype.removeConstraintQuery = function (...args) {
 //   err.message = err.message + ` in relation "${tableName}"`
 //   this.__formatError(err)
 //
+const { PostgresQueryInterface } = require('sequelize/lib/dialects/postgres/query-interface');
+  
+PostgresQueryInterface.prototype.__removeConstraint = PostgresQueryInterface.prototype.removeConstraint;
+
+PostgresQueryInterface.prototype.removeConstraint = async function (tableName, constraintName, options) {
+  try {
+    await this.__removeConstraint(tableName, constraintName, options);
+  } catch(error) {
+    if(error.message.includes('use DROP INDEX CASCADE instead')) {
+      const query = this.queryGenerator.removeConstraintQuery(tableName, constraintName);
+      const [, queryConstraintName] = query.split('DROP CONSTRAINT');
+      const newQuery = `DROP INDEX ${queryConstraintName} CASCADE;`;
+
+      return this.sequelize.query(newQuery, options);
+    }
+    else 
+      throw error;
+  }
+};
 
 //// Done!
 

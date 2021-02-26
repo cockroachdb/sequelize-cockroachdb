@@ -22,6 +22,7 @@ try {
 }
 
 const { Sequelize, DataTypes } = require('sequelize');
+const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
 
 // Ensure Sequelize version compatibility.
 const semver = require('semver');

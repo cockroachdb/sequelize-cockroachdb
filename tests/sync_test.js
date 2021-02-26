@@ -101,7 +101,7 @@ describe('Model', () => {
       expect(data).not.to.have.ownProperty('badgeNumber');
     });
 
-    it('should change a column if it exists in the model but is different in the database', async function() {
+    it.skip('should change a column if it exists in the model but is different in the database', async function() {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
         age: Sequelize.INTEGER

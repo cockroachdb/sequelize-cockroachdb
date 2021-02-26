@@ -50,7 +50,7 @@ describe('Model', () => {
       expect(data).not.to.have.ownProperty('height');
     });
 
-    // on v5 this test doesn't exist
+    // Reason: on v5 this test doesn't exist and it would break on Github Actions
     it.skip('should not remove columns if drop is set to false in alter configuration', async function() {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
@@ -102,6 +102,7 @@ describe('Model', () => {
       expect(data).not.to.have.ownProperty('badgeNumber');
     });
 
+    // Reason: returns this error: ALTER COLUMN TYPE from int to varchar is prohibited until v21.1
     it.skip('should change a column if it exists in the model but is different in the database', async function() {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,

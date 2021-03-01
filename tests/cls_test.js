@@ -111,8 +111,9 @@ describe('CLS (Async hooks)', () => {
     });
   });
 
-  describe.only('sequelize.query integration', () => {
-    it.skip('automagically uses the transaction in all calls', async function () {
+  // Reason: https://github.com/cockroachdb/cockroach/issues/61269
+  describe.skip('sequelize.query integration', () => {
+    it('automagically uses the transaction in all calls', async function () {
       await this.sequelize.transaction(async () => {
         await this.User.create({ name: 'bob' });
         return Promise.all([
@@ -124,7 +125,7 @@ describe('CLS (Async hooks)', () => {
       });
     });
 
-    it.only('automagically uses the transaction in all calls with async/await', async function () {
+    it('automagically uses the transaction in all calls with async/await', async function () {
       await this.sequelize.transaction(async () => {
         await this.User.create({ name: 'bob' });
         expect(await this.User.findAll({ transaction: null })).to.have.length(
@@ -148,7 +149,7 @@ describe('CLS (Async hooks)', () => {
     });
   });
 
-  // Reason: would need to implement Support
+  // Reason: would need to implement Support which is a test configuration file
   it.skip('custom logging with benchmarking has correct CLS context', async function () {
     const Support = {}
     const logger = sinon.spy(() => {

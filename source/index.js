@@ -22,6 +22,7 @@ try {
 }
 
 const { Sequelize, DataTypes } = require('sequelize');
+const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
 
 // Ensure Sequelize version compatibility.
 const semver = require('semver');
@@ -88,6 +89,18 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
   });
   return pg;
 }
+QueryGenerator.prototype.__describeTableQuery = QueryGenerator.prototype.describeTableQuery;
+QueryGenerator.prototype.describeTableQuery = function (...args) {
+  const query = this.__describeTableQuery.call(this, ...args);
+  return query
+    // Cast integer to string to avoid concatenation error beetween string and integer
+    // The || is needed to avoid replacing in the wrong place
+    .replace('|| c.character_maximum_length', '|| CAST(c.character_maximum_length AS STRING)')
+    // Change unimplemented table
+    .replace('pg_statio_all_tables', 'pg_class')
+    // Change unimplemented column
+    .replace('relid', 'oid');
+};
 
 //// Done!
 

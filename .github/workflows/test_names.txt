@@ -4,3 +4,4 @@ should get a list of foreign keys for the table
 should add, read & remove primary key constraint
 should add, read & remove foreign key constraint
 should throw non existent constraints as UnknownConstraintError
+should change a column if it exists in the model but is different in the database

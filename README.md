@@ -19,3 +19,20 @@ Run `cockroach start-single-node --insecure --logtostderr` to start the database
 Run `cockroach sql --insecure` to enter in SQL mode and type `CREATE DATABASE sequelize_test;`
 
 Then install the depedencies with `npm i` and `npm test` to run all tests
+
+## Limitations
+
+### Dealing with transactions
+
+From the [docs](https://www.cockroachlabs.com/docs/stable/transactions.html)
+
+> CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
+
+Which means that any other query made in another connection will hang.
+
+For example:
+```js
+const t = await this.sequelize.transaction();
+await this.User.create({ name: "bob" }, { transaction: t });
+await this.User.findAll({ transaction: null }); // Query will hang!
+```

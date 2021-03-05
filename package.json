@@ -24,7 +24,6 @@
     "types"
   ],
   "scripts": {
-    "test-upsert": "node tests/see-upsert-working.js",
     "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/*_test.js\""
   },
   "dependencies": {
@@ -38,7 +37,8 @@
     "chai-datetime": "^1.7.0",
     "mocha": "^8.2.0",
     "sequelize": "^6.3.5",
-    "sinon": "^9.2.4"
+    "sinon": "^9.2.4",
+    "sinon-chai": "^3.5.0"
   },
   "peerDependencies": {
     "sequelize": "5 - 6"

@@ -1,9 +1,21 @@
+// Copyright 2021 The Cockroach Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// permissions and limitations under the License.
+
 require('./helper');
 
-var expect = require('chai').expect;
-var Sequelize = require('..');
-
-const DataTypes = Sequelize.DataTypes;
+const { expect } = require('chai');
+const { Sequelize, DataTypes } = require('../source');
 const _ = require('lodash');
 
 describe('QueryInterface', () => {
@@ -29,8 +41,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  // Reason: this test doesn't work locally because it expects to have one table but other tests creates some tables
-  describe.skip('showAllTables', () => {
+  describe('showAllTables', () => {
     it('should not contain views', async function() {
       async function cleanup() {
         // NOTE: The syntax "DROP VIEW [IF EXISTS]"" is not part of the standard

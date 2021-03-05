@@ -1,9 +1,21 @@
+// Copyright 2021 The Cockroach Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// permissions and limitations under the License.
+
 require('./helper');
 
-var expect = require('chai').expect;
-var Sequelize = require('..');
-
-const DataTypes = Sequelize.DataTypes;
+const { expect } = require('chai');
+const { Sequelize, DataTypes } = require('../source');
 const sinon = require('sinon');
 
 describe('Model', () => {
@@ -23,16 +35,21 @@ describe('Model', () => {
     });
 
     it('should only update the passed fields', async function() {
-      const account = await this.Account
-        .create({ ownerId: 2 });
+      const spy = sinon.spy();
+
+      const account = await this.Account.create({ ownerId: 2 });
 
       await this.Account.update({
         name: Math.random().toString()
       }, {
         where: {
           id: account.get('id')
-        }
+        },
+        logging: spy
       });
+
+      // The substring `ownerId` should not be found in the logged SQL
+      expect(spy, 'Update query was issued when no data to update').to.have.not.been.calledWithMatch('ownerId');
     });
 
     describe('skips update query', () => {
@@ -51,7 +68,7 @@ describe('Model', () => {
         });
 
         expect(result[0]).to.equal(0);
-        expect(spy.called, 'Update query was issued when no data to update').to.be.false;
+        expect(spy, 'Update query was issued when no data to update').to.have.not.been.called;
       });
 
       it('skips when timestamps disabled', async function() {
@@ -82,7 +99,7 @@ describe('Model', () => {
         });
 
         expect(result[0]).to.equal(0);
-        expect(spy.called, 'Update query was issued when no data to update').to.be.false;
+        expect(spy, 'Update query was issued when no data to update').to.have.not.been.called;
       });
     });
 

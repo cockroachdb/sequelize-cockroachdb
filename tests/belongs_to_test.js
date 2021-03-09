@@ -118,7 +118,7 @@ describe('BelongsTo', () => {
       expect(user).to.be.null;
     });
 
-    // Reason: this fails on CI but works in the sequelize integration test  
+    // Reason: this fails when running on CI but works on CI on the copied tests from sequelize integration tests
     it.skip('supports schemas', async function() {
       const User = this.sequelize.define('UserXYZ', { username: Sequelize.STRING, gender: Sequelize.STRING }).schema('archive'),
         Task = this.sequelize.define('TaskXYZ', { title: Sequelize.STRING, status: Sequelize.STRING }).schema('archive');
@@ -143,7 +143,7 @@ describe('BelongsTo', () => {
       expect(schemas).to.not.have.property('archive');
     });
 
-    // Reason: this fails on CI but works in the sequelize integration test  
+    // Reason: this fails when running on CI but works on CI on the copied tests from sequelize integration tests
     it.skip('supports schemas when defining custom foreign key attribute #9029', async function() {
       const User = this.sequelize.define('UserXYZ', {
           uid: {

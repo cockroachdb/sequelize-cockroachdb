@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "test-upsert": "node tests/see-upsert-working.js",
-    "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/cls_test.js\""
+    "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/*_test.js\""
   },
   "dependencies": {
     "lodash": "^4.17.20",

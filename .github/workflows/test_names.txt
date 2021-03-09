@@ -8,3 +8,5 @@ should change a column if it exists in the model but is different in the databas
 automagically uses the transaction in all calls
 automagically uses the transaction in all calls with async/await
 supports transactions
+using scope to set associations
+updating association via set associations with scope

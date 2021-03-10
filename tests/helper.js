@@ -28,7 +28,7 @@ chai.use(require('sinon-chai'));
 // To override the CockroachDB port, set the COCKROACH_PORT environment
 // variable.
 
-async function cleanDatabase(sequelize) {
+async function cleanupDatabase(sequelize) {
   // https://github.com/sequelize/sequelize/blob/29901187d9560e7d51ae1f9b5f411cf0c5d8994a/test/support.js#L136
   const qi = sequelize.getQueryInterface();
   await qi.dropAllTables();
@@ -56,11 +56,11 @@ before(function() {
 });
 
 afterEach(async function() {
-  await cleanDatabase(this.sequelize);
+  await cleanupDatabase(this.sequelize);
 });
 
 after(async function() {
   await this.sequelize.close();
 });
 
-module.exports = { cleanDatabase };
+module.exports = { cleanupDatabase };

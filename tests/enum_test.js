@@ -1,4 +1,4 @@
-// Copyright 2020 The Cockroach Authors.
+// Copyright 2021 The Cockroach Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,32 +13,26 @@
 // permissions and limitations under the License.
 
 require('./helper');
-var expect = require('chai').expect;
-var Sequelize = require('..');
+
+const { expect } = require('chai');
+const { Sequelize, DataTypes } = require('../source');
 
 describe('Enum', function () {
-  before(function() {
+  beforeEach(async function() {
     this.Bar = this.sequelize.define('bar', {
-      enum: Sequelize.ENUM('A', 'B')
+      enum: DataTypes.ENUM('A', 'B')
     });
-    return this.Bar.sync({ force: true });
+    await this.Bar.sync({ force: true });
   });
 
-  after(async function() {
-    this.queryInterface = this.sequelize.getQueryInterface();
-    await this.queryInterface.dropTable('bars', {});
-    await this.queryInterface.dropEnum('enum_bars_enum');
+  it('accepts valid values', async function () {
+    const bar = await this.Bar.create({ enum: 'A' });
+    expect(bar.enum).to.equal('A');
   });
 
-  it('accepts valid values', function () {
-    this.Bar.create({ enum: 'A' }).then(function (bar) {
-      expect(bar.enum).to.equal('A');
-    });
-  });
-
-  it('rejects invalid values', function () {
-    expect(this.Bar.create({ enum: 'C' }))
-        .to.be.rejectedWith('"C" is not a valid choice in ["A","B"]');
+  it('rejects invalid values', async function () {
+    await expect(
+      this.Bar.create({ enum: 'C' })
+    ).to.be.eventually.rejectedWith('"C" is not a valid choice in ["A","B"]');
   });
 });
-

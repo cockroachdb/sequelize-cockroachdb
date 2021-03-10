@@ -1,4 +1,4 @@
-// Copyright 2020 The Cockroach Authors.
+// Copyright 2021 The Cockroach Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,26 +14,22 @@
 
 require('./helper');
 
-var expect = require('chai').expect;
-var Sequelize = require('..');
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+const { expect } = require('chai');
+const { Sequelize, DataTypes } = require('../source');
 
 describe('upsert', function () {
   it('supports CockroachDB', function () {
     expect(Sequelize.supportsCockroachDB).to.be.true;
   });
 
-  it('updates at most one row', function () {
-    var User = this.sequelize.define('user', {
+  it('updates at most one row', async function () {
+    const User = this.sequelize.define('user', {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true
       },
       name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
       },
     });
 
@@ -44,104 +40,84 @@ describe('upsert', function () {
     const id2 = 2;
     const name2 = 'other';
 
-    return User.sync({force: true}).then(function () {
-      return User.create({
-        id: id1,
-        name: origName1,
-      });
-    }).then(function(user) {
-      expect(user.name).to.equal(origName1);
-      expect(user.updatedAt).to.equalTime(user.createdAt);
-      return User.create({
-        id: id2,
-        name: name2
-      });
-    }).then(function(user) {
-      expect(user.name).to.equal(name2);
-      expect(user.updatedAt).to.equalTime(user.createdAt);
-
-      return User.upsert({
-        id: id1,
-        name: updatedName1
-      });
-    }).then(function() {
-      return User.findByPk(id1);
-    }).then(function(user) {
-      expect(user.name).to.equal(updatedName1);
-      expect(user.updatedAt).afterTime(user.createdAt);
-
-      return User.findByPk(id2);
-    }).then(function(user) {
-      // Verify that the other row is unmodified.
-      expect(user.name).to.equal(name2);
-      expect(user.updatedAt).to.equalTime(user.createdAt);
+    await User.sync({force: true});
+    const user1 = await User.create({
+      id: id1,
+      name: origName1,
     });
+
+    expect(user1.name).to.equal(origName1);
+    expect(user1.updatedAt).to.equalTime(user1.createdAt);
+
+    const user2 = await User.create({
+      id: id2,
+      name: name2
+    });
+
+    expect(user2.name).to.equal(name2);
+    expect(user2.updatedAt).to.equalTime(user2.createdAt);
+
+    await User.upsert({
+      id: id1,
+      name: updatedName1
+    });
+
+    const user1Again = await User.findByPk(id1);
+
+    expect(user1Again.name).to.equal(updatedName1);
+    expect(user1Again.updatedAt).afterTime(user1Again.createdAt);
+
+    const user2Again = await User.findByPk(id2);
+
+    // Verify that the other row is unmodified.
+    expect(user2Again.name).to.equal(name2);
+    expect(user2Again.updatedAt).to.equalTime(user2Again.createdAt);
   });
 
-  it('works with composite primary key', function () {
-    var Counter = this.sequelize.define('counter', {
+  it('works with composite primary key', async function () {
+    const Counter = this.sequelize.define('counter', {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true
       },
       id2: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true
       },
       count: {
-        type: Sequelize.INTEGER
+        type: DataTypes.INTEGER
       }
     });
 
     const id = 1000;
     const id2 = 2000;
 
-    return Counter.sync({force:true}).then(function () {
-      return Counter.create({
-        id: id,
-        id2: id2,
-        count: 1,
-      }).then(function(counter) {
-        return Counter.upsert({
-          id: id,
-          id2: id2,
-          count: 2
-        });
-      }).then(function() {
-        return Counter.findOne({where: {id: id, id2: id2}});
-      }).then(function(counter) {
-        // For some reason, INTEGER columns are returned as strings, so we need
-        // to cast.
-        expect(parseInt(counter.count)).to.equal(2);
-        expect(counter.updatedAt).afterTime(counter.createdAt);
-      });
-    });
+    await Counter.sync({force: true});
+    await Counter.create({ id: id, id2: id2, count: 1 });
+    await Counter.upsert({ id: id, id2: id2, count: 2 });
+
+    const counter = await Counter.findOne({where: {id: id, id2: id2}});
+
+    expect(counter.count).to.equal(2);
+    expect(counter.updatedAt).afterTime(counter.createdAt);
   });
 
-  it('throws error with RETURNING', function () {
-    var User = this.sequelize.define('user', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true
-      },
-      name: {
-        type: Sequelize.STRING,
-      },
-    });
+  it('works with RETURNING', async function () {
+    const User = this.sequelize.define('user', { name: DataTypes.STRING });
+    await User.sync({ force: true });
 
-    return User.sync({force: true}).then(function () {
-      return User.create({
-        id: 1,
-        name: "original",
-      });
-    }).then(function(user) {
-      var options = {returning: "*"};
-      return User.upsert({
-        id: 1,
-        name: "UPDATED"
-      }, options).catch(function(e) {
-        expect(e.message).to.contain("https://github.com/cockroachdb/cockroach/issues/6637");
-      });
-    });
+    const { id } = await User.create({ name: 'Someone' });
+
+    const [userReturnedFromUpsert1] = await User.upsert({ id, name: 'Another Name' }, { returning: true });
+    const user1 = await User.findOne();
+
+    expect(user1.name).to.equal('Another Name');
+    expect(userReturnedFromUpsert1.name).to.equal('Another Name');
+
+    const [userReturnedFromUpsert2] = await User.upsert({ id, name: 'Another Name 2' }, { returning: '*' });
+    const user2 = await User.findOne();
+
+    expect(user2.name).to.equal('Another Name 2');
+    expect(userReturnedFromUpsert2.name).to.equal('Another Name 2');
   });
 });

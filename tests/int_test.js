@@ -1,4 +1,4 @@
-// Copyright 2020 The Cockroach Authors.
+// Copyright 2021 The Cockroach Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,44 +14,47 @@
 
 require('./helper');
 
-var expect = require('chai').expect;
-var Sequelize = require('..');
+const { expect } = require('chai');
+const { Sequelize, DataTypes } = require('../source');
 
-[Sequelize.DataTypes.INTEGER, Sequelize.DataTypes.BIGINT].forEach(function (intType) {
-  let name = intType === Sequelize.DataTypes.INTEGER ? 'integer' : 'bigint';
+for (const intTypeName of ['integer', 'bigint']) {
+  const intType = DataTypes[intTypeName.toUpperCase()];
+
   describe('DataTypes.' + intType.key, function () {
-    before(function () {
+    beforeEach(async function () {
       this.Foo = this.sequelize.define('foo', {
         i: intType
       });
-      return this.Foo.sync({ force: true });
+
+      await this.Foo.sync({ force: true });
     });
 
-    it('accepts JavaScript integers', function () {
-      this.Foo.create({ i: 42 }).then(function (foo) {
-        expect(foo.i).to.equal("42");
-      });
+    it('accepts JavaScript integers', async function () {
+      const foo = await this.Foo.create({ i: 42 });
+      expect(foo.i).to.equal(42);
     });
 
-    it('accepts JavaScript strings that represent 64-bit integers', function () {
-      this.Foo.create({ i: "9223372036854775807" }).then(function (foo) {
-        expect(foo.i).to.equal("9223372036854775807");
-      });
+    it('accepts JavaScript strings that represent 64-bit integers', async function () {
+      const foo = await this.Foo.create({ i: "9223372036854775807" });
+      expect(foo.i).to.equal(9223372036854775807n);
     });
 
-    it('rejects integers that overflow', function () {
-      expect(this.Foo.create({ i: "9223372036854775808" }))
-        .to.be.rejectedWith('numeric constant out of int64 range');
+    it('rejects integers that overflow', async function () {
+      await expect(
+        this.Foo.create({ i: "9223372036854775808" })
+      ).to.be.eventually.rejectedWith('value out of range');
     });
 
-
-    it('rejects garbage', function () {
-      expect(this.Foo.create({ i: "102.3" }))
-        .to.be.rejectedWith(`"102.3" is not a valid ${name}`);
+    it('rejects garbage', async function () {
+      await expect(
+        this.Foo.create({ i: "102.3" })
+      ).to.be.eventually.rejectedWith(`"102.3" is not a valid ${intTypeName}`);
     });
 
-    it('rejects dangerous input', function () {
-      expect(this.Foo.create({ i: "'" })).to.be.rejectedWith(`"\'" is not a valid ${name}`);
-    })
-  })
-});
+    it('rejects dangerous input', async function () {
+      await expect(
+        this.Foo.create({ i: "'" })
+      ).to.be.eventually.rejectedWith(`"\'" is not a valid ${intTypeName}`);
+    });
+  });
+}

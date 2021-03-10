@@ -18,7 +18,6 @@ on: [push, pull_request]
 jobs:
   test:
     # Execute our own tests
-    # This one will spawn 6 jobs
     name: Main - CRDB ${{ matrix.cockroachdb-version }}, Sequelize v${{ matrix.sequelize-version }}
     strategy:
       matrix:
@@ -58,6 +57,7 @@ jobs:
   sequelize-postgres-integration-tests:
     # Execute Sequelize integration tests for postgres
     # This one will spawn 219 jobs
+    if: ${{ !endsWith(github.event.head_commit.message, '[[skip sequelize integration tests]]') }}
     name: (${{ matrix.sequelize-branch }}) ${{ matrix.test-path }}
     strategy:
       matrix:

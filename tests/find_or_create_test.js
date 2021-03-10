@@ -1,4 +1,4 @@
-// Copyright 2020 The Cockroach Authors.
+// Copyright 2021 The Cockroach Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,58 +14,55 @@
 
 require('./helper');
 
-var expect = require('chai').expect;
-var Sequelize = require('..');
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+const { expect } = require('chai');
+const { Sequelize, DataTypes } = require('../source');
 
 describe('findOrCreate', function () {
   it('supports CockroachDB', function () {
     expect(Sequelize.supportsCockroachDB).to.be.true;
   });
 
-  it('creates a row when missing', function () {
-    var User = this.sequelize.define('user', {
+  it('creates a row when missing', async function () {
+    const User = this.sequelize.define('user', {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true
       },
       name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
       },
     });
 
     const id1 = 1;
     const origName = 'original';
 
-    return User.sync({force: true}).then(function () {
-      return User.findOrCreate({
-        where: {
-          id: id1,
-          name: origName,
-        }
-      });
-    }).then(function([user, created]) {
-      expect(user.name).to.equal(origName);
-      expect(user.updatedAt).to.equalTime(user.createdAt);
-      expect(created).to.be.true;
-      return User.findByPk(id1);
-    }).then(function(user) {
-      expect(user.name).to.equal(origName);
-      expect(user.updatedAt).to.equalTime(user.createdAt);
+    await User.sync({force: true});
+
+    const [user, created] = await User.findOrCreate({
+      where: {
+        id: id1,
+        name: origName,
+      }
     });
+
+    expect(user.name).to.equal(origName);
+    expect(user.updatedAt).to.equalTime(user.createdAt);
+    expect(created).to.be.true;
+
+    const userAgain = await User.findByPk(id1);
+
+    expect(userAgain.name).to.equal(origName);
+    expect(userAgain.updatedAt).to.equalTime(userAgain.createdAt);
   });
 
-  it('finds the row when present', function () {
-    var User = this.sequelize.define('user', {
+  it('finds the row when present', async function () {
+    const User = this.sequelize.define('user', {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true
       },
       name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
       },
     });
 
@@ -73,26 +70,27 @@ describe('findOrCreate', function () {
     const origName = 'original';
     const updatedName = "UPDATED";
 
-    return User.sync({force: true}).then(function () {
-      return User.create({
-        id: id1,
-        name: origName,
-      });
-    }).then(function(user) {
-      expect(user.name).to.equal(origName);
-      expect(user.updatedAt).to.equalTime(user.createdAt);
-      return User.findOrCreate({
-        where: {
-          id: id1,
-        },
-        defaults: {
-          name: updatedName
-        }
-      });
-    }).then(function([user, created]) {
-      expect(user.name).to.equal(origName);
-      expect(user.updatedAt).to.equalTime(user.createdAt);
-      expect(created).to.be.false;
+    await User.sync({force: true});
+
+    const user = await User.create({
+      id: id1,
+      name: origName,
     });
+
+    expect(user.name).to.equal(origName);
+    expect(user.updatedAt).to.equalTime(user.createdAt);
+
+    const [userAgain, created] = await User.findOrCreate({
+      where: {
+        id: id1,
+      },
+      defaults: {
+        name: updatedName
+      }
+    });
+
+    expect(userAgain.name).to.equal(origName);
+    expect(userAgain.updatedAt).to.equalTime(userAgain.createdAt);
+    expect(created).to.be.false;
   });
 });

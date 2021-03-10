@@ -10,7 +10,7 @@ automagically uses the transaction in all calls with async/await
 supports transactions
 using scope to set associations
 updating association via set associations with scope
-can filter through hasMany connector
+can filter through belongsTo
 avoids duplicated tables in query
 can filter through hasMany
 can filter through hasMany connector

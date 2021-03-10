@@ -28,6 +28,24 @@ chai.use(require('sinon-chai'));
 // To override the CockroachDB port, set the COCKROACH_PORT environment
 // variable.
 
+async function cleanDatabase(sequelize) {
+  // https://github.com/sequelize/sequelize/blob/29901187d9560e7d51ae1f9b5f411cf0c5d8994a/test/support.js#L136
+  const qi = sequelize.getQueryInterface();
+  await qi.dropAllTables();
+  sequelize.modelManager.models = [];
+  sequelize.models = {};
+  if (qi.dropAllEnums) {
+    await qi.dropAllEnums();
+  }
+  const schemas = await sequelize.showAllSchemas();
+  for (const schema of schemas) {
+    const schemaName = schema.name || schema;
+    if (schemaName !== sequelize.config.database) {
+      await sequelize.dropSchema(schemaName);
+    }
+  }
+}
+
 before(function() {
   this.sequelize = new Sequelize('sequelize_test', 'root', '', {
     dialect: 'postgres',
@@ -38,23 +56,11 @@ before(function() {
 });
 
 afterEach(async function() {
-  // https://github.com/sequelize/sequelize/blob/29901187d9560e7d51ae1f9b5f411cf0c5d8994a/test/support.js#L136
-  const qi = this.sequelize.getQueryInterface();
-  await qi.dropAllTables();
-  this.sequelize.modelManager.models = [];
-  this.sequelize.models = {};
-  if (qi.dropAllEnums) {
-    await qi.dropAllEnums();
-  }
-  const schemas = await this.sequelize.showAllSchemas();
-  for (const schema of schemas) {
-    const schemaName = schema.name || schema;
-    if (schemaName !== this.sequelize.config.database) {
-      await this.sequelize.dropSchema(schemaName);
-    }
-  }
+  await cleanDatabase(this.sequelize);
 });
 
 after(async function() {
   await this.sequelize.close();
 });
+
+module.exports = { cleanDatabase };

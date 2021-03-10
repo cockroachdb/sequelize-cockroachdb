@@ -274,7 +274,7 @@ describe('BelongsTo', () => {
       expect(spy.called).to.be.ok;
     });
 
-    // Reason: Doesn't work locally, only on CI
+    // Reason: Doesn't work locally, gives a 'column "postId" does not exist' when trying to insert in the comments table and returning the "postId" column, on CI works fine
     it.skip('should not clobber atributes', async function() {
       const Comment = this.sequelize.define('comment', {
         text: DataTypes.STRING
@@ -399,8 +399,7 @@ describe('BelongsTo', () => {
       expect(User.rawAttributes.AccountId.field).to.equal('AccountId');
     });
 
-    // Reason: Doesn't work locally, only on CI
-    it.skip('should support specifying the field of a foreign key', async function() {
+    it('should support specifying the field of a foreign key', async function() {
       const User = this.sequelize.define('User', { username: Sequelize.STRING }, { underscored: false }),
         Account = this.sequelize.define('Account', { title: Sequelize.STRING }, { underscored: false });
 
@@ -624,8 +623,7 @@ describe('BelongsTo', () => {
     expect(mailResult.recipientId).to.equal(user.id);
   });
 
-  // Reason: Doesn't work locally, only on CI
-  describe.skip('foreign key constraints', () => {
+  describe('foreign key constraints', () => {
     it('are enabled by default', async function() {
       const Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
         User = this.sequelize.define('User', { username: DataTypes.STRING });
@@ -752,7 +750,7 @@ describe('BelongsTo', () => {
     });
   });
 
-  // Reason: Doesn't work locally, only on CI
+  // Reason: every test gives a 'column "id" does not exist' error. Works fine on CI
   describe.skip('association column', () => {
     it('has correct type and name for non-id primary keys with non-integer type', async function() {
       const User = this.sequelize.define('UserPKBT', {
@@ -892,8 +890,7 @@ describe('BelongsTo', () => {
   });
 
   describe('association options', () => {
-    // Reason: Doesn't work locally, only on CI
-    it.skip('can specify data type for auto-generated relational keys', async function() {
+    it('can specify data type for auto-generated relational keys', async function() {
       const User = this.sequelize.define('UserXYZ', { username: DataTypes.STRING }),
         dataTypes = [DataTypes.INTEGER, DataTypes.BIGINT, DataTypes.STRING],
         Tasks = {};
@@ -986,7 +983,7 @@ describe('BelongsTo', () => {
     });
   });
 
-  // Reason: Doesn't work locally, only on CI
+  // Reason: every test gives a 'column "id" does not exist' error. Works fine on CI
   describe.skip('Eager loading', () => {
     beforeEach(function() {
       this.Individual = this.sequelize.define('individual', {

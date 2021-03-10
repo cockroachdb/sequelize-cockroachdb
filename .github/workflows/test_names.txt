@@ -10,6 +10,7 @@ supports transactions
 using scope to set associations
 updating association via set associations with scope
 should set foreignKey on foreign table
+can filter through belongsTo
 avoids duplicated tables in query
 can filter through hasMany
 can filter through hasMany connector

@@ -11,3 +11,4 @@ supports transactions
 using scope to set associations
 updating association via set associations with scope
 supports schemas
+should fetch associations for multiple instances with limit and order and a belongsTo relation

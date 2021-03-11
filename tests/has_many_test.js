@@ -265,7 +265,7 @@ describe('HasMany', () => {
         expect(users[1].tasks[1].subtasks[1].title).to.equal('a');
       });
 
-      // Reason: no idea what's happening. running the executed queries from sequelize on cockroach cli returns the expected result.
+      // Reason: https://github.com/sequelize/sequelize/issues/13088
       it.skip('should fetch associations for multiple instances with limit and order and a belongsTo relation', async function() {
         const User = this.sequelize.define('User', {}),
           Task = this.sequelize.define('Task', {

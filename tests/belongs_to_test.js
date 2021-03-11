@@ -274,9 +274,7 @@ describe('BelongsTo', () => {
       expect(spy.called).to.be.ok;
     });
 
-    // Reason: Doesn't work locally, gives a 'column "postId" does not exist' when trying to insert in the comments table and returning the "postId" column
-    // but works on CI on the copied tests from sequelize integration tests
-    it.skip('should not clobber atributes', async function() {
+    it('should not clobber atributes', async function() {
       const Comment = this.sequelize.define('comment', {
         text: DataTypes.STRING
       });
@@ -753,9 +751,7 @@ describe('BelongsTo', () => {
     });
   });
 
-  // Reason: Fails locally. Every test gives a 'column "id" does not exist' error.
-  // but works on CI on the copied tests from sequelize integration tests
-  describe.skip('association column', () => {
+  describe('association column', () => {
     it('has correct type and name for non-id primary keys with non-integer type', async function() {
       const User = this.sequelize.define('UserPKBT', {
         username: {
@@ -987,9 +983,7 @@ describe('BelongsTo', () => {
     });
   });
 
-  // Reason: Fails locally. Every test gives a 'column "id" does not exist' error.
-  // but works on CI on the copied tests from sequelize integration tests
-  describe.skip('Eager loading', () => {
+  describe('Eager loading', () => {
     beforeEach(function() {
       this.Individual = this.sequelize.define('individual', {
         name: Sequelize.STRING

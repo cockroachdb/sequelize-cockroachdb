@@ -406,7 +406,8 @@ describe.only('associations', () => {
         });
       });
 
-      describe.only('on the through model', () => {
+      // Reason: https://github.com/sequelize/sequelize/issues/13072
+      describe.skip('on the through model', () => {
         beforeEach(function() {
           this.Post = this.sequelize.define('post', {});
           this.Image = this.sequelize.define('image', {});

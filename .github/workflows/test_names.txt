@@ -10,3 +10,4 @@ automagically uses the transaction in all calls with async/await
 supports transactions
 using scope to set associations
 updating association via set associations with scope
+should create, find and include associations with scope values

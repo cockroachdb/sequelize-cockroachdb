@@ -16,3 +16,4 @@ avoids duplicated tables in query
 can filter through hasMany
 can filter through hasMany connector
 should create a auto increment primary key
+should create, find and include associations with scope value

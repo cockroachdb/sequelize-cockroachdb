@@ -118,8 +118,7 @@ describe('HasMany', () => {
         expect(result[users[2].id].length).to.equal(0);
       });
 
-      // Reason: Doesn't work locally, only on CI
-      it.skip('should fetch associations for multiple instances with limit and order', async function() {
+      it('should fetch associations for multiple instances with limit and order', async function() {
         const User = this.sequelize.define('User', {}),
           Task = this.sequelize.define('Task', {
             title: DataTypes.STRING
@@ -1248,8 +1247,7 @@ describe('HasMany', () => {
       }
     });
 
-    // Reason: Doesn't work locally, only on CI
-    it.skip('infers the keyType if none provided', async function() {
+    it('infers the keyType if none provided', async function() {
       const User = this.sequelize.define('User', {
           id: { type: DataTypes.STRING, primaryKey: true },
           username: DataTypes.STRING
@@ -1330,8 +1328,7 @@ describe('HasMany', () => {
         .throw('Naming collision between attribute \'user\' and association \'user\' on model user. To remedy this, change either foreignKey or as in your association definition');
     });
 
-    // Reason: Doesn't work locally, only on CI
-    it.skip('should ignore group from ancestor on deep separated query', async function() {
+    it('should ignore group from ancestor on deep separated query', async function() {
       const User = this.sequelize.define('user', {
         userId: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
         username: Sequelize.STRING
@@ -1371,8 +1368,7 @@ describe('HasMany', () => {
     });
   });
 
-  // Reason: Doesn't work locally, only on CI
-  describe.skip('sourceKey', () => {
+  describe('sourceKey', () => {
     beforeEach(function() {
       const User = this.sequelize.define('UserXYZ',
         { username: Sequelize.STRING, email: Sequelize.STRING },
@@ -1510,8 +1506,7 @@ describe('HasMany', () => {
     });
   });
 
-  // Reason: Doesn't work locally, only on CI
-  describe.skip('sourceKey with where clause in include', () => {
+  describe('sourceKey with where clause in include', () => {
     beforeEach(function() {
       this.User = this.sequelize.define('User',
         { username: Sequelize.STRING, email: { type: Sequelize.STRING, field: 'mail' } },
@@ -1552,8 +1547,7 @@ describe('HasMany', () => {
     });
   });
 
-  // Reason: Doesn't work locally, only on CI
-  describe.skip('Eager loading', () => {
+  describe('Eager loading', () => {
     beforeEach(function() {
       this.Individual = this.sequelize.define('individual', {
         name: Sequelize.STRING

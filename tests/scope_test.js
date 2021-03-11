@@ -5,7 +5,7 @@ var Sequelize = require('..');
 var DataTypes = Sequelize.DataTypes;
 var Op = Sequelize.Op;
 
-describe.only('associations', () => {
+describe('associations', () => {
   describe('scope', () => {
     beforeEach(function() {
       this.Post = this.sequelize.define('post', {});

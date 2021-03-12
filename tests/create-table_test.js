@@ -5,18 +5,16 @@ var Sequelize = require('..');
 var DataTypes = Sequelize.DataTypes;
 const dialect = 'postgres';
 
-describe.only('QueryInterface', () => {
+describe('QueryInterface', () => {
   beforeEach(function() {
     this.sequelize.options.quoteIdenifiers = true;
     this.queryInterface = this.sequelize.getQueryInterface();
   });
 
-  // afterEach(async function() {
-  //   await Support.dropTestSchemas(this.sequelize);
-  // });
-
   describe('createTable', () => {
-    it('should create a auto increment primary key', async function() {
+    // Reason: expected 'unique_rowid()' to equal 'nextval("TableWithPK_table_id_seq"::regclass)'
+    // Cockroach doesn't have nextval, only Postgres
+    it.skip('should create a auto increment primary key', async function() {
       await this.queryInterface.createTable('TableWithPK', {
         table_id: {
           type: DataTypes.INTEGER,
@@ -102,8 +100,8 @@ describe.only('QueryInterface', () => {
       });
     });
 
-    describe.only('enums', () => {
-      it.only('should work with enums (1)', async function() {
+    describe('enums', () => {
+      it('should work with enums (1)', async function() {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: DataTypes.ENUM('value1', 'value2', 'value3')
         });

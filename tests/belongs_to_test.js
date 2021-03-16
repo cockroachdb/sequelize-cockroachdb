@@ -118,8 +118,7 @@ describe('BelongsTo', () => {
       expect(user).to.be.null;
     });
 
-    // Reason: this fails when running on CI but works on CI on the copied tests from sequelize integration tests
-    it.skip('supports schemas', async function() {
+    it('supports schemas', async function() {
       const User = this.sequelize.define('UserXYZ', { username: Sequelize.STRING, gender: Sequelize.STRING }).schema('archive'),
         Task = this.sequelize.define('TaskXYZ', { title: Sequelize.STRING, status: Sequelize.STRING }).schema('archive');
 
@@ -143,16 +142,15 @@ describe('BelongsTo', () => {
       expect(schemas).to.not.have.property('archive');
     });
 
-    // Reason: this fails when running on CI but works on CI on the copied tests from sequelize integration tests
-    it.skip('supports schemas when defining custom foreign key attribute #9029', async function() {
+    it('supports schemas when defining custom foreign key attribute #9029', async function() {
       const User = this.sequelize.define('UserXYZ', {
-          uid: {
-            type: Sequelize.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-            allowNull: false
-          }
-        }).schema('archive'),
+        uid: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          allowNull: false
+        }
+      }).schema('archive'),
         Task = this.sequelize.define('TaskXYZ', {
           user_id: {
             type: Sequelize.INTEGER,
@@ -532,94 +530,94 @@ describe('BelongsTo', () => {
         }
       );
     });
-  });
 
-  it('should set foreignKey on foreign table', async function() {
-    const Mail = this.sequelize.define('mail', {}, { timestamps: false });
-    const Entry = this.sequelize.define('entry', {}, { timestamps: false });
-    const User = this.sequelize.define('user', {}, { timestamps: false });
+    it('should set foreignKey on foreign table', async function() {
+      const Mail = this.sequelize.define('mail', {}, { timestamps: false });
+      const Entry = this.sequelize.define('entry', {}, { timestamps: false });
+      const User = this.sequelize.define('user', {}, { timestamps: false });
 
-    Entry.belongsTo(User, {
-      as: 'owner',
-      foreignKey: {
-        name: 'ownerId',
-        allowNull: false
-      }
-    });
-    Entry.belongsTo(Mail, {
-      as: 'mail',
-      foreignKey: {
-        name: 'mailId',
-        allowNull: false
-      }
-    });
-    Mail.belongsToMany(User, {
-      as: 'recipients',
-      through: 'MailRecipients',
-      otherKey: {
-        name: 'recipientId',
-        allowNull: false
-      },
-      foreignKey: {
-        name: 'mailId',
-        allowNull: false
-      },
-      timestamps: false
-    });
-    Mail.hasMany(Entry, {
-      as: 'entries',
-      foreignKey: {
-        name: 'mailId',
-        allowNull: false
-      }
-    });
-    User.hasMany(Entry, {
-      as: 'entries',
-      foreignKey: {
-        name: 'ownerId',
-        allowNull: false
-      }
-    });
-
-    await this.sequelize.sync({ force: true });
-    const user = await User.create({});
-    const mail = await Mail.create({});
-
-    await Entry.create({ mailId: mail.id, ownerId: user.id });
-    await Entry.create({ mailId: mail.id, ownerId: user.id });
-    await mail.setRecipients([user.id]);
-
-    const result = await Entry.findAndCountAll({
-      offset: 0,
-      limit: 10,
-      order: [['id', 'DESC']],
-      include: [
-        {
-          association: Entry.associations.mail,
-          include: [
-            {
-              association: Mail.associations.recipients,
-              through: {
-                where: {
-                  recipientId: user.id
-                }
-              },
-              required: true
-            }
-          ],
-          required: true
+      Entry.belongsTo(User, {
+        as: 'owner',
+        foreignKey: {
+          name: 'ownerId',
+          allowNull: false
         }
-      ]
+      });
+      Entry.belongsTo(Mail, {
+        as: 'mail',
+        foreignKey: {
+          name: 'mailId',
+          allowNull: false
+        }
+      });
+      Mail.belongsToMany(User, {
+        as: 'recipients',
+        through: 'MailRecipients',
+        otherKey: {
+          name: 'recipientId',
+          allowNull: false
+        },
+        foreignKey: {
+          name: 'mailId',
+          allowNull: false
+        },
+        timestamps: false
+      });
+      Mail.hasMany(Entry, {
+        as: 'entries',
+        foreignKey: {
+          name: 'mailId',
+          allowNull: false
+        }
+      });
+      User.hasMany(Entry, {
+        as: 'entries',
+        foreignKey: {
+          name: 'ownerId',
+          allowNull: false
+        }
+      });
+
+      await this.sequelize.sync({ force: true });
+      const user = await User.create({});
+      const mail = await Mail.create({});
+
+      await Entry.create({ mailId: mail.id, ownerId: user.id });
+      await Entry.create({ mailId: mail.id, ownerId: user.id });
+      await mail.setRecipients([user.id]);
+
+      const result = await Entry.findAndCountAll({
+        offset: 0,
+        limit: 10,
+        order: [['id', 'DESC']],
+        include: [
+          {
+            association: Entry.associations.mail,
+            include: [
+              {
+                association: Mail.associations.recipients,
+                through: {
+                  where: {
+                    recipientId: user.id
+                  }
+                },
+                required: true
+              }
+            ],
+            required: true
+          }
+        ]
+      });
+
+      const rowResult = result.rows[0].get({ plain: true });
+      const mailResult = rowResult.mail.recipients[0].MailRecipients;
+
+      expect(result.count).to.equal(2);
+      expect(rowResult.ownerId).to.equal(user.id);
+      expect(rowResult.mailId).to.equal(mail.id);
+      expect(mailResult.mailId).to.equal(mail.id);
+      expect(mailResult.recipientId).to.equal(user.id);
     });
-
-    const rowResult = result.rows[0].get({ plain: true });
-    const mailResult = rowResult.mail.recipients[0].MailRecipients;
-
-    expect(result.count).to.equal(2);
-    expect(rowResult.ownerId).to.equal(user.id);
-    expect(rowResult.mailId).to.equal(mail.id);
-    expect(mailResult.mailId).to.equal(mail.id);
-    expect(mailResult.recipientId).to.equal(user.id);
   });
 
   describe('foreign key constraints', () => {
@@ -699,8 +697,7 @@ describe('BelongsTo', () => {
       expect(tasks).to.have.length(1);
     });
 
-    // Reason: works locally. Fails when running on CI but works on CI on the copied tests from sequelize integration tests
-    it.skip('can restrict updates', async function() {
+    it('can restrict updates', async function() {
       const Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
         User = this.sequelize.define('User', { username: DataTypes.STRING });
 
@@ -727,8 +724,7 @@ describe('BelongsTo', () => {
       expect(tasks).to.have.length(1);
     });
 
-    // Reason: works locally. Fails when running on CI but works on CI on the copied tests from sequelize integration tests
-    it.skip('can cascade updates', async function() {
+    it('can cascade updates', async function() {
       const Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
         User = this.sequelize.define('User', { username: DataTypes.STRING });
 
@@ -927,11 +923,11 @@ describe('BelongsTo', () => {
 
       it('works when taking a column directly from the object', function() {
         const User = this.sequelize.define('user', {
-            uid: {
-              type: Sequelize.INTEGER,
-              primaryKey: true
-            }
-          }),
+          uid: {
+            type: Sequelize.INTEGER,
+            primaryKey: true
+          }
+        }),
           Profile = this.sequelize.define('project', {
             user_id: {
               type: Sequelize.INTEGER,
@@ -949,11 +945,11 @@ describe('BelongsTo', () => {
 
       it('works when merging with an existing definition', function() {
         const Task = this.sequelize.define('task', {
-            projectId: {
-              defaultValue: 42,
-              type: Sequelize.INTEGER
-            }
-          }),
+          projectId: {
+            defaultValue: 42,
+            type: Sequelize.INTEGER
+          }
+        }),
           Project = this.sequelize.define('project', {});
 
         Task.belongsTo(Project, { foreignKey: { allowNull: true } });

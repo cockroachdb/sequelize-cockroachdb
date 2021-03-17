@@ -8,9 +8,6 @@ var sinon = require('sinon');
 var Support = {
   async dropTestSchemas(sequelize) {
     const queryInterface = sequelize.getQueryInterface();
-    if (!queryInterface.queryGenerator._dialect.supports.schemas) {
-      return this.sequelize.drop({});
-    }
 
     const schemas = await sequelize.showAllSchemas();
     const schemasPromise = [];

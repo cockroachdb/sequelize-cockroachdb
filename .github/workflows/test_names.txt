@@ -10,3 +10,5 @@ automagically uses the transaction in all calls with async/await
 supports transactions
 using scope to set associations
 updating association via set associations with scope
+returns a response that can be stringified
+returns a response that can be stringified and then parsed

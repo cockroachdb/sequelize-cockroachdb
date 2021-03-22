@@ -84,7 +84,7 @@ ConnectionManager.prototype.__loadDialectModule = ConnectionManager.prototype._l
 ConnectionManager.prototype._loadDialectModule = function (...args) {
   const pg = this.__loadDialectModule(...args);
   pg.types.setTypeParser(20, function (val) {
-    if (val > Number.MAX_SAFE_INTEGER) return BigInt(val);
+    if (val > Number.MAX_SAFE_INTEGER) return String(val);
     else return parseInt(val, 10);
   });
   return pg;
@@ -101,33 +101,6 @@ QueryGenerator.prototype.describeTableQuery = function (...args) {
     // Change unimplemented column
     .replace('relid', 'oid');
 };
-
-// [5] Allow BigInts on `Model.findByPk`
-// Copied from https://github.com/sequelize/sequelize/blob/29901187d9560e7d51ae1f9b5f411cf0c5d8994a/lib/model.js#L1866
-// Added `bigint` to list of valid types.
-// Works on v5 as well.
-const Utils = require('sequelize/lib/utils');
-Model.findByPk = async function findByPk(param, options) {
-  // return Promise resolved with null if no arguments are passed
-  if ([null, undefined].includes(param)) {
-    return null;
-  }
-
-  options = Utils.cloneDeep(options) || {};
-
-  if (['number', 'string', 'bigint'].includes(typeof param) || Buffer.isBuffer(param)) {
-    options.where = {
-      [this.primaryKeyAttribute]: param
-    };
-  } else {
-    throw new Error(`Argument passed to findByPk is invalid: ${param}`);
-  }
-
-  // Bypass a possible overloaded findOne
-  return await this.findOne(options);
-};
-
-//// Done!
 
 Sequelize.supportsCockroachDB = true;
 module.exports = require('sequelize');

@@ -6,7 +6,9 @@ var DataTypes = Sequelize.DataTypes;
 
 // Reason: this tests fails because of the way it's implemented
 // I implemented below each test to demonstrate that it's not a bug
-// The not skipped tests uses a more generic approach since it doesn't rely on auto increment values when using the 'find' function
+// The not skipped tests uses a more generic approach since it doesn't 
+// rely on auto increment values when using the 'find' function.
+// The diff is related to the id given to created registry. Line 90.
 describe('Multiple Level Filters', () => {
   it.skip('can filter through belongsTo', async function() {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
@@ -128,6 +130,8 @@ describe('Multiple Level Filters', () => {
     expect(tasks[1].title).to.be.equal('stablish republic');
   });
 
+  // Reason: the way the ids are implemented doesnt work with Cockroach. 
+  // Reimplemented test below.
   it.skip('avoids duplicated tables in query', async function() {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
@@ -254,6 +258,8 @@ describe('Multiple Level Filters', () => {
     expect(tasks[1].title).to.be.equal('stablish republic');
   });
 
+  // Reason: the way the ids are implemented doesnt work with Cockroach. 
+  // Reimplemented test below.
   it.skip('can filter through hasMany', async function() {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
@@ -372,6 +378,8 @@ describe('Multiple Level Filters', () => {
     expect(users[0].username).to.be.equal('leia');
   });
   
+  // Reason: the way the ids are implemented doesnt work with Cockroach. 
+  // Reimplemented test below.
   it.skip('can filter through hasMany connector', async function() {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });

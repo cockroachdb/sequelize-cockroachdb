@@ -15,3 +15,4 @@ can filter through belongsTo
 avoids duplicated tables in query
 can filter through hasMany
 can filter through hasMany connector
+should create a auto increment primary key

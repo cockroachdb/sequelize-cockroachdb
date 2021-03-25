@@ -101,6 +101,11 @@ QueryGenerator.prototype.describeTableQuery = function (...args) {
     // Change unimplemented column
     .replace('relid', 'oid');
 };
+QueryGenerator.prototype.__fromArray = QueryGenerator.prototype.fromArray;
+QueryGenerator.prototype.fromArray = function (text) {
+  const patchedText = typeof text === 'string' ? text : `{${text.join(',')}}`;
+  return this.__fromArray.call(this, patchedText);
+};
 
 // [5] Allow BigInts on `Model.findByPk`
 // Copied from https://github.com/sequelize/sequelize/blob/29901187d9560e7d51ae1f9b5f411cf0c5d8994a/lib/model.js#L1866

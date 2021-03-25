@@ -2,7 +2,6 @@ adds, reads and removes an index to the table
 works with schemas
 should get a list of foreign keys for the table
 should add, read & remove primary key constraint
-should add, read & remove foreign key constraint
 should throw non existent constraints as UnknownConstraintError
 should change a column if it exists in the model but is different in the database
 should tell me that a column is json
@@ -12,3 +11,7 @@ supports transactions
 using scope to set associations
 updating association via set associations with scope
 should set foreignKey on foreign table
+can filter through belongsTo
+avoids duplicated tables in query
+can filter through hasMany
+can filter through hasMany connector

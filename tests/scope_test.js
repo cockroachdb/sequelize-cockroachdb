@@ -93,8 +93,7 @@ describe('associations', () => {
       });
     });
 
-    // Reason: Fixed in another PR: https://github.com/cockroachdb/sequelize-cockroachdb/pull/64
-    describe.skip('1:1', () => {
+    describe('1:1', () => {
       it('should create, find and include associations with scope values', async function() {
         await this.sequelize.sync({ force: true });
 
@@ -300,8 +299,7 @@ describe('associations', () => {
     });
 
     describe('N:M', () => {
-      // Reason: Fixed in another PR: https://github.com/cockroachdb/sequelize-cockroachdb/pull/64
-      describe.skip('on the target', () => {
+      describe('on the target', () => {
         beforeEach(function() {
           this.Post = this.sequelize.define('post', {});
           this.Tag = this.sequelize.define('tag', {

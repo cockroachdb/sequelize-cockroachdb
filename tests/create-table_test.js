@@ -5,7 +5,7 @@ var Sequelize = require('..');
 var DataTypes = Sequelize.DataTypes;
 const dialect = 'postgres';
 
-describe.only('QueryInterface', () => {
+describe('QueryInterface', () => {
   beforeEach(function() {
     this.sequelize.options.quoteIdenifiers = true;
     this.queryInterface = this.sequelize.getQueryInterface();

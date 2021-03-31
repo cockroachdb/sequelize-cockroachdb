@@ -79,16 +79,19 @@ PostgresDialect.prototype.supports.EXCEPTION = false;
 });
 
 // [4] Fix int to string conversion
+// As pg-types says, "By default the PostgreSQL backend server returns everything as strings."
+// Corrects this issue: https://github.com/cockroachdb/sequelize-cockroachdb/issues/50
 const { ConnectionManager } = require('sequelize/lib/dialects/abstract/connection-manager');
 ConnectionManager.prototype.__loadDialectModule = ConnectionManager.prototype._loadDialectModule;
 ConnectionManager.prototype._loadDialectModule = function (...args) {
   const pg = this.__loadDialectModule(...args);
   pg.types.setTypeParser(20, function (val) {
-    if (val > Number.MAX_SAFE_INTEGER) return BigInt(val);
+    if (val > Number.MAX_SAFE_INTEGER) return String(val);
     else return parseInt(val, 10);
   });
   return pg;
-}
+};
+
 QueryGenerator.prototype.__describeTableQuery = QueryGenerator.prototype.describeTableQuery;
 QueryGenerator.prototype.describeTableQuery = function (...args) {
   const query = this.__describeTableQuery.call(this, ...args);
@@ -101,6 +104,7 @@ QueryGenerator.prototype.describeTableQuery = function (...args) {
     // Change unimplemented column
     .replace('relid', 'oid');
 };
+
 QueryGenerator.prototype.__fromArray = QueryGenerator.prototype.fromArray;
 QueryGenerator.prototype.fromArray = function (text) {
   const patchedText = typeof text === 'string' ? text : `{${text.join(',')}}`;

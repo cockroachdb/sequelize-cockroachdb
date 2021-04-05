@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Start a single CockroachDB instance (${{ matrix.cockroachdb-version }}) with docker
         env:
-          CONTAINER_ENTRYPOINT: ${{ startsWith(matrix.cockroachdb-version, 'v19') && './cockroach' || 'cockroach' }}
+          CONTAINER_ENTRYPOINT: ${{ 'cockroach' }}
         run: |
           echo $CONTAINER_ENTRYPOINT
           docker pull cockroachdb/cockroach:${{ matrix.cockroachdb-version }}

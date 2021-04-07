@@ -33,3 +33,5 @@ allows the creation of a TSVECTOR field
 TSVECTOR only allow string
 doesn't allow duplicated records with unique function based indexes
 sets auto increment fields
+should return autoIncrement primary key \(create\)
+several concurrent calls

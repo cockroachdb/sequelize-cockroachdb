@@ -58,24 +58,6 @@ describe('QueryInterface', () => {
         });
       });
 
-      it('should be able to remove a column with a default value', async function() {
-        await this.queryInterface.removeColumn('users', 'firstName');
-        const table = await this.queryInterface.describeTable('users');
-        expect(table).to.not.have.property('firstName');
-      });
-
-      it('should be able to remove a column without default value', async function() {
-        await this.queryInterface.removeColumn('users', 'lastName');
-        const table = await this.queryInterface.describeTable('users');
-        expect(table).to.not.have.property('lastName');
-      });
-
-      it('should be able to remove a column with a foreign key constraint', async function() {
-        await this.queryInterface.removeColumn('users', 'manager');
-        const table = await this.queryInterface.describeTable('users');
-        expect(table).to.not.have.property('manager');
-      });
-
       // Reason: In CockroachDB, dropping a Primary Key column is restricted.
       it.skip('should be able to remove a column with primaryKey', async function() {
         await this.queryInterface.removeColumn('users', 'manager');
@@ -115,36 +97,6 @@ describe('QueryInterface', () => {
             unique: true
           }
         });
-      });
-
-      it('should be able to remove a column with a default value', async function() {
-        await this.queryInterface.removeColumn({
-          tableName: 'users',
-          schema: 'archive'
-        }, 'firstName'
-        );
-
-        const table = await this.queryInterface.describeTable({
-          tableName: 'users',
-          schema: 'archive'
-        });
-
-        expect(table).to.not.have.property('firstName');
-      });
-
-      it('should be able to remove a column without default value', async function() {
-        await this.queryInterface.removeColumn({
-          tableName: 'users',
-          schema: 'archive'
-        }, 'lastName'
-        );
-
-        const table = await this.queryInterface.describeTable({
-          tableName: 'users',
-          schema: 'archive'
-        });
-
-        expect(table).to.not.have.property('lastName');
       });
 
       // Reason: In CockroachDB, dropping a Primary Key column is restricted.

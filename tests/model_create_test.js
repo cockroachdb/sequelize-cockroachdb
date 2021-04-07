@@ -584,179 +584,7 @@ describe('Model', () => {
     });
   });
 
-  describe.only('create', () => {
-    it('works with multiple non-integer primary keys with a default value', async function() {
-      const User = this.sequelize.define('User', {
-        'id1': {
-          primaryKey: true,
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4
-        },
-        'id2': {
-          primaryKey: true,
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4
-        },
-        'email': {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4
-        }
-      });
-
-      await this.sequelize.sync({ force: true });
-      const user = await User.create({});
-      expect(user).to.be.ok;
-      expect(user.id1).to.be.ok;
-      expect(user.id2).to.be.ok;
-    });
-
-    it('should return an error for a unique constraint error', async function() {
-      const User = this.sequelize.define('User', {
-        'email': {
-          type: DataTypes.STRING,
-          unique: { name: 'email', msg: 'Email is already registered.' },
-          validate: {
-            notEmpty: true,
-            isEmail: true
-          }
-        }
-      });
-
-      await this.sequelize.sync({ force: true });
-      await User.create({ email: 'hello@sequelize.com' });
-
-      try {
-        await User.create({ email: 'hello@sequelize.com' });
-        assert(false);
-      } catch (err) {
-        expect(err).to.be.ok;
-        expect(err).to.be.an.instanceof(Error);
-      }
-    });
-
-    it('works without any primary key', async function() {
-      const Log = this.sequelize.define('log', {
-        level: DataTypes.STRING
-      });
-
-      Log.removeAttribute('id');
-
-      await this.sequelize.sync({ force: true });
-
-      await Promise.all([Log.create({ level: 'info' }), Log.bulkCreate([
-        { level: 'error' },
-        { level: 'debug' }
-      ])]);
-
-      const logs = await Log.findAll();
-      logs.forEach(log => {
-        expect(log.get('id')).not.to.be.ok;
-      });
-    });
-
-    it('should be able to set createdAt and updatedAt if using silent: true', async function() {
-      const User = this.sequelize.define('user', {
-        name: DataTypes.STRING
-      }, {
-        timestamps: true
-      });
-
-      const createdAt = new Date(2012, 10, 10, 10, 10, 10);
-      const updatedAt = new Date(2011, 11, 11, 11, 11, 11);
-
-      await User.sync({ force: true });
-
-      const user = await User.create({
-        createdAt,
-        updatedAt
-      }, {
-        silent: true
-      });
-
-      expect(createdAt.getTime()).to.equal(user.get('createdAt').getTime());
-      expect(updatedAt.getTime()).to.equal(user.get('updatedAt').getTime());
-
-      const user0 = await User.findOne({
-        where: {
-          updatedAt: {
-            [Op.ne]: null
-          }
-        }
-      });
-
-      expect(createdAt.getTime()).to.equal(user0.get('createdAt').getTime());
-      expect(updatedAt.getTime()).to.equal(user0.get('updatedAt').getTime());
-    });
-
-    it('works with custom timestamps with a default value', async function() {
-      const User = this.sequelize.define('User', {
-        username: DataTypes.STRING,
-        date_of_birth: DataTypes.DATE,
-        email: DataTypes.STRING,
-        password: DataTypes.STRING,
-        created_time: {
-          type: DataTypes.DATE,
-          allowNull: true,
-          defaultValue: DataTypes.NOW
-        },
-        updated_time: {
-          type: DataTypes.DATE,
-          allowNull: true,
-          defaultValue: DataTypes.NOW
-        }
-      }, {
-        createdAt: 'created_time',
-        updatedAt: 'updated_time',
-        tableName: 'users',
-        underscored: true,
-        freezeTableName: true,
-        force: false
-      });
-
-      await this.sequelize.sync({ force: true });
-
-      const user1 = await User.create({});
-      await delay(10);
-      const user2 = await User.create({});
-
-      for (const user of [user1, user2]) {
-        expect(user).to.be.ok;
-        expect(user.created_time).to.be.ok;
-        expect(user.updated_time).to.be.ok;
-      }
-
-      // Timestamps should have milliseconds. However, there is a small chance that
-      // it really is 0 for one of them, by coincidence. So we check twice with two
-      // users created almost at the same time.
-      expect([
-        user1.created_time.getMilliseconds(),
-        user2.created_time.getMilliseconds()
-      ]).not.to.deep.equal([0, 0]);
-      expect([
-        user1.updated_time.getMilliseconds(),
-        user2.updated_time.getMilliseconds()
-      ]).not.to.deep.equal([0, 0]);
-    });
-
-    it('works with custom timestamps and underscored', async function() {
-      const User = this.sequelize.define('User', {
-
-      }, {
-        createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
-        underscored: true
-      });
-
-      await this.sequelize.sync({ force: true });
-      const user = await User.create({});
-      expect(user).to.be.ok;
-      expect(user.createdAt).to.be.ok;
-      expect(user.updatedAt).to.be.ok;
-
-      expect(user.created_at).not.to.be.ok;
-      expect(user.updated_at).not.to.be.ok;
-    });
-
+  describe('create', () => {
     // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
     // https://www.cockroachlabs.com/docs/stable/transactions.html
     it.skip('supports transactions', async function() {
@@ -795,87 +623,6 @@ describe('Model', () => {
         expect(user.get('maId')).to.be.ok;
         expect(user.get('maId')).to.equal(1);
       });
-    });
-
-    it('is possible to use casting when creating an instance', async function() {
-      const type = dialect === 'mysql' || dialect === 'mariadb' ? 'signed' : 'integer';
-      let match = false;
-
-      const user = await this.User.create({
-        intVal: this.sequelize.cast('1', type)
-      }, {
-        logging(sql) {
-          expect(sql).to.match(new RegExp(`CAST\\(N?'1' AS ${type.toUpperCase()}\\)`));
-          match = true;
-        }
-      });
-
-      const user0 = await this.User.findByPk(user.id);
-      expect(user0.intVal).to.equal(1);
-      expect(match).to.equal(true);
-    });
-
-    it('is possible to use casting multiple times mixed in with other utilities', async function() {
-      let type = this.sequelize.cast(this.sequelize.cast(this.sequelize.literal('1-2'), 'integer'), 'integer'),
-        match = false;
-
-      if (dialect === 'mysql' || dialect === 'mariadb') {
-        type = this.sequelize.cast(this.sequelize.cast(this.sequelize.literal('1-2'), 'unsigned'), 'signed');
-      }
-
-      const user = await this.User.create({
-        intVal: type
-      }, {
-        logging(sql) {
-          if (dialect === 'mysql' || dialect === 'mariadb') {
-            expect(sql).to.contain('CAST(CAST(1-2 AS UNSIGNED) AS SIGNED)');
-          } else {
-            expect(sql).to.contain('CAST(CAST(1-2 AS INTEGER) AS INTEGER)');
-          }
-          match = true;
-        }
-      });
-
-      const user0 = await this.User.findByPk(user.id);
-      expect(user0.intVal).to.equal(-1);
-      expect(match).to.equal(true);
-    });
-
-    it('is possible to just use .literal() to bypass escaping', async function() {
-      const user = await this.User.create({
-        intVal: this.sequelize.literal(`CAST(1-2 AS ${dialect === 'mysql' ? 'SIGNED' : 'INTEGER'})`)
-      });
-
-      const user0 = await this.User.findByPk(user.id);
-      expect(user0.intVal).to.equal(-1);
-    });
-
-    it('is possible to use funtions when creating an instance', async function() {
-      const user = await this.User.create({
-        secretValue: this.sequelize.fn('upper', 'sequelize')
-      });
-
-      const user0 = await this.User.findByPk(user.id);
-      expect(user0.secretValue).to.equal('SEQUELIZE');
-    });
-
-    it('should escape $ in sequelize functions arguments', async function() {
-      const user = await this.User.create({
-        secretValue: this.sequelize.fn('upper', '$sequelize')
-      });
-
-      const user0 = await this.User.findByPk(user.id);
-      expect(user0.secretValue).to.equal('$SEQUELIZE');
-    });
-
-    it('should work with a non-id named uuid primary key columns', async function() {
-      const Monkey = this.sequelize.define('Monkey', {
-        monkeyId: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4, allowNull: false }
-      });
-
-      await this.sequelize.sync({ force: true });
-      const monkey = await Monkey.create();
-      expect(monkey.get('monkeyId')).to.be.ok;
     });
 
     // Reason: CRDB does not use uuid-ossp. It uses gen_random_uuid() function instead.
@@ -920,108 +667,53 @@ describe('Model', () => {
       }
     });
 
-    if (dialect === 'postgres') {
-      it('does not cast arrays for postgresql insert', async function() {
-        const User = this.sequelize.define('UserWithArray', {
-          myvals: { type: Sequelize.ARRAY(Sequelize.INTEGER) },
-          mystr: { type: Sequelize.ARRAY(Sequelize.STRING) }
-        });
-
-        let test = false;
-        await User.sync({ force: true });
-
-        await User.create({ myvals: [], mystr: [] }, {
-          logging(sql) {
-            test = true;
-            expect(sql).to.contain('INSERT INTO "UserWithArrays" ("id","myvals","mystr","createdAt","updatedAt") VALUES (DEFAULT,$1,$2,$3,$4)');
-          }
-        });
-
-        expect(test).to.be.true;
+    // Reason: CockroachDB does not yet support CITEXT
+    // Seen here: https://github.com/cockroachdb/cockroach/issues/22463
+    it.skip("doesn't allow case-insensitive duplicated records using CITEXT", async function() {
+      const User = this.sequelize.define('UserWithUniqueCITEXT', {
+        username: { type: Sequelize.CITEXT, unique: true }
       });
-
-      it('does not cast arrays for postgres update', async function() {
-        const User = this.sequelize.define('UserWithArray', {
-          myvals: { type: Sequelize.ARRAY(Sequelize.INTEGER) },
-          mystr: { type: Sequelize.ARRAY(Sequelize.STRING) }
-        });
-        let test = false;
-
-        await User.sync({ force: true });
-        const user = await User.create({ myvals: [1, 2, 3, 4], mystr: ['One', 'Two', 'Three', 'Four'] });
-        user.myvals = [];
-        user.mystr = [];
-
-        await user.save({
-          logging(sql) {
-            test = true;
-            expect(sql).to.contain('UPDATE "UserWithArrays" SET "myvals"=$1,"mystr"=$2,"updatedAt"=$3 WHERE "id" = $4');
-          }
-        });
-
-        expect(test).to.be.true;
-      });
-    }
-
-    it("doesn't allow duplicated records with unique:true", async function() {
-      const User = this.sequelize.define('UserWithUniqueUsername', {
-        username: { type: Sequelize.STRING, unique: true }
-      });
-
-      await User.sync({ force: true });
-      await User.create({ username: 'foo' });
 
       try {
+        await User.sync({ force: true });
         await User.create({ username: 'foo' });
+        await User.create({ username: 'fOO' });
       } catch (err) {
         if (!(err instanceof Sequelize.UniqueConstraintError)) throw err;
         expect(err).to.be.ok;
       }
     });
 
-    if (dialect === 'postgres' || dialect === 'sqlite') {
-      it("doesn't allow case-insensitive duplicated records using CITEXT", async function() {
-        const User = this.sequelize.define('UserWithUniqueCITEXT', {
-          username: { type: Sequelize.CITEXT, unique: true }
-        });
-
-        try {
-          await User.sync({ force: true });
-          await User.create({ username: 'foo' });
-          await User.create({ username: 'fOO' });
-        } catch (err) {
-          if (!(err instanceof Sequelize.UniqueConstraintError)) throw err;
-          expect(err).to.be.ok;
-        }
+    // Reason: CockroachDB does not yet support TSVECTOR
+    // Seen here: https://github.com/cockroachdb/cockroach/issues/41288
+    it.skip('allows the creation of a TSVECTOR field', async function() {
+      const User = this.sequelize.define('UserWithTSVECTOR', {
+        name: Sequelize.TSVECTOR
       });
-    }
 
-    if (dialect === 'postgres') {
-      it('allows the creation of a TSVECTOR field', async function() {
-        const User = this.sequelize.define('UserWithTSVECTOR', {
-          name: Sequelize.TSVECTOR
-        });
+      await User.sync({ force: true });
+      await User.create({ name: 'John Doe' });
+    });
 
+    // Reason: CockroachDB does not yet support TSVECTOR
+    // Seen here: https://github.com/cockroachdb/cockroach/issues/41288
+    it.skip('TSVECTOR only allow string', async function() {
+      const User = this.sequelize.define('UserWithTSVECTOR', {
+        username: { type: Sequelize.TSVECTOR }
+      });
+
+      try {
         await User.sync({ force: true });
-        await User.create({ name: 'John Doe' });
-      });
+        await User.create({ username: 42 });
+      } catch (err) {
+        if (!(err instanceof Sequelize.ValidationError)) throw err;
+        expect(err).to.be.ok;
+      }
+    });
 
-      it('TSVECTOR only allow string', async function() {
-        const User = this.sequelize.define('UserWithTSVECTOR', {
-          username: { type: Sequelize.TSVECTOR }
-        });
-
-        try {
-          await User.sync({ force: true });
-          await User.create({ username: 42 });
-        } catch (err) {
-          if (!(err instanceof Sequelize.ValidationError)) throw err;
-          expect(err).to.be.ok;
-        }
-      });
-    }
-
-    it("doesn't allow duplicated records with unique function based indexes", async function() {
+    // Reason: CoackroachDB does not support 'lower' function for INDEX
+    // Seen here: https://github.com/cockroachdb/cockroach/issues/9682?version=v20.2
+    it.skip("doesn't allow duplicated records with unique function based indexes", async function() {
       const User = this.sequelize.define('UserWithUniqueUsernameFunctionIndex', {
         username: Sequelize.STRING,
         email: { type: Sequelize.STRING, unique: true }
@@ -1039,93 +731,9 @@ describe('Model', () => {
       }
     });
 
-    it('raises an error if created object breaks definition constraints', async function() {
-      const UserNull = this.sequelize.define('UserWithNonNullSmth', {
-        username: { type: Sequelize.STRING, unique: true },
-        smth: { type: Sequelize.STRING, allowNull: false }
-      });
-
-      this.sequelize.options.omitNull = false;
-
-      await UserNull.sync({ force: true });
-
-      try {
-        await UserNull.create({ username: 'foo2', smth: null });
-      } catch (err) {
-        expect(err).to.exist;
-
-        const smth1 = err.get('smth')[0] || {};
-
-        expect(smth1.path).to.equal('smth');
-        expect(smth1.type || smth1.origin).to.match(/notNull Violation/);
-      }
-    });
-    it('raises an error if created object breaks definition constraints', async function() {
-      const UserNull = this.sequelize.define('UserWithNonNullSmth', {
-        username: { type: Sequelize.STRING, unique: true },
-        smth: { type: Sequelize.STRING, allowNull: false }
-      });
-
-      this.sequelize.options.omitNull = false;
-
-      await UserNull.sync({ force: true });
-      await UserNull.create({ username: 'foo', smth: 'foo' });
-
-      try {
-        await UserNull.create({ username: 'foo', smth: 'bar' });
-      } catch (err) {
-        if (!(err instanceof Sequelize.UniqueConstraintError)) throw err;
-        expect(err).to.be.ok;
-      }
-    });
-
-    it('raises an error if saving an empty string into a column allowing null or URL', async function() {
-      const StringIsNullOrUrl = this.sequelize.define('StringIsNullOrUrl', {
-        str: { type: Sequelize.STRING, allowNull: true, validate: { isURL: true } }
-      });
-
-      this.sequelize.options.omitNull = false;
-
-      await StringIsNullOrUrl.sync({ force: true });
-      const str1 = await StringIsNullOrUrl.create({ str: null });
-      expect(str1.str).to.be.null;
-      const str2 = await StringIsNullOrUrl.create({ str: 'http://sequelizejs.org' });
-      expect(str2.str).to.equal('http://sequelizejs.org');
-
-      try {
-        await StringIsNullOrUrl.create({ str: '' });
-      } catch (err) {
-        expect(err).to.exist;
-        expect(err.get('str')[0].message).to.match(/Validation isURL on str failed/);
-      }
-    });
-
-    it('raises an error if you mess up the datatype', function() {
-      expect(() => {
-        this.sequelize.define('UserBadDataType', {
-          activity_date: Sequelize.DATe
-        });
-      }).to.throw(Error, 'Unrecognized datatype for attribute "UserBadDataType.activity_date"');
-
-      expect(() => {
-        this.sequelize.define('UserBadDataType', {
-          activity_date: { type: Sequelize.DATe }
-        });
-      }).to.throw(Error, 'Unrecognized datatype for attribute "UserBadDataType.activity_date"');
-    });
-
-    it('sets a 64 bit int in bigint', async function() {
-      const User = this.sequelize.define('UserWithBigIntFields', {
-        big: Sequelize.BIGINT
-      });
-
-      await User.sync({ force: true });
-      const user = await User.create({ big: '9223372036854775807' });
-
-      expect(user.big).to.be.equal('9223372036854775807');
-    });
-
-    it('sets auto increment fields', async function() {
+    // Reason: CRDB does not grant autoIncrement to be sequential and usually does not gives it
+    // small numbers like PG does. Reimplementing the test to check if it is incremental below.
+    it.skip('sets auto increment fields', async function() {
       const User = this.sequelize.define('UserWithAutoIncrementField', {
         userid: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false }
       });
@@ -1136,298 +744,16 @@ describe('Model', () => {
       const user0 = await User.create({});
       expect(user0.userid).to.equal(2);
     });
-
-    it('allows the usage of options as attribute', async function() {
-      const User = this.sequelize.define('UserWithNameAndOptions', {
-        name: Sequelize.STRING,
-        options: Sequelize.TEXT
+    it('sets auto increment fields', async function() {
+      const User = this.sequelize.define('UserWithAutoIncrementField', {
+        userid: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false }
       });
-
-      const options = JSON.stringify({ foo: 'bar', bar: 'foo' });
 
       await User.sync({ force: true });
+      const user1 = await User.create({});
+      const user2 = await User.create({});
 
-      const user = await User
-        .create({ name: 'John Doe', options });
-
-      expect(user.options).to.equal(options);
-    });
-
-    it('allows sql logging', async function() {
-      const User = this.sequelize.define('UserWithUniqueNameAndNonNullSmth', {
-        name: { type: Sequelize.STRING, unique: true },
-        smth: { type: Sequelize.STRING, allowNull: false }
-      });
-
-      let test = false;
-      await User.sync({ force: true });
-
-      await User
-        .create({ name: 'Fluffy Bunny', smth: 'else' }, {
-          logging(sql) {
-            expect(sql).to.exist;
-            test = true;
-            expect(sql.toUpperCase()).to.contain('INSERT');
-          }
-        });
-
-      expect(test).to.be.true;
-    });
-
-    it('should only store the values passed in the whitelist', async function() {
-      const data = { username: 'Peter', secretValue: '42' };
-
-      const user = await this.User.create(data, { fields: ['username'] });
-      const _user = await this.User.findByPk(user.id);
-      expect(_user.username).to.equal(data.username);
-      expect(_user.secretValue).not.to.equal(data.secretValue);
-      expect(_user.secretValue).to.equal(null);
-    });
-
-    it('should store all values if no whitelist is specified', async function() {
-      const data = { username: 'Peter', secretValue: '42' };
-
-      const user = await this.User.create(data);
-      const _user = await this.User.findByPk(user.id);
-      expect(_user.username).to.equal(data.username);
-      expect(_user.secretValue).to.equal(data.secretValue);
-    });
-
-    it('can omit autoincremental columns', async function() {
-      const data = { title: 'Iliad' },
-        dataTypes = [Sequelize.INTEGER, Sequelize.BIGINT],
-        sync = [],
-        promises = [],
-        books = [];
-
-      dataTypes.forEach((dataType, index) => {
-        books[index] = this.sequelize.define(`Book${index}`, {
-          id: { type: dataType, primaryKey: true, autoIncrement: true },
-          title: Sequelize.TEXT
-        });
-      });
-
-      books.forEach(b => {
-        sync.push(b.sync({ force: true }));
-      });
-
-      await Promise.all(sync);
-      books.forEach((b, index) => {
-        promises.push((async () => {
-          const book = await b.create(data);
-          expect(book.title).to.equal(data.title);
-          expect(book.author).to.equal(data.author);
-          expect(books[index].rawAttributes.id.type instanceof dataTypes[index]).to.be.ok;
-        })());
-      });
-
-      await Promise.all(promises);
-    });
-
-    it('saves data with single quote', async function() {
-      const quote = "single'quote";
-
-      const user = await this.User.create({ data: quote });
-      expect(user.data).to.equal(quote);
-      const user0 = await this.User.findOne({ where: { id: user.id } });
-      expect(user0.data).to.equal(quote);
-    });
-
-    it('saves data with double quote', async function() {
-      const quote = 'double"quote';
-
-      const user = await this.User.create({ data: quote });
-      expect(user.data).to.equal(quote);
-      const user0 = await this.User.findOne({ where: { id: user.id } });
-      expect(user0.data).to.equal(quote);
-    });
-
-    it('saves stringified JSON data', async function() {
-      const json = JSON.stringify({ key: 'value' });
-
-      const user = await this.User.create({ data: json });
-      expect(user.data).to.equal(json);
-      const user0 = await this.User.findOne({ where: { id: user.id } });
-      expect(user0.data).to.equal(json);
-    });
-
-    it('stores the current date in createdAt', async function() {
-      const user = await this.User.create({ username: 'foo' });
-      expect(parseInt(+user.createdAt / 5000, 10)).to.be.closeTo(parseInt(+new Date() / 5000, 10), 1.5);
-    });
-
-    it('allows setting custom IDs', async function() {
-      const user = await this.User.create({ id: 42 });
-      expect(user.id).to.equal(42);
-      const user0 = await this.User.findByPk(42);
-      expect(user0).to.exist;
-    });
-
-    it('should allow blank creates (with timestamps: false)', async function() {
-      const Worker = this.sequelize.define('Worker', {}, { timestamps: false });
-      await Worker.sync();
-      const worker = await Worker.create({}, { fields: [] });
-      expect(worker).to.be.ok;
-    });
-
-    it('should allow truly blank creates', async function() {
-      const Worker = this.sequelize.define('Worker', {}, { timestamps: false });
-      await Worker.sync();
-      const worker = await Worker.create({}, { fields: [] });
-      expect(worker).to.be.ok;
-    });
-
-    it('should only set passed fields', async function() {
-      const User = this.sequelize.define('User', {
-        'email': {
-          type: DataTypes.STRING
-        },
-        'name': {
-          type: DataTypes.STRING
-        }
-      });
-
-      await this.sequelize.sync({ force: true });
-
-      const user = await User.create({
-        name: 'Yolo Bear',
-        email: 'yolo@bear.com'
-      }, {
-        fields: ['name']
-      });
-
-      expect(user.name).to.be.ok;
-      expect(user.email).not.to.be.ok;
-      const user0 = await User.findByPk(user.id);
-      expect(user0.name).to.be.ok;
-      expect(user0.email).not.to.be.ok;
-    });
-
-    it('Works even when SQL query has a values of transaction keywords such as BEGIN TRANSACTION', async function() {
-      const Task = this.sequelize.define('task', {
-        title: DataTypes.STRING
-      });
-      await Task.sync({ force: true });
-
-      const newTasks = await Promise.all([
-        Task.create({ title: 'BEGIN TRANSACTION' }),
-        Task.create({ title: 'COMMIT TRANSACTION' }),
-        Task.create({ title: 'ROLLBACK TRANSACTION' }),
-        Task.create({ title: 'SAVE TRANSACTION' })
-      ]);
-
-      expect(newTasks).to.have.lengthOf(4);
-      expect(newTasks[0].title).to.equal('BEGIN TRANSACTION');
-      expect(newTasks[1].title).to.equal('COMMIT TRANSACTION');
-      expect(newTasks[2].title).to.equal('ROLLBACK TRANSACTION');
-      expect(newTasks[3].title).to.equal('SAVE TRANSACTION');
-    });
-
-    describe('enums', () => {
-      it('correctly restores enum values', async function() {
-        const Item = this.sequelize.define('Item', {
-          state: { type: Sequelize.ENUM, values: ['available', 'in_cart', 'shipped'] }
-        });
-
-        await Item.sync({ force: true });
-        const _item = await Item.create({ state: 'available' });
-        const item = await Item.findOne({ where: { state: 'available' } });
-        expect(item.id).to.equal(_item.id);
-      });
-
-      it('allows null values', async function() {
-        const Enum = this.sequelize.define('Enum', {
-          state: {
-            type: Sequelize.ENUM,
-            values: ['happy', 'sad'],
-            allowNull: true
-          }
-        });
-
-        await Enum.sync({ force: true });
-        const _enum = await Enum.create({ state: null });
-        expect(_enum.state).to.be.null;
-      });
-
-      describe('when defined via { field: Sequelize.ENUM }', () => {
-        it('allows values passed as parameters', async function() {
-          const Enum = this.sequelize.define('Enum', {
-            state: Sequelize.ENUM('happy', 'sad')
-          });
-
-          await Enum.sync({ force: true });
-
-          await Enum.create({ state: 'happy' });
-        });
-
-        it('allows values passed as an array', async function() {
-          const Enum = this.sequelize.define('Enum', {
-            state: Sequelize.ENUM(['happy', 'sad'])
-          });
-
-          await Enum.sync({ force: true });
-
-          await Enum.create({ state: 'happy' });
-        });
-      });
-
-      describe('when defined via { field: { type: Sequelize.ENUM } }', () => {
-        it('allows values passed as parameters', async function() {
-          const Enum = this.sequelize.define('Enum', {
-            state: {
-              type: Sequelize.ENUM('happy', 'sad')
-            }
-          });
-
-          await Enum.sync({ force: true });
-
-          await Enum.create({ state: 'happy' });
-        });
-
-        it('allows values passed as an array', async function() {
-          const Enum = this.sequelize.define('Enum', {
-            state: {
-              type: Sequelize.ENUM(['happy', 'sad'])
-            }
-          });
-
-          await Enum.sync({ force: true });
-
-          await Enum.create({ state: 'happy' });
-        });
-      });
-
-      describe('can safely sync multiple times', () => {
-        it('through the factory', async function() {
-          const Enum = this.sequelize.define('Enum', {
-            state: {
-              type: Sequelize.ENUM,
-              values: ['happy', 'sad'],
-              allowNull: true
-            }
-          });
-
-          await Enum.sync({ force: true });
-          await Enum.sync();
-
-          await Enum.sync({ force: true });
-        });
-
-        it('through sequelize', async function() {
-          this.sequelize.define('Enum', {
-            state: {
-              type: Sequelize.ENUM,
-              values: ['happy', 'sad'],
-              allowNull: true
-            }
-          });
-
-          await this.sequelize.sync({ force: true });
-          await this.sequelize.sync();
-
-          await this.sequelize.sync({ force: true });
-        });
-      });
+      expect(user2.userid > user1.userid).to.be.true;
     });
   });
 

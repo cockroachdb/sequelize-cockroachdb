@@ -36,3 +36,5 @@ sets auto increment fields
 should return autoIncrement primary key \(create\)
 several concurrent calls
 should error correctly when defaults contain a unique key and the where clause is complex
+should work with multiple concurrent calls
+should not deadlock with concurrency duplicate entries and no outer transaction

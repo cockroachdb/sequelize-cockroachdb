@@ -209,6 +209,9 @@ Model.findOrCreate = async function findOrCreate(options) {
         .filter(name => this.rawAttributes[name])
         .map(name => this.rawAttributes[name].field || name);
 
+      // This line differs from the original findOrCreate. Added {} to bypass the .fields requesting.
+      // This issue: https://github.com/cockroachdb/cockroach/issues/63332 could probably change the
+      // need for this adaptation.
       const errFieldKeys = Object.keys(err.fields || {});
       const errFieldsWhereIntersects = Utils.intersects(errFieldKeys, whereFields);
       if (defaultFields && !errFieldsWhereIntersects && Utils.intersects(errFieldKeys, defaultFields)) {

@@ -55,7 +55,10 @@ describe('Model', () => {
       expect(count0).to.equal(1);
     });
 
-    it('should error correctly when defaults contain a unique key and the where clause is complex', async function() {
+    // Reason: CRDB has to return a Details field at bytes stream. Since it doesn't, it does not
+    // generate the 'error.errors' array. 
+    // https://github.com/cockroachdb/cockroach/issues/63332
+    it.skip('should error correctly when defaults contain a unique key and the where clause is complex', async function() {
       const User = this.sequelize.define('user', {
         objectId: {
           type: DataTypes.STRING,

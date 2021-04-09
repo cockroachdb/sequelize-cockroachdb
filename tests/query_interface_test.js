@@ -440,8 +440,7 @@ describe('QueryInterface', () => {
     });
   });
 
-  // Reason: gives this error on the before each: column "uid" does not exist. Works fine on CI
-  describe.skip('constraints', () => {
+  describe('constraints', () => {
     beforeEach(async function() {
       this.User = this.sequelize.define('users', {
         username: DataTypes.STRING,

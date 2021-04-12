@@ -23,3 +23,6 @@ should work with enums (case 1)
 should work with enums (case 2)
 should work with enums with schemas
 should be able to remove a column with primaryKey
+should make the auto incremented values available on the returned instances
+should make the auto incremented values available on the returned instances with custom fields
+should return auto increment primary key values

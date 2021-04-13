@@ -25,3 +25,5 @@ should work with enums with schemas
 should be able to remove a column with primaryKey
 supports schemas
 should fetch associations for multiple instances with limit and order and a belongsTo relation
+should correctly group with attributes, #3009
+should not add primary key when grouping using a belongsTo association

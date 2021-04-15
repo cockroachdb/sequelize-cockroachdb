@@ -6,7 +6,7 @@ should throw non existent constraints as UnknownConstraintError
 should change a column if it exists in the model but is different in the database
 should tell me that a column is json
 automagically uses the transaction in all calls
-automagically uses the transaction in all calls with async/await
+automagically uses the transaction in all calls with async\/await
 supports transactions
 using scope to set associations
 updating association via set associations with scope
@@ -19,8 +19,8 @@ should create a auto increment primary key
 on the through model
 should support schemas
 should change columns
-should work with enums (case 1)
-should work with enums (case 2)
+should work with enums \(case 1\)
+should work with enums \(case 2\)
 should work with enums with schemas
 should be able to remove a column with primaryKey
 supports schemas

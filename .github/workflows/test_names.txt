@@ -25,3 +25,4 @@ should work with enums with schemas
 should be able to remove a column with primaryKey
 supports schemas
 should fetch associations for multiple instances with limit and order and a belongsTo relation
+should not throw with on NULLS LAST/NULLS FIRST

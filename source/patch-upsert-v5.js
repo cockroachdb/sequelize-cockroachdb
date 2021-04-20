@@ -16,7 +16,7 @@
 
 const { Model, DataTypes, QueryTypes } = require('sequelize');
 const _ = require('lodash');
-const uuidv4 = require('uuid/v4');
+const uuidv4 = require('uuid').v4;
 const Promise = require('sequelize/lib/promise');
 const Utils = require('sequelize/lib/utils');
 const { logger } = require('sequelize/lib/utils/logger');

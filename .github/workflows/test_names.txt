@@ -6,7 +6,7 @@ should throw non existent constraints as UnknownConstraintError
 should change a column if it exists in the model but is different in the database
 should tell me that a column is json
 automagically uses the transaction in all calls
-automagically uses the transaction in all calls with async/await
+automagically uses the transaction in all calls with async\/await
 supports transactions
 using scope to set associations
 updating association via set associations with scope
@@ -19,10 +19,18 @@ should create a auto increment primary key
 on the through model
 should support schemas
 should change columns
-should work with enums (case 1)
-should work with enums (case 2)
+should work with enums \(case 1\)
+should work with enums \(case 2\)
 should work with enums with schemas
 should be able to remove a column with primaryKey
+should be able to find multiple users with case-insensitive on CITEXT type
+should allow us to find IDs using capital letters
+sorts the results via id in ascending order
+sorts the results via id in descending order
+sorts the results via a date column
+handles offset and limit
+should be able to handle binary values through associations as well...
+should be able to handle false/true values through associations as well...
 supports schemas
 should fetch associations for multiple instances with limit and order and a belongsTo relation
 maps attributes from a grouped limit to models
@@ -31,3 +39,19 @@ works with computed order
 works with multiple orders
 works with paranoid junction models
 Applies limit and order correctly
+should correctly group with attributes, #3009
+should not add primary key when grouping using a belongsTo association
+should not throw with on NULLS LAST/NULLS FIRST
+should make the autoincremented values available on the returned instances
+should make the autoincremented values available on the returned instances with custom fields
+is possible to use functions as default values
+doesn't allow case-insensitive duplicated records using CITEXT
+allows the creation of a TSVECTOR field
+TSVECTOR only allow string
+doesn't allow duplicated records with unique function based indexes
+sets auto increment fields
+should return autoIncrement primary key \(create\)
+several concurrent calls
+should error correctly when defaults contain a unique key and the where clause is complex
+should work with multiple concurrent calls
+should not deadlock with concurrency duplicate entries and no outer transaction

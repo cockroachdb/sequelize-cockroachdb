@@ -24,7 +24,7 @@
     "types"
   ],
   "scripts": {
-    "test": "mocha --check-leaks --colors -t 60000 --reporter spec \"tests/*_test.js\""
+    "test": "mocha --check-leaks --colors -t 120000 --reporter spec \"tests/*_test.js\""
   },
   "dependencies": {
     "lodash": "^4.17.20",

@@ -53,7 +53,8 @@ describe('Model', () => {
         ]);
       });
 
-      // Reason: Ids are not predictable. Refactoring below. 
+      // Reason: CRDB ids are not guaranteed to increment by 1.
+      // Refactoring below. 
       it.skip('should be able to handle false/true values through associations as well...', async function() {
         const User = this.User,
           Passports = this.sequelize.define('Passports', {
@@ -128,7 +129,8 @@ describe('Model', () => {
         expect(theFalsePassport[0].isActive).to.be.false;
       });
 
-      // Reason: Ids are not predictable. Refactoring below.
+      // Reason: CRDB ids are not guaranteed to increment by 1.
+      // Refactoring below. 
       it.skip('should be able to handle binary values through associations as well...', async function() {
         const User = this.User;
         const Binary = this.sequelize.define('Binary', {
@@ -243,8 +245,8 @@ describe('Model', () => {
         this.users = [user].concat(user2);
       });
 
-      // Reason: The way we treat BigInt ids as Strings, makes the .below and .above comparisons not,
-      // work, since they expect either number or date. Reimplementing all of them parsing BigInt below. 
+      // Reason: Because we treat BigInt as Strings, Mocha's below and above comparisons do not work
+      // since they expect either number or date. Reimplementing all of them parsing BigInt below. 
       // [1/3]
       it.skip('sorts the results via id in ascending order', async function() {
         const users = await this.User.findAll();

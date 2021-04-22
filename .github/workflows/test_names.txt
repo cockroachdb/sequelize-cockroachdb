@@ -23,6 +23,14 @@ should work with enums \(case 1\)
 should work with enums \(case 2\)
 should work with enums with schemas
 should be able to remove a column with primaryKey
+should be able to find multiple users with case-insensitive on CITEXT type
+should allow us to find IDs using capital letters
+sorts the results via id in ascending order
+sorts the results via id in descending order
+sorts the results via a date column
+handles offset and limit
+should be able to handle binary values through associations as well...
+should be able to handle false/true values through associations as well...
 supports schemas
 should fetch associations for multiple instances with limit and order and a belongsTo relation
 should not throw with on NULLS LAST/NULLS FIRST

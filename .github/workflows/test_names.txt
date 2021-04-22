@@ -33,6 +33,8 @@ should be able to handle binary values through associations as well...
 should be able to handle false/true values through associations as well...
 supports schemas
 should fetch associations for multiple instances with limit and order and a belongsTo relation
+should correctly group with attributes, #3009
+should not add primary key when grouping using a belongsTo association
 should not throw with on NULLS LAST/NULLS FIRST
 should make the autoincremented values available on the returned instances
 should make the autoincremented values available on the returned instances with custom fields

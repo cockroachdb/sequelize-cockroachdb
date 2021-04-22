@@ -28,7 +28,7 @@ From the [docs](https://www.cockroachlabs.com/docs/stable/transactions.html)
 
 > CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
 
-Which means that any other query made in another connection will hang.
+Which means that any other query made in another connection to the same [node](https://www.cockroachlabs.com/blog/how-cockroachdb-distributes-atomic-transactions/) will hang.
 
 For example:
 ```js
@@ -36,3 +36,12 @@ const t = await this.sequelize.transaction();
 await this.User.create({ name: "bob" }, { transaction: t });
 await this.User.findAll({ transaction: null }); // Query will hang!
 ```
+
+### CockroachDB does not support yet:
+
+
+- [CITEXT](https://github.com/cockroachdb/cockroach/issues/22463)
+- [TSVector](https://github.com/cockroachdb/cockroach/issues/41288)
+- [lower](https://github.com/cockroachdb/cockroach/issues/9682?version=v20.2) function for index
+
+See `tests/model_create_test.js` to browse those implementations.

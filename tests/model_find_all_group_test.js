@@ -23,7 +23,8 @@ describe('Model', () => {
 
         await this.sequelize.sync({ force: true });
 
-        // CRDB does not give ids 1 and 2. It is usually a Big Number.
+        // CRDB does not give human readable ids, it's usually a Big Number.
+        // Also, autoIncrement does not guarantee sequentially incremented numbers.
         // Had to ensure ids are 1 and 2 for this test.
         await Post.bulkCreate([
           { id: 1, name: 'post-1' },
@@ -69,7 +70,8 @@ describe('Model', () => {
 
         await this.sequelize.sync({ force: true });
 
-        // CRDB does not give ids 1 and 2. It is usually a Big Number.
+        // CRDB does not give human readable ids, it's usually a Big Number.
+        // Also, autoIncrement does not guarantee sequentially incremented numbers.
         // Had to ensure ids are 1 and 2 for this test.
         await Post.bulkCreate([
           { id: 1, name: 'post-1' },

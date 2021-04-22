@@ -25,7 +25,6 @@ should work with enums with schemas
 should be able to remove a column with primaryKey
 supports schemas
 should fetch associations for multiple instances with limit and order and a belongsTo relation
-Applies limit and order correctly
 maps attributes from a grouped limit to models
 maps attributes from a grouped limit to models with include
 works with computed order

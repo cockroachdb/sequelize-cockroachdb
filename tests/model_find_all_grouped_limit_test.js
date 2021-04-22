@@ -167,7 +167,7 @@ describe('Model', () => {
           });
         });
 
-        // Edited test. It relays on a sequential field. 
+        // Edited test. It relys on a sequential field. 
         // To keep its essence, added a new field to User.
         it('works with computed order', async function() {
           const users = await this.User.findAll({
@@ -192,7 +192,7 @@ describe('Model', () => {
           expect(users.map(u => u.get('position'))).to.deep.equal([1, 3, 5, 4]);
         });
 
-        // Edited test. It relays on a sequential field. 
+        // Edited test. It relys on a sequential field. 
         // To keep its essence, added a new field to User.
         it('works with multiple orders', async function() {
           const users = await this.User.findAll({
@@ -218,7 +218,7 @@ describe('Model', () => {
           expect(users.map(u => u.get('position'))).to.deep.equal([1, 3, 5, 7, 4]);
         });
 
-        // Edited test. It relays on a sequential field. 
+        // Edited test. It relys on a sequential field. 
         // To keep its essence, added a new field to User.
         it('works with paranoid junction models', async function() {
           const users0 = await this.User.findAll({
@@ -311,7 +311,6 @@ describe('Model', () => {
 
           const byUser = _.groupBy(tasks, _.property('userId'));
           expect(Object.keys(byUser)).to.have.length(3);
-          console.log(byUser);
           expect(byUser[1]).to.have.length(1);
           expect(byUser[2]).to.have.length(3);
           expect(_.invokeMap(byUser[2], 'get', 'id')).to.deep.equal([4, 3, 2]);

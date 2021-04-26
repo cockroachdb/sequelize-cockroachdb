@@ -75,10 +75,11 @@ describe('Model', () => {
       }]);
     });
 
-    // Skip reason: Gotta get back to this later. Will have to investigate further where exactly this message is saved,
-    // since it is not passed to the query at any point. It is probably saved in some validador dependency.
+    // Skip reason: Gotta get back to this later. This test breaks because CRDB does not passes Details field
+    // at error transmitting. The message seems to be parsed here [1].
+    // [1]: https://github.com/sequelize/sequelize/blob/main/lib/dialects/postgres/query.js#L324
     it.skip('allows us to customize the error message for unique constraint', async function() {
-      const User = this.sequelizeskipine('UserWithUniqueUsername', {
+      const User = this.sequelize.define('UserWithUniqueUsername', {
         username: { type: Sequelize.STRING, unique: { name: 'user_and_email', msg: 'User and email must be unique' } },
         email: { type: Sequelize.STRING, unique: 'user_and_email' }
       });

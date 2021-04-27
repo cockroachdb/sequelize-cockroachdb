@@ -37,30 +37,30 @@ for (const intTypeName of ['integer', 'bigint']) {
     // Reason: Not fully supported by Sequelize.
     // https://github.com/sequelize/sequelize/issues/10468
     it.skip('accepts JavaScript strings that represent 64-bit integers', async function () {
-      const foo = await this.Foo.create({ i: "9223372036854775807" });
+      const foo = await this.Foo.create({ i: '9223372036854775807' });
       expect(foo.i).to.equal(9223372036854775807n);
     });
     it('accepts JavaScript strings that represent 64-bit integers', async function () {
-      const foo = await this.Foo.create({ i: "9223372036854775807" });
-      expect(foo.i).to.equal("9223372036854775807");
+      const foo = await this.Foo.create({ i: '9223372036854775807' });
+      expect(foo.i).to.equal('9223372036854775807');
     });
 
     it('rejects integers that overflow', async function () {
       await expect(
-        this.Foo.create({ i: "9223372036854775808" })
+        this.Foo.create({ i: '9223372036854775808' })
       ).to.be.eventually.rejectedWith('value out of range');
     });
 
     it('rejects garbage', async function () {
       await expect(
-        this.Foo.create({ i: "102.3" })
+        this.Foo.create({ i: '102.3' })
       ).to.be.eventually.rejectedWith(`"102.3" is not a valid ${intTypeName}`);
     });
 
     it('rejects dangerous input', async function () {
-      await expect(
-        this.Foo.create({ i: "'" })
-      ).to.be.eventually.rejectedWith(`"\'" is not a valid ${intTypeName}`);
+      await expect(this.Foo.create({ i: "'" })).to.be.eventually.rejectedWith(
+        `"\'" is not a valid ${intTypeName}`
+      );
     });
   });
 }

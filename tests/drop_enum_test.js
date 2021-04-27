@@ -18,13 +18,13 @@ const { expect } = require('chai');
 const { Sequelize, DataTypes } = require('../source');
 
 describe('QueryInterface', () => {
-  beforeEach(function() {
+  beforeEach(function () {
     this.sequelize.options.quoteIdentifiers = true;
     this.queryInterface = this.sequelize.getQueryInterface();
   });
 
   describe('dropEnum', () => {
-    beforeEach(async function() {
+    beforeEach(async function () {
       await this.queryInterface.createTable('menus', {
         structuretype: DataTypes.ENUM('menus', 'submenu', 'routine'),
         sequence: DataTypes.INTEGER,
@@ -32,15 +32,17 @@ describe('QueryInterface', () => {
       });
     });
 
-    it('should be able to drop the specified column', async function() {
+    it('should be able to drop the specified column', async function () {
       await this.queryInterface.removeColumn('menus', 'structuretype');
       const enumList0 = await this.queryInterface.pgListEnums('menus');
 
       expect(enumList0).to.have.lengthOf(1);
-      expect(enumList0[0]).to.have.property('enum_name').and.to.equal('enum_menus_structuretype');
+      expect(enumList0[0])
+        .to.have.property('enum_name')
+        .and.to.equal('enum_menus_structuretype');
     });
 
-    it('should be able to drop the specified enum after removing the column', async function() {
+    it('should be able to drop the specified enum after removing the column', async function () {
       await expect(
         this.queryInterface.dropEnum('enum_menus_structuretype')
       ).to.be.eventually.rejectedWith(

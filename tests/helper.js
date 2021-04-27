@@ -46,7 +46,7 @@ async function cleanupDatabase(sequelize) {
   }
 }
 
-before(function() {
+before(function () {
   this.sequelize = new Sequelize('sequelize_test', 'root', '', {
     dialect: 'postgres',
     port: process.env.COCKROACH_PORT || 26257,
@@ -55,11 +55,11 @@ before(function() {
   });
 });
 
-afterEach(async function() {
+afterEach(async function () {
   await cleanupDatabase(this.sequelize);
 });
 
-after(async function() {
+after(async function () {
   await this.sequelize.close();
 });
 

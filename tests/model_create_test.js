@@ -11,7 +11,7 @@ const Op = Sequelize.Op;
 const _ = require('lodash');
 
 describe('Model', () => {
-  beforeEach(async function() {
+  beforeEach(async function () {
     this.User = this.sequelize.define('User', {
       username: DataTypes.STRING,
       secretValue: DataTypes.STRING,
@@ -35,7 +35,7 @@ describe('Model', () => {
   describe('findOrCreate', () => {
     // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
     // https://www.cockroachlabs.com/docs/stable/transactions.html
-    it.skip('supports transactions', async function() {
+    it.skip('supports transactions', async function () {
       const t = await this.sequelize.transaction();
 
       await this.User.findOrCreate({
@@ -56,9 +56,9 @@ describe('Model', () => {
     });
 
     // Reason: CRDB has to return a Details field at bytes stream. Since it doesn't, it does not
-    // generate the 'error.errors' array. 
+    // generate the 'error.errors' array.
     // https://github.com/cockroachdb/cockroach/issues/63332
-    it.skip('should error correctly when defaults contain a unique key and the where clause is complex', async function() {
+    it.skip('should error correctly when defaults contain a unique key and the where clause is complex', async function () {
       const User = this.sequelize.define('user', {
         objectId: {
           type: DataTypes.STRING,
@@ -76,11 +76,14 @@ describe('Model', () => {
       try {
         await User.findOrCreate({
           where: {
-            [Op.or]: [{
-              objectId: 'asdasdasd1'
-            }, {
-              objectId: 'asdasdasd2'
-            }]
+            [Op.or]: [
+              {
+                objectId: 'asdasdasd1'
+              },
+              {
+                objectId: 'asdasdasd2'
+              }
+            ]
           },
           defaults: {
             username: 'gottlieb'
@@ -91,10 +94,10 @@ describe('Model', () => {
         expect(error.errors[0].path).to.be.a('string', 'username');
       }
     });
-  
+
     // Reason: Results of concurrent transactions are not deterministic.
     // Probably will have to refactor this test to work with threads or some retrying strategy.
-    it.skip('should not deadlock with concurrency duplicate entries and no outer transaction', async function() {
+    it.skip('should not deadlock with concurrency duplicate entries and no outer transaction', async function () {
       const User = this.sequelize.define('User', {
         email: {
           type: DataTypes.STRING,
@@ -108,24 +111,32 @@ describe('Model', () => {
 
       await User.sync({ force: true });
 
-      await Promise.all(_.range(50).map(() => {
-        return User.findOrCreate({
-          where: {
-            email: 'unique.email.1@sequelizejs.com',
-            companyId: 2
-          }
-        });
-      }));
+      await Promise.all(
+        _.range(50).map(() => {
+          return User.findOrCreate({
+            where: {
+              email: 'unique.email.1@sequelizejs.com',
+              companyId: 2
+            }
+          });
+        })
+      );
     });
 
-    // Reason: Transaction stuff. Usually crashes Sequelize and times out tests by 60 seconds.    
+    // Reason: Transaction stuff. Usually crashes Sequelize and times out tests by 60 seconds.
     describe.skip('several concurrent calls', () => {
-      it('works with a transaction', async function() {
+      it('works with a transaction', async function () {
         const transaction = await this.sequelize.transaction();
 
         const [first, second] = await Promise.all([
-          this.User.findOrCreate({ where: { uniqueName: 'winner' }, transaction }),
-          this.User.findOrCreate({ where: { uniqueName: 'winner' }, transaction })
+          this.User.findOrCreate({
+            where: { uniqueName: 'winner' },
+            transaction
+          }),
+          this.User.findOrCreate({
+            where: { uniqueName: 'winner' },
+            transaction
+          })
         ]);
 
         const firstInstance = first[0],
@@ -144,7 +155,7 @@ describe('Model', () => {
         await transaction.commit();
       });
 
-      it('should not fail silently with concurrency higher than pool, a unique constraint and a create hook resulting in mismatched values', async function() {
+      it('should not fail silently with concurrency higher than pool, a unique constraint and a create hook resulting in mismatched values', async function () {
         const User = this.sequelize.define('user', {
           username: {
             type: DataTypes.STRING,
@@ -177,7 +188,9 @@ describe('Model', () => {
               return await User.findOrCreate({ where: { username } });
             } catch (err) {
               spy();
-              expect(err.message).to.equal('user#findOrCreate: value used for username was not equal for both the find and the create calls, \'mick \' vs \'mick\'');
+              expect(err.message).to.equal(
+                "user#findOrCreate: value used for username was not equal for both the find and the create calls, 'mick ' vs 'mick'"
+              );
             }
           })
         );
@@ -185,7 +198,7 @@ describe('Model', () => {
         expect(spy).to.have.been.called;
       });
 
-      it('should error correctly when defaults contain a unique key without a transaction', async function() {
+      it('should error correctly when defaults contain a unique key without a transaction', async function () {
         const User = this.sequelize.define('user', {
           objectId: {
             type: DataTypes.STRING,
@@ -203,43 +216,46 @@ describe('Model', () => {
           username: 'gottlieb'
         });
 
-        return Promise.all([(async () => {
-          try {
-            await User.findOrCreate({
-              where: {
-                objectId: 'asdasdasd'
-              },
-              defaults: {
-                username: 'gottlieb'
-              }
-            });
+        return Promise.all([
+          (async () => {
+            try {
+              await User.findOrCreate({
+                where: {
+                  objectId: 'asdasdasd'
+                },
+                defaults: {
+                  username: 'gottlieb'
+                }
+              });
 
-            throw new Error('I should have ben rejected');
-          } catch (err) {
-            expect(err instanceof Sequelize.UniqueConstraintError).to.be.ok;
-            expect(err.fields).to.be.ok;
-          }
-        })(), (async () => {
-          try {
-            await User.findOrCreate({
-              where: {
-                objectId: 'asdasdasd'
-              },
-              defaults: {
-                username: 'gottlieb'
-              }
-            });
+              throw new Error('I should have ben rejected');
+            } catch (err) {
+              expect(err instanceof Sequelize.UniqueConstraintError).to.be.ok;
+              expect(err.fields).to.be.ok;
+            }
+          })(),
+          (async () => {
+            try {
+              await User.findOrCreate({
+                where: {
+                  objectId: 'asdasdasd'
+                },
+                defaults: {
+                  username: 'gottlieb'
+                }
+              });
 
-            throw new Error('I should have ben rejected');
-          } catch (err) {
-            expect(err instanceof Sequelize.UniqueConstraintError).to.be.ok;
-            expect(err.fields).to.be.ok;
-          }
-        })()]);
+              throw new Error('I should have ben rejected');
+            } catch (err) {
+              expect(err instanceof Sequelize.UniqueConstraintError).to.be.ok;
+              expect(err.fields).to.be.ok;
+            }
+          })()
+        ]);
       });
 
       // Creating two concurrent transactions and selecting / inserting from the same table throws sqlite off
-      it('works without a transaction', async function() {
+      it('works without a transaction', async function () {
         const [first, second] = await Promise.all([
           this.User.findOrCreate({ where: { uniqueName: 'winner' } }),
           this.User.findOrCreate({ where: { uniqueName: 'winner' } })
@@ -264,7 +280,7 @@ describe('Model', () => {
   describe('findCreateFind', () => {
     // Reason: Results of concurrent transactions are not deterministic.
     // Probably will have to refactor this test to work with threads or some retrying strategy.
-    it.skip('should work with multiple concurrent calls', async function() {
+    it.skip('should work with multiple concurrent calls', async function () {
       const [first, second, third] = await Promise.all([
         this.User.findOrCreate({ where: { uniqueName: 'winner' } }),
         this.User.findOrCreate({ where: { uniqueName: 'winner' } }),
@@ -278,9 +294,11 @@ describe('Model', () => {
         thirdInstance = third[0],
         thirdCreated = third[1];
 
-      expect([firstCreated, secondCreated, thirdCreated].filter(value => {
-        return value;
-      }).length).to.equal(1);
+      expect(
+        [firstCreated, secondCreated, thirdCreated].filter(value => {
+          return value;
+        }).length
+      ).to.equal(1);
 
       expect(firstInstance).to.be.ok;
       expect(secondInstance).to.be.ok;
@@ -294,7 +312,7 @@ describe('Model', () => {
   describe('create', () => {
     // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
     // https://www.cockroachlabs.com/docs/stable/transactions.html
-    it.skip('supports transactions', async function() {
+    it.skip('supports transactions', async function () {
       const t = await this.sequelize.transaction();
       await this.User.create({ username: 'user' }, { transaction: t });
       const count = await this.User.count();
@@ -306,7 +324,7 @@ describe('Model', () => {
 
     // Reason: the ids are Serial on CRDB by default. Thus, it will be a BigInt instead of "1".
     describe.skip('return values', () => {
-      it('should make the autoincremented values available on the returned instances', async function() {
+      it('should make the autoincremented values available on the returned instances', async function () {
         const User = this.sequelize.define('user', {});
 
         await User.sync({ force: true });
@@ -315,7 +333,7 @@ describe('Model', () => {
         expect(user.get('id')).to.equal(1);
       });
 
-      it('should make the autoincremented values available on the returned instances with custom fields', async function() {
+      it('should make the autoincremented values available on the returned instances with custom fields', async function () {
         const User = this.sequelize.define('user', {
           maId: {
             type: DataTypes.INTEGER,
@@ -334,13 +352,15 @@ describe('Model', () => {
 
     // Reason: CRDB does not use uuid-ossp. It uses gen_random_uuid() function instead.
     // Docs: https://www.cockroachlabs.com/docs/stable/functions-and-operators.html#id-generation-functions
-    // Closed Issue: https://github.com/cockroachdb/cockroach/issues/40586 
+    // Closed Issue: https://github.com/cockroachdb/cockroach/issues/40586
     // Reimplemented the test the right way below
-    it.skip('is possible to use functions as default values', async function() {
+    it.skip('is possible to use functions as default values', async function () {
       let userWithDefaults;
 
       if (dialect.startsWith('postgres')) {
-        await this.sequelize.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+        await this.sequelize.query(
+          'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
+        );
         userWithDefaults = this.sequelize.define('userWithDefaults', {
           uuid: {
             type: 'UUID',
@@ -351,11 +371,13 @@ describe('Model', () => {
         await userWithDefaults.sync({ force: true });
         const user = await userWithDefaults.create({});
         // uuid validation regex taken from http://stackoverflow.com/a/13653180/800016
-        expect(user.uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+        expect(user.uuid).to.match(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        );
         return;
       }
     });
-    it('is possible to use functions as default values', async function() {
+    it('is possible to use functions as default values', async function () {
       let userWithDefaults;
 
       if (dialect.startsWith('postgres')) {
@@ -369,14 +391,16 @@ describe('Model', () => {
         await userWithDefaults.sync({ force: true });
         const user = await userWithDefaults.create({});
         // uuid validation regex taken from http://stackoverflow.com/a/13653180/800016
-        expect(user.uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+        expect(user.uuid).to.match(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        );
         return;
       }
     });
 
     // Reason: CockroachDB does not yet support CITEXT
     // Seen here: https://github.com/cockroachdb/cockroach/issues/22463
-    it.skip("doesn't allow case-insensitive duplicated records using CITEXT", async function() {
+    it.skip("doesn't allow case-insensitive duplicated records using CITEXT", async function () {
       const User = this.sequelize.define('UserWithUniqueCITEXT', {
         username: { type: Sequelize.CITEXT, unique: true }
       });
@@ -393,7 +417,7 @@ describe('Model', () => {
 
     // Reason: CockroachDB does not yet support TSVECTOR
     // Seen here: https://github.com/cockroachdb/cockroach/issues/41288
-    it.skip('allows the creation of a TSVECTOR field', async function() {
+    it.skip('allows the creation of a TSVECTOR field', async function () {
       const User = this.sequelize.define('UserWithTSVECTOR', {
         name: Sequelize.TSVECTOR
       });
@@ -404,7 +428,7 @@ describe('Model', () => {
 
     // Reason: CockroachDB does not yet support TSVECTOR
     // Seen here: https://github.com/cockroachdb/cockroach/issues/41288
-    it.skip('TSVECTOR only allow string', async function() {
+    it.skip('TSVECTOR only allow string', async function () {
       const User = this.sequelize.define('UserWithTSVECTOR', {
         username: { type: Sequelize.TSVECTOR }
       });
@@ -420,16 +444,21 @@ describe('Model', () => {
 
     // Reason: CoackroachDB does not support 'lower' function for INDEX
     // Seen here: https://github.com/cockroachdb/cockroach/issues/9682?version=v20.2
-    it.skip("doesn't allow duplicated records with unique function based indexes", async function() {
-      const User = this.sequelize.define('UserWithUniqueUsernameFunctionIndex', {
-        username: Sequelize.STRING,
-        email: { type: Sequelize.STRING, unique: true }
-      });
+    it.skip("doesn't allow duplicated records with unique function based indexes", async function () {
+      const User = this.sequelize.define(
+        'UserWithUniqueUsernameFunctionIndex',
+        {
+          username: Sequelize.STRING,
+          email: { type: Sequelize.STRING, unique: true }
+        }
+      );
 
       try {
         await User.sync({ force: true });
         const tableName = User.getTableName();
-        await this.sequelize.query(`CREATE UNIQUE INDEX lower_case_username ON "${tableName}" ((lower(username)))`);
+        await this.sequelize.query(
+          `CREATE UNIQUE INDEX lower_case_username ON "${tableName}" ((lower(username)))`
+        );
         await User.create({ username: 'foo' });
         await User.create({ username: 'foo' });
       } catch (err) {
@@ -440,9 +469,14 @@ describe('Model', () => {
 
     // Reason: CRDB does not grant autoIncrement to be sequential and usually does not gives it
     // small numbers like PG does. Reimplementing the test to check if it is incremental below.
-    it.skip('sets auto increment fields', async function() {
+    it.skip('sets auto increment fields', async function () {
       const User = this.sequelize.define('UserWithAutoIncrementField', {
-        userid: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false }
+        userid: {
+          type: Sequelize.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+          allowNull: false
+        }
       });
 
       await User.sync({ force: true });
@@ -451,9 +485,14 @@ describe('Model', () => {
       const user0 = await User.create({});
       expect(user0.userid).to.equal(2);
     });
-    it('sets auto increment fields', async function() {
+    it('sets auto increment fields', async function () {
       const User = this.sequelize.define('UserWithAutoIncrementField', {
-        userid: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true, allowNull: false }
+        userid: {
+          type: Sequelize.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+          allowNull: false
+        }
       });
 
       await User.sync({ force: true });
@@ -465,8 +504,8 @@ describe('Model', () => {
   });
 
   // Reason: CRDB works with Serial as Primary Key by default. This expects the id
-  // to be 1, when it is actually a BigInt. 
-  it.skip('should return autoIncrement primary key (create)', async function() {
+  // to be 1, when it is actually a BigInt.
+  it.skip('should return autoIncrement primary key (create)', async function () {
     const Maya = this.sequelize.define('Maya', {});
 
     const M1 = {};

@@ -18,7 +18,9 @@
 try {
   require('sequelize');
 } catch (_) {
-  throw new Error('Failed to load Sequelize. Have you installed it? Run `npm install sequelize`');
+  throw new Error(
+    'Failed to load Sequelize. Have you installed it? Run `npm install sequelize`'
+  );
 }
 
 const { Sequelize, DataTypes, Model } = require('sequelize');
@@ -32,10 +34,14 @@ const { version, release } = require('sequelize/package.json');
 const branchVersion = release.branches ? release.branches[0] : release.branch;
 // When executing the tests on Github Actions the version it gets from sequelize is from the repository which has a development version '0.0.0-development'
 // in that case we fallback to a branch version
-const sequelizeVersion = semver.coerce(version === '0.0.0-development' ? branchVersion : version);
+const sequelizeVersion = semver.coerce(
+  version === '0.0.0-development' ? branchVersion : version
+);
 
 if (semver.satisfies(sequelizeVersion, '<=4')) {
-  throw new Error(`Sequelize versions 4 and below are not supported by sequelize-cockroachdb. Detected version is ${sequelizeVersion}.`);
+  throw new Error(
+    `Sequelize versions 4 and below are not supported by sequelize-cockroachdb. Detected version is ${sequelizeVersion}.`
+  );
 }
 
 //// [1] Override the `upsert` query method from Sequelize v5 to make it work with CockroachDB
@@ -63,26 +69,35 @@ PostgresDialect.prototype.supports.EXCEPTION = false;
 // We must teach Sequelize's INTEGER and BIGINT types to accept stringified
 // numbers instead of just raw JavaScript numbers; it's otherwise impossible to
 // store a number outside the representable range into a CockroachDB INT column.
-[DataTypes.postgres.INTEGER, DataTypes.postgres.BIGINT].forEach(function (intType) {
+[DataTypes.postgres.INTEGER, DataTypes.postgres.BIGINT].forEach(function (
+  intType
+) {
   // Disable escaping so that the returned string is not wrapped in quotes
   // downstream. Valid integers cannot be dangerous, and we take care to reject
   // invalid integers.
   intType.prototype.escape = false;
 
-  intType.prototype.$stringify = intType.prototype._stringify = function stringify(value) {
+  intType.prototype.$stringify = intType.prototype._stringify = function stringify(
+    value
+  ) {
     var rep = String(value);
     if (!/^[-+]?[0-9]+$/.test(rep)) {
-      throw new Sequelize.ValidationError(util.format("%j is not a valid integer", value));
+      throw new Sequelize.ValidationError(
+        util.format('%j is not a valid integer', value)
+      );
     }
     return rep;
-  }
+  };
 });
 
 // [4] Fix int to string conversion
 // As pg-types says, "By default the PostgreSQL backend server returns everything as strings."
 // Corrects this issue: https://github.com/cockroachdb/sequelize-cockroachdb/issues/50
-const { ConnectionManager } = require('sequelize/lib/dialects/abstract/connection-manager');
-ConnectionManager.prototype.__loadDialectModule = ConnectionManager.prototype._loadDialectModule;
+const {
+  ConnectionManager
+} = require('sequelize/lib/dialects/abstract/connection-manager');
+ConnectionManager.prototype.__loadDialectModule =
+  ConnectionManager.prototype._loadDialectModule;
 ConnectionManager.prototype._loadDialectModule = function (...args) {
   const pg = this.__loadDialectModule(...args);
   pg.types.setTypeParser(20, function (val) {
@@ -92,17 +107,23 @@ ConnectionManager.prototype._loadDialectModule = function (...args) {
   return pg;
 };
 
-QueryGenerator.prototype.__describeTableQuery = QueryGenerator.prototype.describeTableQuery;
+QueryGenerator.prototype.__describeTableQuery =
+  QueryGenerator.prototype.describeTableQuery;
 QueryGenerator.prototype.describeTableQuery = function (...args) {
   const query = this.__describeTableQuery.call(this, ...args);
-  return query
-    // Cast integer to string to avoid concatenation error beetween string and integer
-    // The || is needed to avoid replacing in the wrong place
-    .replace('|| c.character_maximum_length', '|| CAST(c.character_maximum_length AS STRING)')
-    // Change unimplemented table
-    .replace('pg_statio_all_tables', 'pg_class')
-    // Change unimplemented column
-    .replace('relid', 'oid');
+  return (
+    query
+      // Cast integer to string to avoid concatenation error beetween string and integer
+      // The || is needed to avoid replacing in the wrong place
+      .replace(
+        '|| c.character_maximum_length',
+        '|| CAST(c.character_maximum_length AS STRING)'
+      )
+      // Change unimplemented table
+      .replace('pg_statio_all_tables', 'pg_class')
+      // Change unimplemented column
+      .replace('relid', 'oid')
+  );
 };
 
 QueryGenerator.prototype.__fromArray = QueryGenerator.prototype.fromArray;
@@ -124,7 +145,10 @@ Model.findByPk = async function findByPk(param, options) {
 
   options = Utils.cloneDeep(options) || {};
 
-  if (['number', 'string', 'bigint'].includes(typeof param) || Buffer.isBuffer(param)) {
+  if (
+    ['number', 'string', 'bigint'].includes(typeof param) ||
+    Buffer.isBuffer(param)
+  ) {
     options.where = {
       [this.primaryKeyAttribute]: param
     };
@@ -148,7 +172,7 @@ Model.findOrCreate = async function findOrCreate(options) {
   if (!options || !options.where || arguments.length > 1) {
     throw new Error(
       'Missing where attribute in the options parameter passed to findOrCreate. ' +
-      'Please note that the API has changed, and is now options only (an object with where, defaults keys, transaction etc.)'
+        'Please note that the API has changed, and is now options only (an object with where, defaults keys, transaction etc.)'
     );
   }
 
@@ -159,7 +183,9 @@ Model.findOrCreate = async function findOrCreate(options) {
     const unknownDefaults = defaults.filter(name => !this.rawAttributes[name]);
 
     if (unknownDefaults.length) {
-      logger.warn(`Unknown attributes (${unknownDefaults}) passed to defaults option of findOrCreate`);
+      logger.warn(
+        `Unknown attributes (${unknownDefaults}) passed to defaults option of findOrCreate`
+      );
     }
   }
 
@@ -203,18 +229,31 @@ Model.findOrCreate = async function findOrCreate(options) {
     } catch (err) {
       if (!(err instanceof sequelizeErrors.UniqueConstraintError)) throw err;
       const flattenedWhere = Utils.flattenObjectDeep(options.where);
-      const flattenedWhereKeys = Object.keys(flattenedWhere).map(name => _.last(name.split('.')));
-      const whereFields = flattenedWhereKeys.map(name => _.get(this.rawAttributes, `${name}.field`, name));
-      const defaultFields = options.defaults && Object.keys(options.defaults)
-        .filter(name => this.rawAttributes[name])
-        .map(name => this.rawAttributes[name].field || name);
+      const flattenedWhereKeys = Object.keys(flattenedWhere).map(name =>
+        _.last(name.split('.'))
+      );
+      const whereFields = flattenedWhereKeys.map(name =>
+        _.get(this.rawAttributes, `${name}.field`, name)
+      );
+      const defaultFields =
+        options.defaults &&
+        Object.keys(options.defaults)
+          .filter(name => this.rawAttributes[name])
+          .map(name => this.rawAttributes[name].field || name);
 
       // This line differs from the original findOrCreate. Added {} to bypass the .fields requesting.
       // This issue: https://github.com/cockroachdb/cockroach/issues/63332 could probably change the
       // need for this adaptation.
       const errFieldKeys = Object.keys(err.fields || {});
-      const errFieldsWhereIntersects = Utils.intersects(errFieldKeys, whereFields);
-      if (defaultFields && !errFieldsWhereIntersects && Utils.intersects(errFieldKeys, defaultFields)) {
+      const errFieldsWhereIntersects = Utils.intersects(
+        errFieldKeys,
+        whereFields
+      );
+      if (
+        defaultFields &&
+        !errFieldsWhereIntersects &&
+        Utils.intersects(errFieldKeys, defaultFields)
+      ) {
         throw err;
       }
 
@@ -222,15 +261,22 @@ Model.findOrCreate = async function findOrCreate(options) {
         _.each(err.fields, (value, key) => {
           const name = this.fieldRawAttributesMap[key].fieldName;
           if (value.toString() !== options.where[name].toString()) {
-            throw new Error(`${this.name}#findOrCreate: value used for ${name} was not equal for both the find and the create calls, '${options.where[name]}' vs '${value}'`);
+            throw new Error(
+              `${this.name}#findOrCreate: value used for ${name} was not equal for both the find and the create calls, '${options.where[name]}' vs '${value}'`
+            );
           }
         });
       }
 
       // Someone must have created a matching instance inside the same transaction since we last did a find. Let's find it!
-      const otherCreated = await this.findOne(Utils.defaults({
-        transaction: internalTransaction ? null : transaction
-      }, options));
+      const otherCreated = await this.findOne(
+        Utils.defaults(
+          {
+            transaction: internalTransaction ? null : transaction
+          },
+          options
+        )
+      );
 
       // Sanity check, ideally we caught this at the defaultFeilds/err.fields check
       // But if we didn't and instance is null, we will throw
@@ -243,7 +289,7 @@ Model.findOrCreate = async function findOrCreate(options) {
       await transaction.commit();
     }
   }
-}
+};
 
 //// Done!
 

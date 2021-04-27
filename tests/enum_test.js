@@ -18,7 +18,7 @@ const { expect } = require('chai');
 const { Sequelize, DataTypes } = require('../source');
 
 describe('Enum', function () {
-  beforeEach(async function() {
+  beforeEach(async function () {
     this.Bar = this.sequelize.define('bar', {
       enum: DataTypes.ENUM('A', 'B')
     });
@@ -31,8 +31,8 @@ describe('Enum', function () {
   });
 
   it('rejects invalid values', async function () {
-    await expect(
-      this.Bar.create({ enum: 'C' })
-    ).to.be.eventually.rejectedWith('"C" is not a valid choice in ["A","B"]');
+    await expect(this.Bar.create({ enum: 'C' })).to.be.eventually.rejectedWith(
+      '"C" is not a valid choice in ["A","B"]'
+    );
   });
 });

@@ -1,3 +1,3 @@
-declare module "sequelize-cockroachdb" {
-  export * from "sequelize";
+declare module 'sequelize-cockroachdb' {
+  export * from 'sequelize';
 }

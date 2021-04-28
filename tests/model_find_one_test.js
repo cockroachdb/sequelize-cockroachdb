@@ -61,23 +61,21 @@ describe('Model', () => {
       });
 
       // Edited Test
-      // Reason: This test expects id to be 1. 
+      // Reason: This test expected id to be 1. 
       // CRDB does not work with human-readable ids by default.
       it('returns a single dao', async function() {
         const user = await this.User.findByPk(this.user.id);
         expect(Array.isArray(user)).to.not.be.ok;
         expect(user.id).to.equal(this.user.id);
-        // expect(user.id).to.equal(1);
       });
 
       // Edited Test
-      // Reason: This test expects id to be 1. 
+      // Reason: This test expected id to be 1. 
       // CRDB does not work with human-readable ids by default.
       it('returns a single dao given a string id', async function() {
         const user = await this.User.findByPk(this.user.id.toString());
         expect(Array.isArray(user)).to.not.be.ok;
         expect(user.id).to.equal(this.user.id);
-        // expect(user.id).to.equal(1);
       });
 
       // Edited test

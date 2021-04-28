@@ -59,3 +59,5 @@ should make the auto incremented values available on the returned instances
 should make the auto incremented values available on the returned instances with custom fields
 should return auto increment primary key values
 reload should work
+with timestamps set to true
+with timestamps set to true and options.silent set to true

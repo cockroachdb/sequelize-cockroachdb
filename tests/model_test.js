@@ -53,8 +53,11 @@ describe('Model', () => {
     // Edit Reason: CRDB creates its primary index named 'primary'. 
     // Ref: https://www.cockroachlabs.com/docs/stable/indexes.html#creation
     // Postgres creates its primary index named something like `${nameOfTheTable}_pkey`.
+    // In this CRDB test, indexes are ordered as: [UserWithUniqueFieldAliases_user_name_key, primary]
+    // At PG expectation, indexes are ordered as: [UserWithUniqueFieldAliases_pkey, UserWithUniqueFieldAliases_user_name_key]
+    // So, the CRDB primary index is not at the same array position as PG is. 
     // Editing this test to the case.
-    it('allows unique on column with field aliases', async function() {
+    it.only('allows unique on column with field aliases', async function() {
       const User = this.sequelize.define('UserWithUniqueFieldAlias', {
         userName: { type: Sequelize.STRING, unique: 'user_name_unique', field: 'user_name' }
       });
@@ -352,7 +355,7 @@ describe('Model', () => {
       expect(schemas).to.deep.equal(['crdb_internal', 'schema_test', 'special'])
     });
 
-    // Skipped test: CRDB does not work with sequences. 
+    // Skipped test: CRDB does not work with nextval. It uses unique_rowid() function instead. 
     // PG responds: nextval('special."Publics_id_seq"'::regclass)
     // CRDB responds: unique_rowid()
     it.skip('should describeTable using the default schema settings', async function() {
@@ -391,8 +394,8 @@ describe('Model', () => {
 
       await this.sequelize.sync({ force: true });
 
-      // Added ids to this bulkCreate because 
-      // CRDB does not give low incremental ids.
+      // Added ids to this bulkCreate because CRDB doesn't
+      // guarantee incremental ids will start at 1.
       await this.User.bulkCreate([{
         id: 1,
         username: 'leia'

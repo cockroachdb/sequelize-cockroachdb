@@ -6,11 +6,11 @@ var DataTypes = Sequelize.DataTypes;
 
 // Reason: this tests fails because of the way it's implemented
 // I implemented below each test to demonstrate that it's not a bug
-// The not skipped tests uses a more generic approach since it doesn't 
+// The not skipped tests uses a more generic approach since it doesn't
 // rely on auto increment values when using the 'find' function.
 // The diff is related to the id given to created registry. Line 90.
 describe('Multiple Level Filters', () => {
-  it.skip('can filter through belongsTo', async function() {
+  it.skip('can filter through belongsTo', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
@@ -23,41 +23,50 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
-    await Project.bulkCreate([{
-      UserId: 1,
-      title: 'republic'
-    }, {
-      UserId: 2,
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        UserId: 1,
+        title: 'republic'
+      },
+      {
+        UserId: 2,
+        title: 'empire'
+      }
+    ]);
 
-    await Task.bulkCreate([{
-      ProjectId: 1,
-      title: 'fight empire'
-    }, {
-      ProjectId: 1,
-      title: 'stablish republic'
-    }, {
-      ProjectId: 2,
-      title: 'destroy rebel alliance'
-    }, {
-      ProjectId: 2,
-      title: 'rule everything'
-    }]);
+    await Task.bulkCreate([
+      {
+        ProjectId: 1,
+        title: 'fight empire'
+      },
+      {
+        ProjectId: 1,
+        title: 'stablish republic'
+      },
+      {
+        ProjectId: 2,
+        title: 'destroy rebel alliance'
+      },
+      {
+        ProjectId: 2,
+        title: 'rule everything'
+      }
+    ]);
 
     const tasks = await Task.findAll({
       include: [
         {
           model: Project,
-          include: [
-            { model: User, where: { username: 'leia' } }
-          ],
+          include: [{ model: User, where: { username: 'leia' } }],
           required: true
         }
       ]
@@ -68,7 +77,7 @@ describe('Multiple Level Filters', () => {
     expect(tasks[1].title).to.be.equal('stablish republic');
   });
 
-  it('can filter through belongsTo', async function() {
+  it('can filter through belongsTo', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
@@ -81,45 +90,54 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
     const [user0, user1] = await User.findAll();
 
-    await Project.bulkCreate([{
-      UserId: user0.id,
-      title: 'republic'
-    }, {
-      UserId: user1.id,
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        UserId: user0.id,
+        title: 'republic'
+      },
+      {
+        UserId: user1.id,
+        title: 'empire'
+      }
+    ]);
 
     const [project0, project1] = await Project.findAll();
 
-    await Task.bulkCreate([{
-      ProjectId: project0.id,
-      title: 'fight empire'
-    }, {
-      ProjectId: project0.id,
-      title: 'stablish republic'
-    }, {
-      ProjectId: project1.id,
-      title: 'destroy rebel alliance'
-    }, {
-      ProjectId: project1.id,
-      title: 'rule everything'
-    }]);
+    await Task.bulkCreate([
+      {
+        ProjectId: project0.id,
+        title: 'fight empire'
+      },
+      {
+        ProjectId: project0.id,
+        title: 'stablish republic'
+      },
+      {
+        ProjectId: project1.id,
+        title: 'destroy rebel alliance'
+      },
+      {
+        ProjectId: project1.id,
+        title: 'rule everything'
+      }
+    ]);
 
     const tasks = await Task.findAll({
       include: [
         {
           model: Project,
-          include: [
-            { model: User, where: { username: 'leia' } }
-          ],
+          include: [{ model: User, where: { username: 'leia' } }],
           required: true
         }
       ]
@@ -130,9 +148,9 @@ describe('Multiple Level Filters', () => {
     expect(tasks[1].title).to.be.equal('stablish republic');
   });
 
-  // Reason: the way the ids are implemented doesnt work with Cockroach. 
+  // Reason: the way the ids are implemented doesnt work with Cockroach.
   // Reimplemented test below.
-  it.skip('avoids duplicated tables in query', async function() {
+  it.skip('avoids duplicated tables in query', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
@@ -145,43 +163,57 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
-    await Project.bulkCreate([{
-      UserId: 1,
-      title: 'republic'
-    }, {
-      UserId: 2,
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        UserId: 1,
+        title: 'republic'
+      },
+      {
+        UserId: 2,
+        title: 'empire'
+      }
+    ]);
 
-    await Task.bulkCreate([{
-      ProjectId: 1,
-      title: 'fight empire'
-    }, {
-      ProjectId: 1,
-      title: 'stablish republic'
-    }, {
-      ProjectId: 2,
-      title: 'destroy rebel alliance'
-    }, {
-      ProjectId: 2,
-      title: 'rule everything'
-    }]);
+    await Task.bulkCreate([
+      {
+        ProjectId: 1,
+        title: 'fight empire'
+      },
+      {
+        ProjectId: 1,
+        title: 'stablish republic'
+      },
+      {
+        ProjectId: 2,
+        title: 'destroy rebel alliance'
+      },
+      {
+        ProjectId: 2,
+        title: 'rule everything'
+      }
+    ]);
 
     const tasks = await Task.findAll({
       include: [
         {
           model: Project,
           include: [
-            { model: User, where: {
-              username: 'leia',
-              id: 1
-            } }
+            {
+              model: User,
+              where: {
+                username: 'leia',
+                id: 1
+              }
+            }
           ],
           required: true
         }
@@ -193,7 +225,7 @@ describe('Multiple Level Filters', () => {
     expect(tasks[1].title).to.be.equal('stablish republic');
   });
 
-  it('avoids duplicated tables in query', async function() {
+  it('avoids duplicated tables in query', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
@@ -206,47 +238,61 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
     const [user0, user1] = await User.findAll();
 
-    await Project.bulkCreate([{
-      UserId: user0.id,
-      title: 'republic'
-    }, {
-      UserId: user1.id,
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        UserId: user0.id,
+        title: 'republic'
+      },
+      {
+        UserId: user1.id,
+        title: 'empire'
+      }
+    ]);
 
     const [project0, project1] = await Project.findAll();
 
-    await Task.bulkCreate([{
-      ProjectId: project0.id,
-      title: 'fight empire'
-    }, {
-      ProjectId: project0.id,
-      title: 'stablish republic'
-    }, {
-      ProjectId: project1.id,
-      title: 'destroy rebel alliance'
-    }, {
-      ProjectId: project1.id,
-      title: 'rule everything'
-    }]);
+    await Task.bulkCreate([
+      {
+        ProjectId: project0.id,
+        title: 'fight empire'
+      },
+      {
+        ProjectId: project0.id,
+        title: 'stablish republic'
+      },
+      {
+        ProjectId: project1.id,
+        title: 'destroy rebel alliance'
+      },
+      {
+        ProjectId: project1.id,
+        title: 'rule everything'
+      }
+    ]);
 
     const tasks = await Task.findAll({
       include: [
         {
           model: Project,
           include: [
-            { model: User, where: {
-              username: 'leia',
-              id: user0.id
-            } }
+            {
+              model: User,
+              where: {
+                username: 'leia',
+                id: user0.id
+              }
+            }
           ],
           required: true
         }
@@ -258,9 +304,9 @@ describe('Multiple Level Filters', () => {
     expect(tasks[1].title).to.be.equal('stablish republic');
   });
 
-  // Reason: the way the ids are implemented doesnt work with Cockroach. 
+  // Reason: the way the ids are implemented doesnt work with Cockroach.
   // Reimplemented test below.
-  it.skip('can filter through hasMany', async function() {
+  it.skip('can filter through hasMany', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
@@ -273,41 +319,50 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
-    await Project.bulkCreate([{
-      UserId: 1,
-      title: 'republic'
-    }, {
-      UserId: 2,
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        UserId: 1,
+        title: 'republic'
+      },
+      {
+        UserId: 2,
+        title: 'empire'
+      }
+    ]);
 
-    await Task.bulkCreate([{
-      ProjectId: 1,
-      title: 'fight empire'
-    }, {
-      ProjectId: 1,
-      title: 'stablish republic'
-    }, {
-      ProjectId: 2,
-      title: 'destroy rebel alliance'
-    }, {
-      ProjectId: 2,
-      title: 'rule everything'
-    }]);
+    await Task.bulkCreate([
+      {
+        ProjectId: 1,
+        title: 'fight empire'
+      },
+      {
+        ProjectId: 1,
+        title: 'stablish republic'
+      },
+      {
+        ProjectId: 2,
+        title: 'destroy rebel alliance'
+      },
+      {
+        ProjectId: 2,
+        title: 'rule everything'
+      }
+    ]);
 
     const users = await User.findAll({
       include: [
         {
           model: Project,
-          include: [
-            { model: Task, where: { title: 'fight empire' } }
-          ],
+          include: [{ model: Task, where: { title: 'fight empire' } }],
           required: true
         }
       ]
@@ -317,7 +372,7 @@ describe('Multiple Level Filters', () => {
     expect(users[0].username).to.be.equal('leia');
   });
 
-  it('can filter through hasMany', async function() {
+  it('can filter through hasMany', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Task = this.sequelize.define('Task', { title: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
@@ -330,45 +385,54 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
     const [user0, user1] = await User.findAll();
 
-    await Project.bulkCreate([{
-      UserId: user0.id,
-      title: 'republic'
-    }, {
-      UserId: user1.id,
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        UserId: user0.id,
+        title: 'republic'
+      },
+      {
+        UserId: user1.id,
+        title: 'empire'
+      }
+    ]);
 
     const [project0, project1] = await Project.findAll();
 
-    await Task.bulkCreate([{
-      ProjectId: project0.id,
-      title: 'fight empire'
-    }, {
-      ProjectId: project0.id,
-      title: 'stablish republic'
-    }, {
-      ProjectId: project1.id,
-      title: 'destroy rebel alliance'
-    }, {
-      ProjectId: project1.id,
-      title: 'rule everything'
-    }]);
+    await Task.bulkCreate([
+      {
+        ProjectId: project0.id,
+        title: 'fight empire'
+      },
+      {
+        ProjectId: project0.id,
+        title: 'stablish republic'
+      },
+      {
+        ProjectId: project1.id,
+        title: 'destroy rebel alliance'
+      },
+      {
+        ProjectId: project1.id,
+        title: 'rule everything'
+      }
+    ]);
 
     const users = await User.findAll({
       include: [
         {
           model: Project,
-          include: [
-            { model: Task, where: { title: 'fight empire' } }
-          ],
+          include: [{ model: Task, where: { title: 'fight empire' } }],
           required: true
         }
       ]
@@ -377,10 +441,10 @@ describe('Multiple Level Filters', () => {
     expect(users.length).to.be.equal(1);
     expect(users[0].username).to.be.equal('leia');
   });
-  
-  // Reason: the way the ids are implemented doesnt work with Cockroach. 
+
+  // Reason: the way the ids are implemented doesnt work with Cockroach.
   // Reimplemented test below.
-  it.skip('can filter through hasMany connector', async function() {
+  it.skip('can filter through hasMany connector', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
 
@@ -389,17 +453,23 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
-    await Project.bulkCreate([{
-      title: 'republic'
-    }, {
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        title: 'republic'
+      },
+      {
+        title: 'empire'
+      }
+    ]);
 
     const user = await User.findByPk(1);
     const project = await Project.findByPk(1);
@@ -409,16 +479,14 @@ describe('Multiple Level Filters', () => {
     await user0.setProjects([project0]);
 
     const users = await User.findAll({
-      include: [
-        { model: Project, where: { title: 'republic' } }
-      ]
+      include: [{ model: Project, where: { title: 'republic' } }]
     });
 
     expect(users.length).to.be.equal(1);
     expect(users[0].username).to.be.equal('leia');
   });
-  
-  it('can filter through hasMany connector', async function() {
+
+  it('can filter through hasMany connector', async function () {
     const User = this.sequelize.define('User', { username: DataTypes.STRING }),
       Project = this.sequelize.define('Project', { title: DataTypes.STRING });
 
@@ -427,29 +495,33 @@ describe('Multiple Level Filters', () => {
 
     await this.sequelize.sync({ force: true });
 
-    await User.bulkCreate([{
-      username: 'leia'
-    }, {
-      username: 'vader'
-    }]);
+    await User.bulkCreate([
+      {
+        username: 'leia'
+      },
+      {
+        username: 'vader'
+      }
+    ]);
 
-    await Project.bulkCreate([{
-      title: 'republic'
-    }, {
-      title: 'empire'
-    }]);
+    await Project.bulkCreate([
+      {
+        title: 'republic'
+      },
+      {
+        title: 'empire'
+      }
+    ]);
 
     const [user] = await User.findAll();
     const [project] = await Project.findAll();
     await user.setProjects([project]);
-    const [,user0] = await User.findAll();
-    const [,project0] = await Project.findAll();
+    const [, user0] = await User.findAll();
+    const [, project0] = await Project.findAll();
     await user0.setProjects([project0]);
 
     const users = await User.findAll({
-      include: [
-        { model: Project, where: { title: 'republic' } }
-      ]
+      include: [{ model: Project, where: { title: 'republic' } }]
     });
 
     expect(users.length).to.be.equal(1);

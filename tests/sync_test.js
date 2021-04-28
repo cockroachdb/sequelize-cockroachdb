@@ -20,7 +20,7 @@ const dialect = 'postgres';
 
 describe('Model', () => {
   describe('sync', () => {
-    beforeEach(async function() {
+    beforeEach(async function () {
       this.testSync = this.sequelize.define('testSync', {
         dummy: Sequelize.STRING
       });
@@ -28,7 +28,7 @@ describe('Model', () => {
     });
 
     // Reason: after merging with other patches started failing locally only
-    it.skip('should remove a column if it exists in the databases schema but not the model', async function() {
+    it.skip('should remove a column if it exists in the databases schema but not the model', async function () {
       const User = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
         age: Sequelize.INTEGER,
@@ -47,7 +47,7 @@ describe('Model', () => {
     });
 
     // Reason: after merging with other patches started failing locally only
-    it.skip('should add a column if it exists in the model but not the database', async function() {
+    it.skip('should add a column if it exists in the model but not the database', async function () {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING
       });
@@ -67,7 +67,7 @@ describe('Model', () => {
     });
 
     // Reason: on v5 this test doesn't exist and it would break on Github Actions
-    it.skip('should not remove columns if drop is set to false in alter configuration', async function() {
+    it.skip('should not remove columns if drop is set to false in alter configuration', async function () {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
         age: Sequelize.INTEGER
@@ -85,7 +85,7 @@ describe('Model', () => {
     });
 
     // Reason: after merging with other patches started failing locally only
-    it.skip('should remove columns if drop is set to true in alter configuration', async function() {
+    it.skip('should remove columns if drop is set to true in alter configuration', async function () {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
         age: Sequelize.INTEGER
@@ -103,7 +103,7 @@ describe('Model', () => {
     });
 
     // Reason: after merging with other patches started failing locally only
-    it.skip('should alter a column using the correct column name (#9515)', async function() {
+    it.skip('should alter a column using the correct column name (#9515)', async function () {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING
       });
@@ -121,7 +121,7 @@ describe('Model', () => {
     });
 
     // Reason: returns this error: ALTER COLUMN TYPE from int to varchar is prohibited until v21.1
-    it.skip('should change a column if it exists in the model but is different in the database', async function() {
+    it.skip('should change a column if it exists in the model but is different in the database', async function () {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
         age: Sequelize.INTEGER
@@ -140,7 +140,7 @@ describe('Model', () => {
     });
 
     // Reason: after merging with other patches started failing locally only
-    it.skip('should not alter table if data type does not change', async function() {
+    it.skip('should not alter table if data type does not change', async function () {
       const testSync = this.sequelize.define('testSync', {
         name: Sequelize.STRING,
         age: Sequelize.STRING
@@ -154,11 +154,15 @@ describe('Model', () => {
     });
 
     // Reason: after merging with other patches started failing locally only
-    it.skip('should properly create composite index without affecting individual fields', async function() {
-      const testSync = this.sequelize.define('testSync', {
-        name: Sequelize.STRING,
-        age: Sequelize.STRING
-      }, { indexes: [{ unique: true, fields: ['name', 'age'] }] });
+    it.skip('should properly create composite index without affecting individual fields', async function () {
+      const testSync = this.sequelize.define(
+        'testSync',
+        {
+          name: Sequelize.STRING,
+          age: Sequelize.STRING
+        },
+        { indexes: [{ unique: true, fields: ['name', 'age'] }] }
+      );
       await this.sequelize.sync();
       await testSync.create({ name: 'test' });
       await testSync.create({ name: 'test2' });
@@ -173,11 +177,15 @@ describe('Model', () => {
       expect(data.dataValues.name).to.eql('test3');
       expect(data.dataValues.age).to.eql('1');
     });
-    it('should properly create composite index that fails on constraint violation', async function() {
-      const testSync = this.sequelize.define('testSync', {
-        name: Sequelize.STRING,
-        age: Sequelize.STRING
-      }, { indexes: [{ unique: true, fields: ['name', 'age'] }] });
+    it('should properly create composite index that fails on constraint violation', async function () {
+      const testSync = this.sequelize.define(
+        'testSync',
+        {
+          name: Sequelize.STRING,
+          age: Sequelize.STRING
+        },
+        { indexes: [{ unique: true, fields: ['name', 'age'] }] }
+      );
 
       try {
         await this.sequelize.sync();
@@ -190,7 +198,7 @@ describe('Model', () => {
     });
 
     // Reason: after merging with other patches started failing locally only
-    it.skip('should properly alter tables when there are foreign keys', async function() {
+    it.skip('should properly alter tables when there are foreign keys', async function () {
       const foreignKeyTestSyncA = this.sequelize.define('foreignKeyTestSyncA', {
         dummy: Sequelize.STRING
       });
@@ -209,31 +217,44 @@ describe('Model', () => {
 
     describe('indexes', () => {
       describe('with alter:true', () => {
-        it('should not duplicate named indexes after multiple sync calls', async function() {
-          const User = this.sequelize.define('testSync', {
-            email: {
-              type: Sequelize.STRING
+        it('should not duplicate named indexes after multiple sync calls', async function () {
+          const User = this.sequelize.define(
+            'testSync',
+            {
+              email: {
+                type: Sequelize.STRING
+              },
+              phone: {
+                type: Sequelize.STRING
+              },
+              mobile: {
+                type: Sequelize.STRING
+              }
             },
-            phone: {
-              type: Sequelize.STRING
-            },
-            mobile: {
-              type: Sequelize.STRING
+            {
+              indexes: [
+                {
+                  name: 'another_index_email_mobile',
+                  fields: ['email', 'mobile']
+                },
+                {
+                  name: 'another_index_phone_mobile',
+                  fields: ['phone', 'mobile'],
+                  unique: true
+                },
+                { name: 'another_index_email', fields: ['email'] },
+                { name: 'another_index_mobile', fields: ['mobile'] }
+              ]
             }
-          }, {
-            indexes: [
-              { name: 'another_index_email_mobile', fields: ['email', 'mobile'] },
-              { name: 'another_index_phone_mobile', fields: ['phone', 'mobile'], unique: true },
-              { name: 'another_index_email', fields: ['email'] },
-              { name: 'another_index_mobile', fields: ['mobile'] }
-            ]
-          });
+          );
 
           await User.sync({ sync: true });
           await User.sync({ alter: true });
           await User.sync({ alter: true });
           await User.sync({ alter: true });
-          const results = await this.sequelize.getQueryInterface().showIndex(User.getTableName());
+          const results = await this.sequelize
+            .getQueryInterface()
+            .showIndex(User.getTableName());
           if (dialect === 'sqlite') {
             // SQLite doesn't treat primary key as index
             // However it does create an extra "autoindex", except primary == false
@@ -244,39 +265,55 @@ describe('Model', () => {
           }
 
           if (dialect === 'sqlite') {
-            expect(results.filter(r => r.name === 'sqlite_autoindex_testSyncs_1')).to.have.length(1);
+            expect(
+              results.filter(r => r.name === 'sqlite_autoindex_testSyncs_1')
+            ).to.have.length(1);
           }
-          expect(results.filter(r => r.name === 'another_index_email_mobile')).to.have.length(1);
-          expect(results.filter(r => r.name === 'another_index_phone_mobile')).to.have.length(1);
-          expect(results.filter(r => r.name === 'another_index_email')).to.have.length(1);
-          expect(results.filter(r => r.name === 'another_index_mobile')).to.have.length(1);
+          expect(
+            results.filter(r => r.name === 'another_index_email_mobile')
+          ).to.have.length(1);
+          expect(
+            results.filter(r => r.name === 'another_index_phone_mobile')
+          ).to.have.length(1);
+          expect(
+            results.filter(r => r.name === 'another_index_email')
+          ).to.have.length(1);
+          expect(
+            results.filter(r => r.name === 'another_index_mobile')
+          ).to.have.length(1);
         });
 
-        it('should not duplicate unnamed indexes after multiple sync calls', async function() {
-          const User = this.sequelize.define('testSync', {
-            email: {
-              type: Sequelize.STRING
+        it('should not duplicate unnamed indexes after multiple sync calls', async function () {
+          const User = this.sequelize.define(
+            'testSync',
+            {
+              email: {
+                type: Sequelize.STRING
+              },
+              phone: {
+                type: Sequelize.STRING
+              },
+              mobile: {
+                type: Sequelize.STRING
+              }
             },
-            phone: {
-              type: Sequelize.STRING
-            },
-            mobile: {
-              type: Sequelize.STRING
+            {
+              indexes: [
+                { fields: ['email', 'mobile'] },
+                { fields: ['phone', 'mobile'], unique: true },
+                { fields: ['email'] },
+                { fields: ['mobile'] }
+              ]
             }
-          }, {
-            indexes: [
-              { fields: ['email', 'mobile'] },
-              { fields: ['phone', 'mobile'], unique: true },
-              { fields: ['email'] },
-              { fields: ['mobile'] }
-            ]
-          });
+          );
 
           await User.sync({ sync: true });
           await User.sync({ alter: true });
           await User.sync({ alter: true });
           await User.sync({ alter: true });
-          const results = await this.sequelize.getQueryInterface().showIndex(User.getTableName());
+          const results = await this.sequelize
+            .getQueryInterface()
+            .showIndex(User.getTableName());
           if (dialect === 'sqlite') {
             // SQLite doesn't treat primary key as index
             // However it does create an extra "autoindex", except primary == false
@@ -288,7 +325,7 @@ describe('Model', () => {
         });
       });
 
-      it('should create only one unique index for unique:true column', async function() {
+      it('should create only one unique index for unique:true column', async function () {
         const User = this.sequelize.define('testSync', {
           email: {
             type: Sequelize.STRING,
@@ -297,7 +334,9 @@ describe('Model', () => {
         });
 
         await User.sync({ force: true });
-        const results = await this.sequelize.getQueryInterface().showIndex(User.getTableName());
+        const results = await this.sequelize
+          .getQueryInterface()
+          .showIndex(User.getTableName());
         if (dialect === 'sqlite') {
           // SQLite doesn't treat primary key as index
           expect(results).to.have.length(1);
@@ -306,10 +345,12 @@ describe('Model', () => {
           expect(results.filter(r => r.primary)).to.have.length(1);
         }
 
-        expect(results.filter(r => r.unique === true && r.primary === false)).to.have.length(1);
+        expect(
+          results.filter(r => r.unique === true && r.primary === false)
+        ).to.have.length(1);
       });
 
-      it('should create only one unique index for unique:true columns', async function() {
+      it('should create only one unique index for unique:true columns', async function () {
         const User = this.sequelize.define('testSync', {
           email: {
             type: Sequelize.STRING,
@@ -322,7 +363,9 @@ describe('Model', () => {
         });
 
         await User.sync({ force: true });
-        const results = await this.sequelize.getQueryInterface().showIndex(User.getTableName());
+        const results = await this.sequelize
+          .getQueryInterface()
+          .showIndex(User.getTableName());
         if (dialect === 'sqlite') {
           // SQLite doesn't treat primary key as index
           expect(results).to.have.length(2);
@@ -331,27 +374,35 @@ describe('Model', () => {
           expect(results.filter(r => r.primary)).to.have.length(1);
         }
 
-        expect(results.filter(r => r.unique === true && r.primary === false)).to.have.length(2);
+        expect(
+          results.filter(r => r.unique === true && r.primary === false)
+        ).to.have.length(2);
       });
 
-      it('should create only one unique index for unique:true columns taking care of options.indexes', async function() {
-        const User = this.sequelize.define('testSync', {
-          email: {
-            type: Sequelize.STRING,
-            unique: true
+      it('should create only one unique index for unique:true columns taking care of options.indexes', async function () {
+        const User = this.sequelize.define(
+          'testSync',
+          {
+            email: {
+              type: Sequelize.STRING,
+              unique: true
+            },
+            phone: {
+              type: Sequelize.STRING,
+              unique: true
+            }
           },
-          phone: {
-            type: Sequelize.STRING,
-            unique: true
+          {
+            indexes: [
+              { name: 'wow_my_index', fields: ['email', 'phone'], unique: true }
+            ]
           }
-        }, {
-          indexes: [
-            { name: 'wow_my_index', fields: ['email', 'phone'], unique: true }
-          ]
-        });
+        );
 
         await User.sync({ force: true });
-        const results = await this.sequelize.getQueryInterface().showIndex(User.getTableName());
+        const results = await this.sequelize
+          .getQueryInterface()
+          .showIndex(User.getTableName());
         if (dialect === 'sqlite') {
           // SQLite doesn't treat primary key as index
           expect(results).to.have.length(3);
@@ -360,11 +411,15 @@ describe('Model', () => {
           expect(results.filter(r => r.primary)).to.have.length(1);
         }
 
-        expect(results.filter(r => r.unique === true && r.primary === false)).to.have.length(3);
-        expect(results.filter(r => r.name === 'wow_my_index')).to.have.length(1);
+        expect(
+          results.filter(r => r.unique === true && r.primary === false)
+        ).to.have.length(3);
+        expect(results.filter(r => r.name === 'wow_my_index')).to.have.length(
+          1
+        );
       });
 
-      it('should create only one unique index for unique:name column', async function() {
+      it('should create only one unique index for unique:name column', async function () {
         const User = this.sequelize.define('testSync', {
           email: {
             type: Sequelize.STRING,
@@ -373,7 +428,9 @@ describe('Model', () => {
         });
 
         await User.sync({ force: true });
-        const results = await this.sequelize.getQueryInterface().showIndex(User.getTableName());
+        const results = await this.sequelize
+          .getQueryInterface()
+          .showIndex(User.getTableName());
         if (dialect === 'sqlite') {
           // SQLite doesn't treat primary key as index
           expect(results).to.have.length(1);
@@ -382,15 +439,19 @@ describe('Model', () => {
           expect(results.filter(r => r.primary)).to.have.length(1);
         }
 
-        expect(results.filter(r => r.unique === true && r.primary === false)).to.have.length(1);
+        expect(
+          results.filter(r => r.unique === true && r.primary === false)
+        ).to.have.length(1);
 
         if (!['postgres', 'sqlite'].includes(dialect)) {
           // Postgres/SQLite doesn't support naming indexes in create table
-          expect(results.filter(r => r.name === 'wow_my_index')).to.have.length(1);
+          expect(results.filter(r => r.name === 'wow_my_index')).to.have.length(
+            1
+          );
         }
       });
 
-      it('should create only one unique index for unique:name columns', async function() {
+      it('should create only one unique index for unique:name columns', async function () {
         const User = this.sequelize.define('testSync', {
           email: {
             type: Sequelize.STRING,
@@ -403,7 +464,9 @@ describe('Model', () => {
         });
 
         await User.sync({ force: true });
-        const results = await this.sequelize.getQueryInterface().showIndex(User.getTableName());
+        const results = await this.sequelize
+          .getQueryInterface()
+          .showIndex(User.getTableName());
         if (dialect === 'sqlite') {
           // SQLite doesn't treat primary key as index
           expect(results).to.have.length(1);
@@ -412,10 +475,14 @@ describe('Model', () => {
           expect(results.filter(r => r.primary)).to.have.length(1);
         }
 
-        expect(results.filter(r => r.unique === true && r.primary === false)).to.have.length(1);
+        expect(
+          results.filter(r => r.unique === true && r.primary === false)
+        ).to.have.length(1);
         if (!['postgres', 'sqlite'].includes(dialect)) {
           // Postgres/SQLite doesn't support naming indexes in create table
-          expect(results.filter(r => r.name === 'wow_my_index')).to.have.length(1);
+          expect(results.filter(r => r.name === 'wow_my_index')).to.have.length(
+            1
+          );
         }
       });
     });

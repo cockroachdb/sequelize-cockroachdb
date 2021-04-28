@@ -15,7 +15,12 @@
 require('./helper');
 
 const { expect } = require('chai');
-const { Sequelize, Op, DataTypes, UniqueConstraintError } = require('../source');
+const {
+  Sequelize,
+  Op,
+  DataTypes,
+  UniqueConstraintError
+} = require('../source');
 const sinon = require('sinon');
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -48,7 +53,10 @@ describe('basic usage', function () {
         unique: true
       }
     });
-    const Bar = this.sequelize.define('bar', { name: DataTypes.STRING(10), date: DataTypes.DATE });
+    const Bar = this.sequelize.define('bar', {
+      name: DataTypes.STRING(10),
+      date: DataTypes.DATE
+    });
     const Baz = this.sequelize.define('baz', {
       id: {
         type: DataTypes.UUID,
@@ -101,7 +109,9 @@ describe('basic usage', function () {
 
     assertToJsonDeepEquality(await bar1.getFoo(), foo1);
     assertToJsonDeepEquality(await foo1.getBars(), [bar1]);
-    assertToJsonDeepEquality(await Foo.findAll({ include: Bar }), [{ ...foo1.toJSON(), bars: [bar1.toJSON()] }]);
+    assertToJsonDeepEquality(await Foo.findAll({ include: Bar }), [
+      { ...foo1.toJSON(), bars: [bar1.toJSON()] }
+    ]);
 
     const baz1 = await Baz.create({ name: 'baz1' });
     expect(typeof baz1.id).to.equal('string');
@@ -112,9 +122,7 @@ describe('basic usage', function () {
     await bar1.addBaz(baz1);
     await baz2.addBar(bar1);
 
-    expect(
-      (await bar1.getBazs()).map(baz => baz.id).sort()
-    ).to.be.deep.equal(
+    expect((await bar1.getBazs()).map(baz => baz.id).sort()).to.be.deep.equal(
       [baz1, baz2].map(baz => baz.id).sort()
     );
 
@@ -159,11 +167,13 @@ describe('basic usage', function () {
 
     expect(await Qux.sum('age')).to.equal(530);
 
-    expect(
-      await Qux.sum('age', { where: { age: { [Op.gt]: 30 } } })
-    ).to.equal(520);
+    expect(await Qux.sum('age', { where: { age: { [Op.gt]: 30 } } })).to.equal(
+      520
+    );
 
-    expect(await Qux.count({ where: { age: { [Op.notIn]: [40, 160] } } })).to.equal(2);
+    expect(
+      await Qux.count({ where: { age: { [Op.notIn]: [40, 160] } } })
+    ).to.equal(2);
 
     expect(
       await Qux.sum('age', {

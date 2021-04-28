@@ -27,9 +27,15 @@ const queryInterfacePatches = {
   upsert(tableName, insertValues, updateValues, where, model, options) {
     options = _.clone(options);
 
-    const primaryKeys = Object.values(model.primaryKeys).map(item => item.field);
-    const uniqueKeys = Object.values(model.uniqueKeys).filter(c => c.fields.length >= 1).map(c => c.fields);
-    const indexKeys = Object.values(model._indexes).filter(c => c.unique && c.fields.length >= 1).map(c => c.fields);
+    const primaryKeys = Object.values(model.primaryKeys).map(
+      item => item.field
+    );
+    const uniqueKeys = Object.values(model.uniqueKeys)
+      .filter(c => c.fields.length >= 1)
+      .map(c => c.fields);
+    const indexKeys = Object.values(model._indexes)
+      .filter(c => c.unique && c.fields.length >= 1)
+      .map(c => c.fields);
 
     options.type = QueryTypes.UPSERT;
     options.updateOnDuplicate = Object.keys(updateValues);
@@ -53,15 +59,20 @@ const queryInterfacePatches = {
 
     // Always use PK, if no constraint available OR update data contains PK
     if (
-      options.upsertKeys.length === 0
-      || _.intersection(options.updateOnDuplicate, primaryKeys).length
+      options.upsertKeys.length === 0 ||
+      _.intersection(options.updateOnDuplicate, primaryKeys).length
     ) {
       options.upsertKeys = primaryKeys;
     }
 
     options.upsertKeys = _.uniq(options.upsertKeys);
 
-    const sql = this.QueryGenerator.insertQuery(tableName, insertValues, model.rawAttributes, options);
+    const sql = this.QueryGenerator.insertQuery(
+      tableName,
+      insertValues,
+      model.rawAttributes,
+      options
+    );
     return this.sequelize.query(sql, options);
   }
 };
@@ -76,7 +87,9 @@ const queryGeneratorPatches = {
     let tmpTable = '';
 
     if (Array.isArray(options.returning)) {
-      returnFields.push(...options.returning.map(field => this.quoteIdentifier(field)));
+      returnFields.push(
+        ...options.returning.map(field => this.quoteIdentifier(field))
+      );
     } else if (modelAttributes) {
       _.each(modelAttributes, attribute => {
         if (!(attribute.type instanceof DataTypes.VIRTUAL)) {
@@ -93,11 +106,15 @@ const queryGeneratorPatches = {
     if (this._dialect.supports.returnValues.returning) {
       returningFragment = ` RETURNING ${returnFields.join(',')}`;
     } else if (this._dialect.supports.returnValues.output) {
-      outputFragment = ` OUTPUT ${returnFields.map(field => `INSERTED.${field}`).join(',')}`;
+      outputFragment = ` OUTPUT ${returnFields
+        .map(field => `INSERTED.${field}`)
+        .join(',')}`;
 
       //To capture output rows when there is a trigger on MSSQL DB
       if (options.hasTrigger && this._dialect.supports.tmpTableTrigger) {
-        const tmpColumns = returnFields.map((field, i) => `${field} ${returnTypes[i].toSql()}`);
+        const tmpColumns = returnFields.map(
+          (field, i) => `${field} ${returnTypes[i].toSql()}`
+        );
 
         tmpTable = `DECLARE @tmp TABLE (${tmpColumns.join(',')}); `;
         outputFragment += ' INTO @tmp';
@@ -119,7 +136,10 @@ const queryGeneratorPatches = {
     const returningModelAttributes = [];
     const values = [];
     const quotedTable = this.quoteTable(table);
-    const bindParam = options.bindParam === undefined ? this.bindParam(bind) : options.bindParam;
+    const bindParam =
+      options.bindParam === undefined
+        ? this.bindParam(bind)
+        : options.bindParam;
     let query;
     let valueQuery = '';
     let emptyQuery = '';
@@ -152,7 +172,15 @@ const queryGeneratorPatches = {
       outputFragment = returnValues.outputFragment || '';
     }
 
-    if (_.get(this, ['sequelize', 'options', 'dialectOptions', 'prependSearchPath']) || options.searchPath) {
+    if (
+      _.get(this, [
+        'sequelize',
+        'options',
+        'dialectOptions',
+        'prependSearchPath'
+      ]) ||
+      options.searchPath
+    ) {
       // Not currently supported with search path (requires output of multiple queries)
       options.bindParam = false;
     }
@@ -162,14 +190,22 @@ const queryGeneratorPatches = {
       options.bindParam = false;
     }
 
-    valueHash = Utils.removeNullValuesFromHash(valueHash, this.options.omitNull);
+    valueHash = Utils.removeNullValuesFromHash(
+      valueHash,
+      this.options.omitNull
+    );
     for (const key in valueHash) {
       if (Object.prototype.hasOwnProperty.call(valueHash, key)) {
         const value = valueHash[key];
         fields.push(this.quoteIdentifier(key));
 
         // SERIALS' can't be NULL in postgresql, use DEFAULT where supported
-        if (modelAttributeMap && modelAttributeMap[key] && modelAttributeMap[key].autoIncrement === true && !value) {
+        if (
+          modelAttributeMap &&
+          modelAttributeMap[key] &&
+          modelAttributeMap[key].autoIncrement === true &&
+          !value
+        ) {
           if (!this._dialect.supports.autoIncrement.defaultValue) {
             fields.splice(-1, 1);
           } else if (this._dialect.supports.DEFAULT) {
@@ -178,14 +214,34 @@ const queryGeneratorPatches = {
             values.push(this.escape(null));
           }
         } else {
-          if (modelAttributeMap && modelAttributeMap[key] && modelAttributeMap[key].autoIncrement === true) {
+          if (
+            modelAttributeMap &&
+            modelAttributeMap[key] &&
+            modelAttributeMap[key].autoIncrement === true
+          ) {
             identityWrapperRequired = true;
           }
 
-          if (value instanceof Utils.SequelizeMethod || options.bindParam === false) {
-            values.push(this.escape(value, modelAttributeMap && modelAttributeMap[key] || undefined, { context: 'INSERT' }));
+          if (
+            value instanceof Utils.SequelizeMethod ||
+            options.bindParam === false
+          ) {
+            values.push(
+              this.escape(
+                value,
+                (modelAttributeMap && modelAttributeMap[key]) || undefined,
+                { context: 'INSERT' }
+              )
+            );
           } else {
-            values.push(this.format(value, modelAttributeMap && modelAttributeMap[key] || undefined, { context: 'INSERT' }, bindParam));
+            values.push(
+              this.format(
+                value,
+                (modelAttributeMap && modelAttributeMap[key]) || undefined,
+                { context: 'INSERT' },
+                bindParam
+              )
+            );
           }
         }
       }
@@ -193,21 +249,48 @@ const queryGeneratorPatches = {
 
     let onDuplicateKeyUpdate = '';
 
-    if (this._dialect.supports.inserts.updateOnDuplicate && options.updateOnDuplicate) {
-      if (this._dialect.supports.inserts.updateOnDuplicate == ' ON CONFLICT DO UPDATE SET') { // postgres / sqlite
+    if (
+      this._dialect.supports.inserts.updateOnDuplicate &&
+      options.updateOnDuplicate
+    ) {
+      if (
+        this._dialect.supports.inserts.updateOnDuplicate ==
+        ' ON CONFLICT DO UPDATE SET'
+      ) {
+        // postgres / sqlite
         // If no conflict target columns were specified, use the primary key names from options.upsertKeys
-        const conflictKeys = options.upsertKeys.map(attr => this.quoteIdentifier(attr));
-        const updateKeys = options.updateOnDuplicate.map(attr => `${this.quoteIdentifier(attr)}=EXCLUDED.${this.quoteIdentifier(attr)}`);
-        onDuplicateKeyUpdate = ` ON CONFLICT (${conflictKeys.join(',')}) DO UPDATE SET ${updateKeys.join(',')}`;
+        const conflictKeys = options.upsertKeys.map(attr =>
+          this.quoteIdentifier(attr)
+        );
+        const updateKeys = options.updateOnDuplicate.map(
+          attr =>
+            `${this.quoteIdentifier(attr)}=EXCLUDED.${this.quoteIdentifier(
+              attr
+            )}`
+        );
+        onDuplicateKeyUpdate = ` ON CONFLICT (${conflictKeys.join(
+          ','
+        )}) DO UPDATE SET ${updateKeys.join(',')}`;
       } else {
-        const valueKeys = options.updateOnDuplicate.map(attr => `${this.quoteIdentifier(attr)}=VALUES(${this.quoteIdentifier(attr)})`);
-        onDuplicateKeyUpdate += `${this._dialect.supports.inserts.updateOnDuplicate} ${valueKeys.join(',')}`;
+        const valueKeys = options.updateOnDuplicate.map(
+          attr =>
+            `${this.quoteIdentifier(attr)}=VALUES(${this.quoteIdentifier(
+              attr
+            )})`
+        );
+        onDuplicateKeyUpdate += `${
+          this._dialect.supports.inserts.updateOnDuplicate
+        } ${valueKeys.join(',')}`;
       }
     }
 
     const replacements = {
-      ignoreDuplicates: options.ignoreDuplicates ? this._dialect.supports.inserts.ignoreDuplicates : '',
-      onConflictDoNothing: options.ignoreDuplicates ? this._dialect.supports.inserts.onConflictDoNothing : '',
+      ignoreDuplicates: options.ignoreDuplicates
+        ? this._dialect.supports.inserts.ignoreDuplicates
+        : '',
+      onConflictDoNothing: options.ignoreDuplicates
+        ? this._dialect.supports.inserts.onConflictDoNothing
+        : '',
       attributes: fields.join(','),
       output: outputFragment,
       values: values.join(','),
@@ -227,9 +310,12 @@ const queryGeneratorPatches = {
       }
 
       const delimiter = `$func_${uuidv4().replace(/-/g, '')}$`;
-      const selectQuery = `SELECT (testfunc.response).${returningModelAttributes.join(', (testfunc.response).')}, testfunc.sequelize_caught_exception FROM pg_temp.testfunc();`;
+      const selectQuery = `SELECT (testfunc.response).${returningModelAttributes.join(
+        ', (testfunc.response).'
+      )}, testfunc.sequelize_caught_exception FROM pg_temp.testfunc();`;
 
-      options.exception = 'WHEN unique_violation THEN GET STACKED DIAGNOSTICS sequelize_caught_exception = PG_EXCEPTION_DETAIL;';
+      options.exception =
+        'WHEN unique_violation THEN GET STACKED DIAGNOSTICS sequelize_caught_exception = PG_EXCEPTION_DETAIL;';
       valueQuery = `CREATE OR REPLACE FUNCTION pg_temp.testfunc(OUT response ${quotedTable}, OUT sequelize_caught_exception text) RETURNS RECORD AS ${delimiter} BEGIN ${valueQuery} RETURNING * INTO response; EXCEPTION ${options.exception} END ${delimiter} LANGUAGE plpgsql; ${selectQuery} ${dropFunction}`;
     } else {
       valueQuery += returningFragment;
@@ -237,7 +323,10 @@ const queryGeneratorPatches = {
     }
 
     query = `${replacements.attributes.length ? valueQuery : emptyQuery};`;
-    if (identityWrapperRequired && this._dialect.supports.autoIncrement.identityInsert) {
+    if (
+      identityWrapperRequired &&
+      this._dialect.supports.autoIncrement.identityInsert
+    ) {
       query = `SET IDENTITY_INSERT ${quotedTable} ON; ${query} SET IDENTITY_INSERT ${quotedTable} OFF;`;
     }
 
@@ -257,26 +346,39 @@ const postgresQueryPatches = {
     const { connection } = this;
 
     if (!_.isEmpty(this.options.searchPath)) {
-      sql = this.sequelize.getQueryInterface().QueryGenerator.setSearchPath(this.options.searchPath) + sql;
+      sql =
+        this.sequelize
+          .getQueryInterface()
+          .QueryGenerator.setSearchPath(this.options.searchPath) + sql;
     }
     this.sql = sql;
 
-    const query = parameters && parameters.length
-      ? new Promise((resolve, reject) => connection.query(sql, parameters, (error, result) => error ? reject(error) : resolve(result)))
-      : new Promise((resolve, reject) => connection.query(sql, (error, result) => error ? reject(error) : resolve(result)));
+    const query =
+      parameters && parameters.length
+        ? new Promise((resolve, reject) =>
+            connection.query(sql, parameters, (error, result) =>
+              error ? reject(error) : resolve(result)
+            )
+          )
+        : new Promise((resolve, reject) =>
+            connection.query(sql, (error, result) =>
+              error ? reject(error) : resolve(result)
+            )
+          );
 
     const complete = this._logQuery(sql, debug, parameters);
 
-    return query.catch(err => {
-      // set the client so that it will be reaped if the connection resets while executing
-      if (err.code === 'ECONNRESET') {
-        connection._invalid = true;
-      }
+    return query
+      .catch(err => {
+        // set the client so that it will be reaped if the connection resets while executing
+        if (err.code === 'ECONNRESET') {
+          connection._invalid = true;
+        }
 
-      err.sql = sql;
-      err.parameters = parameters;
-      throw this.formatError(err);
-    })
+        err.sql = sql;
+        err.parameters = parameters;
+        throw this.formatError(err);
+      })
       .then(queryResult => {
         complete();
 
@@ -285,24 +387,31 @@ const postgresQueryPatches = {
           : queryResult.rows;
         const rowCount = Array.isArray(queryResult)
           ? queryResult.reduce(
-            (count, r) => Number.isFinite(r.rowCount) ? count + r.rowCount : count,
-            0
-          )
+              (count, r) =>
+                Number.isFinite(r.rowCount) ? count + r.rowCount : count,
+              0
+            )
           : queryResult.rowCount || 0;
 
-        if (this.sequelize.options.minifyAliases && this.options.aliasesMapping) {
-          rows = rows
-            .map(row => _.toPairs(row)
-              .reduce((acc, [key, value]) => {
-                const mapping = this.options.aliasesMapping.get(key);
-                acc[mapping || key] = value;
-                return acc;
-              }, {})
-            );
+        if (
+          this.sequelize.options.minifyAliases &&
+          this.options.aliasesMapping
+        ) {
+          rows = rows.map(row =>
+            _.toPairs(row).reduce((acc, [key, value]) => {
+              const mapping = this.options.aliasesMapping.get(key);
+              acc[mapping || key] = value;
+              return acc;
+            }, {})
+          );
         }
 
-        const isTableNameQuery = sql.startsWith('SELECT table_name FROM information_schema.tables');
-        const isRelNameQuery = sql.startsWith('SELECT relname FROM pg_class WHERE oid IN');
+        const isTableNameQuery = sql.startsWith(
+          'SELECT table_name FROM information_schema.tables'
+        );
+        const isRelNameQuery = sql.startsWith(
+          'SELECT relname FROM pg_class WHERE oid IN'
+        );
 
         if (isRelNameQuery) {
           return rows.map(row => ({
@@ -328,12 +437,16 @@ const postgresQueryPatches = {
 
         if (this.isShowIndexesQuery()) {
           for (const row of rows) {
-            const attributes = /ON .*? (?:USING .*?\s)?\(([^]*)\)/gi.exec(row.definition)[1].split(',');
+            const attributes = /ON .*? (?:USING .*?\s)?\(([^]*)\)/gi
+              .exec(row.definition)[1]
+              .split(',');
 
             // Map column index in table to column name
             const columns = _.zipObject(
               row.column_indexes,
-              this.sequelize.getQueryInterface().QueryGenerator.fromArray(row.column_names)
+              this.sequelize
+                .getQueryInterface()
+                .QueryGenerator.fromArray(row.column_names)
             );
             delete row.column_indexes;
             delete row.column_names;
@@ -342,20 +455,29 @@ const postgresQueryPatches = {
             let attribute;
 
             // Indkey is the order of attributes in the index, specified by a string of attribute indexes
-            row.fields = row.indkey.split(' ').map((indKey, index) => {
-              field = columns[indKey];
-              // for functional indices indKey = 0
-              if (!field) {
-                return null;
-              }
-              attribute = attributes[index];
-              return {
-                attribute: field,
-                collate: attribute.match(/COLLATE "(.*?)"/) ? /COLLATE "(.*?)"/.exec(attribute)[1] : undefined,
-                order: attribute.includes('DESC') ? 'DESC' : attribute.includes('ASC') ? 'ASC' : undefined,
-                length: undefined
-              };
-            }).filter(n => n !== null);
+            row.fields = row.indkey
+              .split(' ')
+              .map((indKey, index) => {
+                field = columns[indKey];
+                // for functional indices indKey = 0
+                if (!field) {
+                  return null;
+                }
+                attribute = attributes[index];
+                return {
+                  attribute: field,
+                  collate: attribute.match(/COLLATE "(.*?)"/)
+                    ? /COLLATE "(.*?)"/.exec(attribute)[1]
+                    : undefined,
+                  order: attribute.includes('DESC')
+                    ? 'DESC'
+                    : attribute.includes('ASC')
+                    ? 'ASC'
+                    : undefined,
+                  length: undefined
+                };
+              })
+              .filter(n => n !== null);
             delete row.columns;
           }
           return rows;
@@ -364,7 +486,12 @@ const postgresQueryPatches = {
           const result = [];
           for (const row of rows) {
             let defParts;
-            if (row.condef !== undefined && (defParts = row.condef.match(/FOREIGN KEY \((.+)\) REFERENCES (.+)\((.+)\)( ON (UPDATE|DELETE) (CASCADE|RESTRICT))?( ON (UPDATE|DELETE) (CASCADE|RESTRICT))?/))) {
+            if (
+              row.condef !== undefined &&
+              (defParts = row.condef.match(
+                /FOREIGN KEY \((.+)\) REFERENCES (.+)\((.+)\)( ON (UPDATE|DELETE) (CASCADE|RESTRICT))?( ON (UPDATE|DELETE) (CASCADE|RESTRICT))?/
+              ))
+            ) {
               row.id = row.constraint_name;
               row.table = defParts[2];
               row.from = defParts[1];
@@ -384,11 +511,18 @@ const postgresQueryPatches = {
           let result = rows;
           // Postgres will treat tables as case-insensitive, so fix the case
           // of the returned values to match attributes
-          if (this.options.raw === false && this.sequelize.options.quoteIdentifiers === false) {
-            const attrsMap = _.reduce(this.model.rawAttributes, (m, v, k) => {
-              m[k.toLowerCase()] = k;
-              return m;
-            }, {});
+          if (
+            this.options.raw === false &&
+            this.sequelize.options.quoteIdentifiers === false
+          ) {
+            const attrsMap = _.reduce(
+              this.model.rawAttributes,
+              (m, v, k) => {
+                m[k.toLowerCase()] = k;
+                return m;
+              },
+              {}
+            );
             result = rows.map(row => {
               return _.mapKeys(row, (value, key) => {
                 const targetAttr = attrsMap[key];
@@ -410,12 +544,18 @@ const postgresQueryPatches = {
               allowNull: row.Null === 'YES',
               defaultValue: row.Default,
               comment: row.Comment,
-              special: row.special ? this.sequelize.getQueryInterface().QueryGenerator.fromArray(row.special) : [],
+              special: row.special
+                ? this.sequelize
+                    .getQueryInterface()
+                    .QueryGenerator.fromArray(row.special)
+                : [],
               primaryKey: row.Constraint === 'PRIMARY KEY'
             };
 
             if (result[row.Field].type === 'BOOLEAN') {
-              result[row.Field].defaultValue = { 'false': false, 'true': true }[result[row.Field].defaultValue];
+              result[row.Field].defaultValue = { false: false, true: true }[
+                result[row.Field].defaultValue
+              ];
 
               if (result[row.Field].defaultValue === undefined) {
                 result[row.Field].defaultValue = null;
@@ -423,7 +563,9 @@ const postgresQueryPatches = {
             }
 
             if (typeof result[row.Field].defaultValue === 'string') {
-              result[row.Field].defaultValue = result[row.Field].defaultValue.replace(/'/g, '');
+              result[row.Field].defaultValue = result[
+                row.Field
+              ].defaultValue.replace(/'/g, '');
 
               if (result[row.Field].defaultValue.includes('::')) {
                 const split = result[row.Field].defaultValue.split('::');
@@ -451,28 +593,37 @@ const postgresQueryPatches = {
         if (QueryTypes.BULKDELETE === this.options.type) {
           return parseInt(rowCount, 10);
         }
-        if (this.isInsertQuery() || this.isUpdateQuery() || this.isUpsertQuery()) {
+        if (
+          this.isInsertQuery() ||
+          this.isUpdateQuery() ||
+          this.isUpsertQuery()
+        ) {
           if (this.instance && this.instance.dataValues) {
             for (const key in rows[0]) {
               if (Object.prototype.hasOwnProperty.call(rows[0], key)) {
                 const record = rows[0][key];
 
-                const attr = _.find(this.model.rawAttributes, attribute => attribute.fieldName === key || attribute.field === key);
+                const attr = _.find(
+                  this.model.rawAttributes,
+                  attribute =>
+                    attribute.fieldName === key || attribute.field === key
+                );
 
-                this.instance.dataValues[attr && attr.fieldName || key] = record;
+                this.instance.dataValues[
+                  (attr && attr.fieldName) || key
+                ] = record;
               }
             }
           }
 
           if (this.isUpsertQuery()) {
-            return [
-              this.instance,
-              null
-            ];
+            return [this.instance, null];
           }
 
           return [
-            this.instance || rows && (this.options.plain && rows[0] || rows) || undefined,
+            this.instance ||
+              (rows && ((this.options.plain && rows[0]) || rows)) ||
+              undefined,
             rowCount
           ];
         }
@@ -482,7 +633,7 @@ const postgresQueryPatches = {
         return rows;
       });
   }
-}
+};
 
 const modelPatches = {
   static: {
@@ -497,7 +648,8 @@ const modelPatches = {
 
       const createdAtAttr = this._timestampAttributes.createdAt;
       const updatedAtAttr = this._timestampAttributes.updatedAt;
-      const hasPrimary = this.primaryKeyField in values || this.primaryKeyAttribute in values;
+      const hasPrimary =
+        this.primaryKeyField in values || this.primaryKeyAttribute in values;
       const instance = this.build(values);
 
       options.model = this;
@@ -513,24 +665,42 @@ const modelPatches = {
         }
       }).then(() => {
         // Map field names
-        const updatedDataValues = _.pick(instance.dataValues, Object.keys(instance._changed));
-        const insertValues = Utils.mapValueFieldNames(instance.dataValues, Object.keys(instance.rawAttributes), this);
-        const updateValues = Utils.mapValueFieldNames(updatedDataValues, options.fields, this);
+        const updatedDataValues = _.pick(
+          instance.dataValues,
+          Object.keys(instance._changed)
+        );
+        const insertValues = Utils.mapValueFieldNames(
+          instance.dataValues,
+          Object.keys(instance.rawAttributes),
+          this
+        );
+        const updateValues = Utils.mapValueFieldNames(
+          updatedDataValues,
+          options.fields,
+          this
+        );
         const now = Utils.now(this.sequelize.options.dialect);
 
         // Attach createdAt
         if (createdAtAttr && !updateValues[createdAtAttr]) {
-          const field = this.rawAttributes[createdAtAttr].field || createdAtAttr;
+          const field =
+            this.rawAttributes[createdAtAttr].field || createdAtAttr;
           insertValues[field] = this._getDefaultTimestamp(createdAtAttr) || now;
         }
         if (updatedAtAttr && !insertValues[updatedAtAttr]) {
-          const field = this.rawAttributes[updatedAtAttr].field || updatedAtAttr;
-          insertValues[field] = updateValues[field] = this._getDefaultTimestamp(updatedAtAttr) || now;
+          const field =
+            this.rawAttributes[updatedAtAttr].field || updatedAtAttr;
+          insertValues[field] = updateValues[field] =
+            this._getDefaultTimestamp(updatedAtAttr) || now;
         }
 
         // Build adds a null value for the primary key, if none was given by the user.
         // We need to remove that because of some Postgres technicalities.
-        if (!hasPrimary && this.primaryKeyAttribute && !this.rawAttributes[this.primaryKeyAttribute].defaultValue) {
+        if (
+          !hasPrimary &&
+          this.primaryKeyAttribute &&
+          !this.rawAttributes[this.primaryKeyAttribute].defaultValue
+        ) {
           delete insertValues[this.primaryKeyField];
           delete updateValues[this.primaryKeyField];
         }
@@ -541,7 +711,14 @@ const modelPatches = {
           }
         })
           .then(() => {
-            return this.QueryInterface.upsert(this.getTableName(options), insertValues, updateValues, instance.where(), this, options);
+            return this.QueryInterface.upsert(
+              this.getTableName(options),
+              insertValues,
+              updateValues,
+              instance.where(),
+              this,
+              options
+            );
           })
           .tap(result => {
             const [record] = result;
@@ -562,7 +739,8 @@ const QueryGenerator = require('sequelize/lib/dialects/abstract/query-generator'
 const PostgresQuery = require('sequelize/lib/dialects/postgres/query');
 
 QueryInterface.prototype.upsert = queryInterfacePatches.upsert;
-QueryGenerator.prototype.generateReturnValues = queryGeneratorPatches.generateReturnValues;
+QueryGenerator.prototype.generateReturnValues =
+  queryGeneratorPatches.generateReturnValues;
 QueryGenerator.prototype.insertQuery = queryGeneratorPatches.insertQuery;
 PostgresQuery.prototype.run = postgresQueryPatches.run;
 Model.upsert = modelPatches.static.upsert;

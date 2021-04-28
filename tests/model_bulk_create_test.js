@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const { DataTypes } = require('../source');
 
 describe('Model', () => {
-  beforeEach(async function() {
+  beforeEach(async function () {
     this.User = this.sequelize.define('User', {
       username: DataTypes.STRING,
       secretValue: {
@@ -39,13 +39,15 @@ describe('Model', () => {
   });
 
   describe('bulkCreate', () => {
-    it.skip('supports transactions', async function() {
+    it.skip('supports transactions', async function () {
       const User = this.sequelize.define('User', {
         username: DataTypes.STRING
       });
       await User.sync({ force: true });
       const transaction = await this.sequelize.transaction();
-      await User.bulkCreate([{ username: 'foo' }, { username: 'bar' }], { transaction });
+      await User.bulkCreate([{ username: 'foo' }, { username: 'bar' }], {
+        transaction
+      });
       const count1 = await User.count();
       const count2 = await User.count({ transaction });
       expect(count1).to.equal(0);
@@ -56,7 +58,7 @@ describe('Model', () => {
     // Reason: CRDB does not guarantee autoIncrement to be sequential.
     // Reimplementing the test to check if it is incremental below.
     describe('return values', () => {
-      it.skip('should make the auto incremented values available on the returned instances', async function() {
+      it.skip('should make the auto incremented values available on the returned instances', async function () {
         const User = this.sequelize.define('user', {});
 
         await User.sync({ force: true });
@@ -68,11 +70,12 @@ describe('Model', () => {
         expect(users.length).to.eql(actualUsers.length);
         users.forEach((user, i) => {
           expect(user.get('id')).to.be.ok;
-          expect(user.get('id')).to.equal(actualUsers[i].get('id'))
+          expect(user.get('id'))
+            .to.equal(actualUsers[i].get('id'))
             .and.to.equal(i + 1);
         });
       });
-      it('should make the auto incremented values available on the returned instances', async function() {
+      it('should make the auto incremented values available on the returned instances', async function () {
         const User = this.sequelize.define('user', {});
 
         await User.sync({ force: true });
@@ -92,7 +95,7 @@ describe('Model', () => {
 
       // Reason: CRDB does not guarantee autoIncrement to be sequential.
       // Reimplementing the test to check if it is incremental below.
-      it.skip('should make the auto incremented values available on the returned instances with custom fields', async function() {
+      it.skip('should make the auto incremented values available on the returned instances with custom fields', async function () {
         const User = this.sequelize.define('user', {
           maId: {
             type: DataTypes.INTEGER,
@@ -101,21 +104,22 @@ describe('Model', () => {
             field: 'yo_id'
           }
         });
-        
+
         await User.sync({ force: true });
-        
+
         const users = await User.bulkCreate([{}, {}, {}], { returning: true });
-        
+
         const actualUsers = await User.findAll({ order: ['maId'] });
-        
+
         expect(users.length).to.eql(actualUsers.length);
         users.forEach((user, i) => {
           expect(user.get('maId')).to.be.ok;
-          expect(user.get('maId')).to.equal(actualUsers[i].get('maId'))
-          .and.to.equal(i + 1);
+          expect(user.get('maId'))
+            .to.equal(actualUsers[i].get('maId'))
+            .and.to.equal(i + 1);
         });
       });
-      it('should make the auto incremented values available on the returned instances with custom fields', async function() {
+      it('should make the auto incremented values available on the returned instances with custom fields', async function () {
         const User = this.sequelize.define('user', {
           maId: {
             type: DataTypes.INTEGER,
@@ -144,7 +148,7 @@ describe('Model', () => {
     describe('handles auto increment values', () => {
       // Reason: CRDB does not guarantee autoIncrement to be sequential.
       // Reimplementing the test to check if it is incremental below.
-      it.skip('should return auto increment primary key values', async function() {
+      it.skip('should return auto increment primary key values', async function () {
         const Maya = this.sequelize.define('Maya', {});
 
         const M1 = {};
@@ -155,7 +159,7 @@ describe('Model', () => {
         expect(ms[0].id).to.be.eql(1);
         expect(ms[1].id).to.be.eql(2);
       });
-      it('should return auto increment primary key values', async function() {
+      it('should return auto increment primary key values', async function () {
         const Maya = this.sequelize.define('Maya', {});
 
         const M1 = {};
@@ -163,7 +167,7 @@ describe('Model', () => {
 
         await Maya.sync({ force: true });
         const ms = await Maya.bulkCreate([M1, M2], { returning: true });
-        
+
         expect(ms[0].id < ms[1].id).to.be.true;
       });
     });

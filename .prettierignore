@@ -1,0 +1,4 @@
+# Ignored directories
+.github
+.teamcity
+*.md

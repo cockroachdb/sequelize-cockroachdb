@@ -29,19 +29,19 @@ describe('findOrCreate', function () {
         primaryKey: true
       },
       name: {
-        type: DataTypes.STRING,
-      },
+        type: DataTypes.STRING
+      }
     });
 
     const id1 = 1;
     const origName = 'original';
 
-    await User.sync({force: true});
+    await User.sync({ force: true });
 
     const [user, created] = await User.findOrCreate({
       where: {
         id: id1,
-        name: origName,
+        name: origName
       }
     });
 
@@ -62,19 +62,19 @@ describe('findOrCreate', function () {
         primaryKey: true
       },
       name: {
-        type: DataTypes.STRING,
-      },
+        type: DataTypes.STRING
+      }
     });
 
     const id1 = 1;
     const origName = 'original';
-    const updatedName = "UPDATED";
+    const updatedName = 'UPDATED';
 
-    await User.sync({force: true});
+    await User.sync({ force: true });
 
     const user = await User.create({
       id: id1,
-      name: origName,
+      name: origName
     });
 
     expect(user.name).to.equal(origName);
@@ -82,7 +82,7 @@ describe('findOrCreate', function () {
 
     const [userAgain, created] = await User.findOrCreate({
       where: {
-        id: id1,
+        id: id1
       },
       defaults: {
         name: updatedName

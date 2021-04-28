@@ -6,7 +6,7 @@ var DataTypes = Sequelize.DataTypes;
 const dialect = 'postgres';
 
 describe('QueryInterface', () => {
-  beforeEach(function() {
+  beforeEach(function () {
     this.sequelize.options.quoteIdenifiers = true;
     this.queryInterface = this.sequelize.getQueryInterface();
   });
@@ -14,7 +14,7 @@ describe('QueryInterface', () => {
   describe('createTable', () => {
     // Reason: expected 'unique_rowid()' to equal 'nextval("TableWithPK_table_id_seq"::regclass)'
     // Cockroach nextval expects a string instead of a regclass.
-    it.skip('should create a auto increment primary key', async function() {
+    it.skip('should create a auto increment primary key', async function () {
       await this.queryInterface.createTable('TableWithPK', {
         table_id: {
           type: DataTypes.INTEGER,
@@ -28,33 +28,39 @@ describe('QueryInterface', () => {
       if (dialect === 'mssql' || dialect === 'mysql' || dialect === 'mariadb') {
         expect(result.table_id.autoIncrement).to.be.true;
       } else if (dialect === 'postgres') {
-        expect(result.table_id.defaultValue).to.equal('nextval("TableWithPK_table_id_seq"::regclass)');
+        expect(result.table_id.defaultValue).to.equal(
+          'nextval("TableWithPK_table_id_seq"::regclass)'
+        );
       }
     });
 
-    it('should create unique constraint with uniqueKeys', async function() {
-      await this.queryInterface.createTable('MyTable', {
-        id: {
-          type: DataTypes.INTEGER,
-          primaryKey: true,
-          autoIncrement: true
-        },
-        name: {
-          type: DataTypes.STRING
-        },
-        email: {
-          type: DataTypes.STRING
-        }
-      }, {
-        uniqueKeys: {
-          myCustomIndex: {
-            fields: ['name', 'email']
+    it('should create unique constraint with uniqueKeys', async function () {
+      await this.queryInterface.createTable(
+        'MyTable',
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
           },
-          myOtherIndex: {
-            fields: ['name']
+          name: {
+            type: DataTypes.STRING
+          },
+          email: {
+            type: DataTypes.STRING
+          }
+        },
+        {
+          uniqueKeys: {
+            myCustomIndex: {
+              fields: ['name', 'email']
+            },
+            myOtherIndex: {
+              fields: ['name']
+            }
           }
         }
-      });
+      );
 
       const indexes = await this.queryInterface.showIndex('MyTable');
       switch (dialect) {
@@ -62,7 +68,6 @@ describe('QueryInterface', () => {
         case 'postgres-native':
         case 'sqlite':
         case 'mssql':
-
           // name + email
           expect(indexes[0].unique).to.be.true;
           expect(indexes[0].fields[0].attribute).to.equal('name');
@@ -74,7 +79,7 @@ describe('QueryInterface', () => {
           break;
         case 'mariadb':
         case 'mysql':
-        // name + email
+          // name + email
           expect(indexes[1].unique).to.be.true;
           expect(indexes[1].fields[0].attribute).to.equal('name');
           expect(indexes[1].fields[1].attribute).to.equal('email');
@@ -88,29 +93,37 @@ describe('QueryInterface', () => {
       }
     });
 
-    it('should work with schemas', async function() {
+    it('should work with schemas', async function () {
       await this.sequelize.createSchema('hero');
 
-      await this.queryInterface.createTable('User', {
-        name: {
-          type: DataTypes.STRING
+      await this.queryInterface.createTable(
+        'User',
+        {
+          name: {
+            type: DataTypes.STRING
+          }
+        },
+        {
+          schema: 'hero'
         }
-      }, {
-        schema: 'hero'
-      });
+      );
     });
 
     describe('enums', () => {
-      it('should work with enums (1)', async function() {
+      it('should work with enums (1)', async function () {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: DataTypes.ENUM('value1', 'value2', 'value3')
         });
 
         const table = await this.queryInterface.describeTable('SomeTable');
-        expect(table.someEnum.special).to.deep.equal(['value1', 'value2', 'value3']);
+        expect(table.someEnum.special).to.deep.equal([
+          'value1',
+          'value2',
+          'value3'
+        ]);
       });
 
-      it('should work with enums (2)', async function() {
+      it('should work with enums (2)', async function () {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: {
             type: DataTypes.ENUM,
@@ -120,11 +133,15 @@ describe('QueryInterface', () => {
 
         const table = await this.queryInterface.describeTable('SomeTable');
         if (dialect.includes('postgres')) {
-          expect(table.someEnum.special).to.deep.equal(['value1', 'value2', 'value3']);
+          expect(table.someEnum.special).to.deep.equal([
+            'value1',
+            'value2',
+            'value3'
+          ]);
         }
       });
 
-      it('should work with enums (3)', async function() {
+      it('should work with enums (3)', async function () {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: {
             type: DataTypes.ENUM,
@@ -135,28 +152,42 @@ describe('QueryInterface', () => {
 
         const table = await this.queryInterface.describeTable('SomeTable');
         if (dialect.includes('postgres')) {
-          expect(table.otherName.special).to.deep.equal(['value1', 'value2', 'value3']);
+          expect(table.otherName.special).to.deep.equal([
+            'value1',
+            'value2',
+            'value3'
+          ]);
         }
       });
 
-      it('should work with enums (4)', async function() {
+      it('should work with enums (4)', async function () {
         await this.queryInterface.createSchema('archive');
 
-        await this.queryInterface.createTable('SomeTable', {
-          someEnum: {
-            type: DataTypes.ENUM,
-            values: ['value1', 'value2', 'value3'],
-            field: 'otherName'
-          }
-        }, { schema: 'archive' });
+        await this.queryInterface.createTable(
+          'SomeTable',
+          {
+            someEnum: {
+              type: DataTypes.ENUM,
+              values: ['value1', 'value2', 'value3'],
+              field: 'otherName'
+            }
+          },
+          { schema: 'archive' }
+        );
 
-        const table = await this.queryInterface.describeTable('SomeTable', { schema: 'archive' });
+        const table = await this.queryInterface.describeTable('SomeTable', {
+          schema: 'archive'
+        });
         if (dialect.includes('postgres')) {
-          expect(table.otherName.special).to.deep.equal(['value1', 'value2', 'value3']);
+          expect(table.otherName.special).to.deep.equal([
+            'value1',
+            'value2',
+            'value3'
+          ]);
         }
       });
 
-      it('should work with enums (5)', async function() {
+      it('should work with enums (5)', async function () {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: {
             type: DataTypes.ENUM(['COMMENT']),

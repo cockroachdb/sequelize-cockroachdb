@@ -5,7 +5,7 @@ const { DataTypes } = require('../source');
 const dialect = 'postgres';
 
 const Support = {
-  dropTestSchemas: async (sequelize) => {
+  dropTestSchemas: async sequelize => {
     const schemas = await sequelize.showAllSchemas();
     const schemasPromise = [];
     schemas.forEach(schema => {
@@ -20,38 +20,45 @@ const Support = {
 };
 
 describe('QueryInterface', () => {
-  beforeEach(function() {
+  beforeEach(function () {
     this.sequelize.options.quoteIdenifiers = true;
     this.queryInterface = this.sequelize.getQueryInterface();
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await Support.dropTestSchemas(this.sequelize);
   });
 
   describe('changeColumn', () => {
     // Reason: ALTER COLUMN TYPE from int to float is prohibited until v21.1
-    it.skip('should support schemas', async function() {
+    it.skip('should support schemas', async function () {
       await this.sequelize.createSchema('archive');
 
-      await this.queryInterface.createTable({
-        tableName: 'users',
-        schema: 'archive'
-      }, {
-        id: {
-          type: DataTypes.INTEGER,
-          primaryKey: true,
-          autoIncrement: true
+      await this.queryInterface.createTable(
+        {
+          tableName: 'users',
+          schema: 'archive'
         },
-        currency: DataTypes.INTEGER
-      });
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+          },
+          currency: DataTypes.INTEGER
+        }
+      );
 
-      await this.queryInterface.changeColumn({
-        tableName: 'users',
-        schema: 'archive'
-      }, 'currency', {
-        type: DataTypes.FLOAT
-      });
+      await this.queryInterface.changeColumn(
+        {
+          tableName: 'users',
+          schema: 'archive'
+        },
+        'currency',
+        {
+          type: DataTypes.FLOAT
+        }
+      );
 
       const table = await this.queryInterface.describeTable({
         tableName: 'users',
@@ -66,17 +73,20 @@ describe('QueryInterface', () => {
     });
 
     // Reason: ALTER COLUMN TYPE from int to float is prohibited until v21.1
-    it.skip('should change columns', async function() {
-      await this.queryInterface.createTable({
-        tableName: 'users'
-      }, {
-        id: {
-          type: DataTypes.INTEGER,
-          primaryKey: true,
-          autoIncrement: true
+    it.skip('should change columns', async function () {
+      await this.queryInterface.createTable(
+        {
+          tableName: 'users'
         },
-        currency: DataTypes.INTEGER
-      });
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+          },
+          currency: DataTypes.INTEGER
+        }
+      );
 
       await this.queryInterface.changeColumn('users', 'currency', {
         type: DataTypes.FLOAT,
@@ -95,12 +105,15 @@ describe('QueryInterface', () => {
     });
 
     //Reason: ALTER COLUMN TYPE from varchar to enum_users_firstName is prohibited until v21.1
-    it.skip('should work with enums (case 1)', async function() {
-      await this.queryInterface.createTable({
-        tableName: 'users'
-      }, {
-        firstName: DataTypes.STRING
-      });
+    it.skip('should work with enums (case 1)', async function () {
+      await this.queryInterface.createTable(
+        {
+          tableName: 'users'
+        },
+        {
+          firstName: DataTypes.STRING
+        }
+      );
 
       await this.queryInterface.changeColumn('users', 'firstName', {
         type: DataTypes.ENUM(['value1', 'value2', 'value3'])
@@ -108,12 +121,15 @@ describe('QueryInterface', () => {
     });
 
     // Reason: ALTER COLUMN TYPE from varchar to enum_users_firstName is prohibited until v21.1
-    it.skip('should work with enums (case 2)', async function() {
-      await this.queryInterface.createTable({
-        tableName: 'users'
-      }, {
-        firstName: DataTypes.STRING
-      });
+    it.skip('should work with enums (case 2)', async function () {
+      await this.queryInterface.createTable(
+        {
+          tableName: 'users'
+        },
+        {
+          firstName: DataTypes.STRING
+        }
+      );
 
       await this.queryInterface.changeColumn('users', 'firstName', {
         type: DataTypes.ENUM,
@@ -122,26 +138,33 @@ describe('QueryInterface', () => {
     });
 
     // Reason: ALTER COLUMN TYPE from varchar to enum_users_firstName is prohibited until v21.1
-    it.skip('should work with enums with schemas', async function() {
+    it.skip('should work with enums with schemas', async function () {
       await this.sequelize.createSchema('archive');
 
-      await this.queryInterface.createTable({
-        tableName: 'users',
-        schema: 'archive'
-      }, {
-        firstName: DataTypes.STRING
-      });
+      await this.queryInterface.createTable(
+        {
+          tableName: 'users',
+          schema: 'archive'
+        },
+        {
+          firstName: DataTypes.STRING
+        }
+      );
 
-      await this.queryInterface.changeColumn({
-        tableName: 'users',
-        schema: 'archive'
-      }, 'firstName', {
-        type: DataTypes.ENUM(['value1', 'value2', 'value3'])
-      });
+      await this.queryInterface.changeColumn(
+        {
+          tableName: 'users',
+          schema: 'archive'
+        },
+        'firstName',
+        {
+          type: DataTypes.ENUM(['value1', 'value2', 'value3'])
+        }
+      );
     });
 
     describe('should support foreign keys', () => {
-      beforeEach(async function() {
+      beforeEach(async function () {
         await this.queryInterface.createTable('users', {
           id: {
             type: DataTypes.INTEGER,
@@ -163,8 +186,10 @@ describe('QueryInterface', () => {
         });
       });
 
-      it('able to change column to foreign key', async function() {
-        const foreignKeys = await this.queryInterface.getForeignKeyReferencesForTable('users');
+      it('able to change column to foreign key', async function () {
+        const foreignKeys = await this.queryInterface.getForeignKeyReferencesForTable(
+          'users'
+        );
         expect(foreignKeys).to.be.an('array');
         expect(foreignKeys).to.be.empty;
 
@@ -178,13 +203,15 @@ describe('QueryInterface', () => {
           onDelete: 'cascade'
         });
 
-        const newForeignKeys = await this.queryInterface.getForeignKeyReferencesForTable('users');
+        const newForeignKeys = await this.queryInterface.getForeignKeyReferencesForTable(
+          'users'
+        );
         expect(newForeignKeys).to.be.an('array');
         expect(newForeignKeys).to.have.lengthOf(1);
         expect(newForeignKeys[0].columnName).to.be.equal('level_id');
       });
 
-      it('able to change column property without affecting other properties', async function() {
+      it('able to change column property without affecting other properties', async function () {
         // 1. look for users table information
         // 2. change column level_id on users to have a Foreign Key
         // 3. look for users table Foreign Keys information
@@ -206,7 +233,9 @@ describe('QueryInterface', () => {
           onDelete: 'cascade'
         });
 
-        const keys = await this.queryInterface.getForeignKeyReferencesForTable('users');
+        const keys = await this.queryInterface.getForeignKeyReferencesForTable(
+          'users'
+        );
         const firstForeignKeys = keys;
 
         await this.queryInterface.changeColumn('users', 'level_id', {
@@ -214,21 +243,27 @@ describe('QueryInterface', () => {
           allowNull: true
         });
 
-        const newForeignKeys = await this.queryInterface.getForeignKeyReferencesForTable('users');
+        const newForeignKeys = await this.queryInterface.getForeignKeyReferencesForTable(
+          'users'
+        );
         expect(firstForeignKeys.length).to.be.equal(newForeignKeys.length);
         expect(firstForeignKeys[0].columnName).to.be.equal('level_id');
-        expect(firstForeignKeys[0].columnName).to.be.equal(newForeignKeys[0].columnName);
+        expect(firstForeignKeys[0].columnName).to.be.equal(
+          newForeignKeys[0].columnName
+        );
 
         const describedTable = await this.queryInterface.describeTable({
           tableName: 'users'
         });
 
         expect(describedTable.level_id).to.have.property('allowNull');
-        expect(describedTable.level_id.allowNull).to.not.equal(firstTable.level_id.allowNull);
+        expect(describedTable.level_id.allowNull).to.not.equal(
+          firstTable.level_id.allowNull
+        );
         expect(describedTable.level_id.allowNull).to.be.equal(true);
       });
 
-      it('should change the comment of column', async function() {
+      it('should change the comment of column', async function () {
         const describedTable = await this.queryInterface.describeTable({
           tableName: 'users'
         });
@@ -240,7 +275,9 @@ describe('QueryInterface', () => {
           comment: 'FooBar'
         });
 
-        const describedTable2 = await this.queryInterface.describeTable({ tableName: 'users' });
+        const describedTable2 = await this.queryInterface.describeTable({
+          tableName: 'users'
+        });
         expect(describedTable2.level_id.comment).to.be.equal('FooBar');
       });
     });

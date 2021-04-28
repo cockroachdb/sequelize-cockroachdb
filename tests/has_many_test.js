@@ -21,15 +21,15 @@ var Support = {
     });
 
     await Promise.all(schemasPromise.map(p => p.catch(e => e)));
-  },
-}
+  }
+};
 
 describe('HasMany', () => {
   describe('get', () => {
     describe('multiple', () => {
       // Query result are non-deterministic
       // Reason: https://github.com/sequelize/sequelize/issues/13088
-      it.skip('should fetch associations for multiple instances with limit and order and a belongsTo relation', async function() {
+      it.skip('should fetch associations for multiple instances with limit and order and a belongsTo relation', async function () {
         const User = this.sequelize.define('User', {}),
           Task = this.sequelize.define('Task', {
             title: DataTypes.STRING,
@@ -41,34 +41,44 @@ describe('HasMany', () => {
           Category = this.sequelize.define('Category', {});
 
         User.Tasks = User.hasMany(Task, { as: 'tasks' });
-        Task.Category = Task.belongsTo(Category, { as: 'category', foreignKey: 'categoryId' });
+        Task.Category = Task.belongsTo(Category, {
+          as: 'category',
+          foreignKey: 'categoryId'
+        });
 
         await this.sequelize.sync({ force: true });
 
-        const users = await Promise.all([User.create({
-          tasks: [
-            { title: 'b', category: {} },
-            { title: 'd', category: {} },
-            { title: 'c', category: {} },
-            { title: 'a', category: {} }
-          ]
-        }, {
-          include: [{ association: User.Tasks, include: [Task.Category] }]
-        }), User.create({
-          tasks: [
-            { title: 'a', category: {} },
-            { title: 'c', category: {} },
-            { title: 'b', category: {} }
-          ]
-        }, {
-          include: [{ association: User.Tasks, include: [Task.Category] }]
-        })]);
+        const users = await Promise.all([
+          User.create(
+            {
+              tasks: [
+                { title: 'b', category: {} },
+                { title: 'd', category: {} },
+                { title: 'c', category: {} },
+                { title: 'a', category: {} }
+              ]
+            },
+            {
+              include: [{ association: User.Tasks, include: [Task.Category] }]
+            }
+          ),
+          User.create(
+            {
+              tasks: [
+                { title: 'a', category: {} },
+                { title: 'c', category: {} },
+                { title: 'b', category: {} }
+              ]
+            },
+            {
+              include: [{ association: User.Tasks, include: [Task.Category] }]
+            }
+          )
+        ]);
 
         const result = await User.Tasks.get(users, {
           limit: 2,
-          order: [
-            ['title', 'ASC']
-          ],
+          order: [['title', 'ASC']],
           include: [Task.Category]
         });
 
@@ -86,14 +96,18 @@ describe('HasMany', () => {
       });
 
       // Reason: works correctly, but it fails because it tries to drop table crdb_internal from cockroach
-      it.skip('supports schemas', async function() {
+      it.skip('supports schemas', async function () {
         const User = this.sequelize.define('User', {}).schema('work'),
-          Task = this.sequelize.define('Task', {
-            title: DataTypes.STRING
-          }).schema('work'),
-          SubTask = this.sequelize.define('SubTask', {
-            title: DataTypes.STRING
-          }).schema('work');
+          Task = this.sequelize
+            .define('Task', {
+              title: DataTypes.STRING
+            })
+            .schema('work'),
+          SubTask = this.sequelize
+            .define('SubTask', {
+              title: DataTypes.STRING
+            })
+            .schema('work');
 
         User.Tasks = User.hasMany(Task, { as: 'tasks' });
         Task.SubTasks = Task.hasMany(SubTask, { as: 'subtasks' });
@@ -104,78 +118,73 @@ describe('HasMany', () => {
         await Task.sync({ force: true });
         await SubTask.sync({ force: true });
 
-        await Promise.all([User.create({
-          id: 1,
-          tasks: [
+        await Promise.all([
+          User.create(
             {
-              title: 'b', subtasks: [
-                { title: 'c' },
-                { title: 'a' }
+              id: 1,
+              tasks: [
+                {
+                  title: 'b',
+                  subtasks: [{ title: 'c' }, { title: 'a' }]
+                },
+                { title: 'd' },
+                {
+                  title: 'c',
+                  subtasks: [{ title: 'b' }, { title: 'a' }, { title: 'c' }]
+                },
+                {
+                  title: 'a',
+                  subtasks: [{ title: 'c' }, { title: 'a' }, { title: 'b' }]
+                }
               ]
             },
-            { title: 'd' },
             {
-              title: 'c', subtasks: [
-                { title: 'b' },
-                { title: 'a' },
-                { title: 'c' }
-              ]
-            },
-            {
-              title: 'a', subtasks: [
-                { title: 'c' },
-                { title: 'a' },
-                { title: 'b' }
-              ]
+              include: [{ association: User.Tasks, include: [Task.SubTasks] }]
             }
-          ]
-        }, {
-          include: [{ association: User.Tasks, include: [Task.SubTasks] }]
-        }), User.create({
-          id: 2,
-          tasks: [
+          ),
+          User.create(
             {
-              title: 'a', subtasks: [
-                { title: 'b' },
-                { title: 'a' },
-                { title: 'c' }
+              id: 2,
+              tasks: [
+                {
+                  title: 'a',
+                  subtasks: [{ title: 'b' }, { title: 'a' }, { title: 'c' }]
+                },
+                {
+                  title: 'c',
+                  subtasks: [{ title: 'a' }]
+                },
+                {
+                  title: 'b',
+                  subtasks: [{ title: 'a' }, { title: 'b' }]
+                }
               ]
             },
             {
-              title: 'c', subtasks: [
-                { title: 'a' }
-              ]
-            },
-            {
-              title: 'b', subtasks: [
-                { title: 'a' },
-                { title: 'b' }
-              ]
+              include: [{ association: User.Tasks, include: [Task.SubTasks] }]
             }
-          ]
-        }, {
-          include: [{ association: User.Tasks, include: [Task.SubTasks] }]
-        })]);
+          )
+        ]);
 
         const users = await User.findAll({
-          include: [{
-            association: User.Tasks,
-            limit: 2,
-            order: [['title', 'ASC']],
-            separate: true,
-            as: 'tasks',
-            include: [
-              {
-                association: Task.SubTasks,
-                order: [['title', 'DESC']],
-                separate: true,
-                as: 'subtasks'
-              }
-            ]
-          }],
-          order: [
-            ['id', 'ASC']
-          ]
+          include: [
+            {
+              association: User.Tasks,
+              limit: 2,
+              order: [['title', 'ASC']],
+              separate: true,
+              as: 'tasks',
+              include: [
+                {
+                  association: Task.SubTasks,
+                  order: [['title', 'DESC']],
+                  separate: true,
+                  as: 'subtasks'
+                }
+              ]
+            }
+          ],
+          order: [['id', 'ASC']]
         });
 
         expect(users[0].tasks.length).to.equal(2);
@@ -211,7 +220,7 @@ describe('HasMany', () => {
 
   describe('(1:N)', () => {
     describe('hasAssociation', () => {
-      beforeEach(function() {
+      beforeEach(function () {
         this.Article = this.sequelize.define('Article', {
           pk: {
             type: DataTypes.INTEGER,
@@ -237,10 +246,12 @@ describe('HasMany', () => {
 
       // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
       // https://www.cockroachlabs.com/docs/stable/transactions.html
-      it.skip('supports transactions', async function() {
+      it.skip('supports transactions', async function () {
         const sequelize = this.sequelize;
-        const Article = sequelize.define('Article', { 'title': DataTypes.STRING });
-        const Label = sequelize.define('Label', { 'text': DataTypes.STRING });
+        const Article = sequelize.define('Article', {
+          title: DataTypes.STRING
+        });
+        const Label = sequelize.define('Label', { text: DataTypes.STRING });
 
         Article.hasMany(Label);
 
@@ -264,7 +275,7 @@ describe('HasMany', () => {
     });
 
     describe('hasAssociations', () => {
-      beforeEach(function() {
+      beforeEach(function () {
         this.Article = this.sequelize.define('Article', {
           pk: {
             type: DataTypes.INTEGER,
@@ -290,10 +301,12 @@ describe('HasMany', () => {
 
       // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
       // https://www.cockroachlabs.com/docs/stable/transactions.html
-      it.skip('supports transactions', async function() {
+      it.skip('supports transactions', async function () {
         const sequelize = this.sequelize;
-        const Article = sequelize.define('Article', { 'title': DataTypes.STRING });
-        const Label = sequelize.define('Label', { 'text': DataTypes.STRING });
+        const Article = sequelize.define('Article', {
+          title: DataTypes.STRING
+        });
+        const Label = sequelize.define('Label', { text: DataTypes.STRING });
 
         Article.hasMany(Label);
 
@@ -323,10 +336,12 @@ describe('HasMany', () => {
     describe('setAssociations', () => {
       // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
       // https://www.cockroachlabs.com/docs/stable/transactions.html
-      it.skip('supports transactions', async function() {
+      it.skip('supports transactions', async function () {
         const sequelize = this.sequelize;
-        const Article = sequelize.define('Article', { 'title': DataTypes.STRING });
-        const Label = sequelize.define('Label', { 'text': DataTypes.STRING });
+        const Article = sequelize.define('Article', {
+          title: DataTypes.STRING
+        });
+        const Label = sequelize.define('Label', { text: DataTypes.STRING });
 
         Article.hasMany(Label);
 
@@ -339,10 +354,16 @@ describe('HasMany', () => {
         ]);
 
         await article.setLabels([label], { transaction: t });
-        const labels0 = await Label.findAll({ where: { ArticleId: article.id }, transaction: undefined });
+        const labels0 = await Label.findAll({
+          where: { ArticleId: article.id },
+          transaction: undefined
+        });
         expect(labels0.length).to.equal(0);
 
-        const labels = await Label.findAll({ where: { ArticleId: article.id }, transaction: t });
+        const labels = await Label.findAll({
+          where: { ArticleId: article.id },
+          transaction: t
+        });
         expect(labels.length).to.equal(1);
         await t.rollback();
       });
@@ -351,10 +372,12 @@ describe('HasMany', () => {
     describe('addAssociations', () => {
       // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
       // https://www.cockroachlabs.com/docs/stable/transactions.html
-      it.skip('supports transactions', async function() {
+      it.skip('supports transactions', async function () {
         const sequelize = this.sequelize;
-        const Article = sequelize.define('Article', { 'title': DataTypes.STRING });
-        const Label = sequelize.define('Label', { 'text': DataTypes.STRING });
+        const Article = sequelize.define('Article', {
+          title: DataTypes.STRING
+        });
+        const Label = sequelize.define('Label', { text: DataTypes.STRING });
         Article.hasMany(Label);
 
         await sequelize.sync({ force: true });
@@ -366,10 +389,16 @@ describe('HasMany', () => {
 
         const t = await sequelize.transaction();
         await article.addLabel(label, { transaction: t });
-        const labels0 = await Label.findAll({ where: { ArticleId: article.id }, transaction: undefined });
+        const labels0 = await Label.findAll({
+          where: { ArticleId: article.id },
+          transaction: undefined
+        });
         expect(labels0.length).to.equal(0);
 
-        const labels = await Label.findAll({ where: { ArticleId: article.id }, transaction: t });
+        const labels = await Label.findAll({
+          where: { ArticleId: article.id },
+          transaction: t
+        });
         expect(labels.length).to.equal(1);
         await t.rollback();
       });
@@ -378,10 +407,12 @@ describe('HasMany', () => {
     describe('createAssociations', () => {
       // Reason: CockroachDB guarantees that while a transaction is pending, it is isolated from other concurrent transactions with serializable isolation.
       // https://www.cockroachlabs.com/docs/stable/transactions.html
-      it.skip('supports transactions', async function() {
-        const sequelize = (this.sequelize);
-        const Article = sequelize.define('Article', { 'title': DataTypes.STRING });
-        const Label = sequelize.define('Label', { 'text': DataTypes.STRING });
+      it.skip('supports transactions', async function () {
+        const sequelize = this.sequelize;
+        const Article = sequelize.define('Article', {
+          title: DataTypes.STRING
+        });
+        const Label = sequelize.define('Label', { text: DataTypes.STRING });
 
         Article.hasMany(Label);
 
@@ -391,9 +422,14 @@ describe('HasMany', () => {
         await article.createLabel({ text: 'bar' }, { transaction: t });
         const labels1 = await Label.findAll();
         expect(labels1.length).to.equal(0);
-        const labels0 = await Label.findAll({ where: { ArticleId: article.id } });
+        const labels0 = await Label.findAll({
+          where: { ArticleId: article.id }
+        });
         expect(labels0.length).to.equal(0);
-        const labels = await Label.findAll({ where: { ArticleId: article.id }, transaction: t });
+        const labels = await Label.findAll({
+          where: { ArticleId: article.id },
+          transaction: t
+        });
         expect(labels.length).to.equal(1);
         await t.rollback();
       });

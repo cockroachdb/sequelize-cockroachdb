@@ -24,6 +24,7 @@
     "types"
   ],
   "scripts": {
+    "lint": "prettier --write .",
     "test": "mocha --check-leaks --colors -t 120000 --reporter spec \"tests/*_test.js\""
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "delay": "^5.0.0",
     "mocha": "^8.2.0",
     "p-timeout": "^4.1.0",
+    "prettier": "2.2.1",
     "sequelize": "^6.3.5",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.5.0"

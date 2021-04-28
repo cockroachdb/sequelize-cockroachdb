@@ -19,7 +19,7 @@ describe('CLS (Async hooks)', () => {
   beforeEach(async function () {
     this.ns = cls.getNamespace('sequelize');
     this.User = this.sequelize.define('user', {
-      name: Sequelize.STRING,
+      name: Sequelize.STRING
     });
     await this.sequelize.sync({ force: true });
   });
@@ -41,7 +41,7 @@ describe('CLS (Async hooks)', () => {
         }),
         this.sequelize.transaction(async () => {
           t2id = this.ns.get('transaction').id;
-        }),
+        })
       ]);
       expect(t1id).to.be.ok;
       expect(t2id).to.be.ok;
@@ -72,7 +72,7 @@ describe('CLS (Async hooks)', () => {
         transactionEnded = true;
       });
 
-      await new Promise((resolve) => {
+      await new Promise(resolve => {
         // Wait for the transaction to be setup
         const interval = setInterval(() => {
           if (transactionSetup) {
@@ -98,13 +98,13 @@ describe('CLS (Async hooks)', () => {
     it('does not leak outside findOrCreate', async function () {
       await this.User.findOrCreate({
         where: {
-          name: 'Kafka',
+          name: 'Kafka'
         },
         logging(sql) {
           if (/default/.test(sql)) {
             throw new Error('The transaction was not properly assigned');
           }
-        },
+        }
       });
 
       await this.User.findAll();
@@ -120,7 +120,7 @@ describe('CLS (Async hooks)', () => {
           expect(
             this.User.findAll({ transaction: null })
           ).to.eventually.have.length(0),
-          expect(this.User.findAll({})).to.eventually.have.length(1),
+          expect(this.User.findAll({})).to.eventually.have.length(1)
         ]);
       });
     });
@@ -141,9 +141,9 @@ describe('CLS (Async hooks)', () => {
   });
 
   it('promises returned by sequelize.query are correctly patched', async function () {
-    await this.sequelize.transaction(async (t) => {
+    await this.sequelize.transaction(async t => {
       await this.sequelize.query('select 1', {
-        type: Sequelize.QueryTypes.SELECT,
+        type: Sequelize.QueryTypes.SELECT
       });
       return expect(this.ns.get('transaction')).to.equal(t);
     });
@@ -151,13 +151,13 @@ describe('CLS (Async hooks)', () => {
 
   // Reason: would need to implement Support which is a test configuration file
   it.skip('custom logging with benchmarking has correct CLS context', async function () {
-    const Support = {}
+    const Support = {};
     const logger = sinon.spy(() => {
       return this.ns.get('value');
     });
     const sequelize = Support.createSequelizeInstance({
       logging: logger,
-      benchmark: true,
+      benchmark: true
     });
 
     const result = this.ns.runPromise(async () => {

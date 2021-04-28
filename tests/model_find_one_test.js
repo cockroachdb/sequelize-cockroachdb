@@ -10,7 +10,7 @@ const config = {
 };
 
 describe('Model', () => {
-  beforeEach(async function() {
+  beforeEach(async function () {
     this.User = this.sequelize.define('User', {
       username: DataTypes.STRING,
       secretValue: DataTypes.STRING,
@@ -24,8 +24,10 @@ describe('Model', () => {
   });
 
   describe('findOne', () => {
-    it.skip('supports transactions', async function() {
-      const User = this.sequelize.define('User', { username: Sequelize.STRING });
+    it.skip('supports transactions', async function () {
+      const User = this.sequelize.define('User', {
+        username: Sequelize.STRING
+      });
 
       await User.sync({ force: true });
       const t = await this.sequelize.transaction();
@@ -46,7 +48,7 @@ describe('Model', () => {
     });
 
     describe('general / basic function', () => {
-      beforeEach(async function() {
+      beforeEach(async function () {
         const user = await this.User.create({ username: 'barfooz' });
         this.UserPrimary = this.sequelize.define('UserPrimary', {
           specialkey: {
@@ -61,18 +63,18 @@ describe('Model', () => {
       });
 
       // Edited Test
-      // Reason: This test expected id to be 1. 
+      // Reason: This test expected id to be 1.
       // CRDB does not work with human-readable ids by default.
-      it('returns a single dao', async function() {
+      it('returns a single dao', async function () {
         const user = await this.User.findByPk(this.user.id);
         expect(Array.isArray(user)).to.not.be.ok;
         expect(user.id).to.equal(this.user.id);
       });
 
       // Edited Test
-      // Reason: This test expected id to be 1. 
+      // Reason: This test expected id to be 1.
       // CRDB does not work with human-readable ids by default.
-      it('returns a single dao given a string id', async function() {
+      it('returns a single dao given a string id', async function () {
         const user = await this.User.findByPk(this.user.id.toString());
         expect(Array.isArray(user)).to.not.be.ok;
         expect(user.id).to.equal(this.user.id);
@@ -80,7 +82,7 @@ describe('Model', () => {
 
       // Edited test
       // Reason: This test tries to find id 1, which does not exist.
-      it('should make aliased attributes available', async function() {
+      it('should make aliased attributes available', async function () {
         const user = await this.User.findOne({
           // used the id from beforeEach created user
           where: { id: this.user.id },
@@ -92,9 +94,13 @@ describe('Model', () => {
 
       // Edited test
       // Reason: CRDB does not work with human-readable ids.
-      it('should allow us to find IDs using capital letters', async function() {
+      it('should allow us to find IDs using capital letters', async function () {
         const User = this.sequelize.define(`User${config.rand()}`, {
-          ID: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+          ID: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+          },
           Login: { type: Sequelize.STRING }
         });
 
@@ -107,21 +113,23 @@ describe('Model', () => {
 
       // Reason: CockroachDB does not yet support CITEXT
       // Seen here: https://github.com/cockroachdb/cockroach/issues/22463
-      it.skip('should allow case-insensitive find on CITEXT type', async function() {
+      it.skip('should allow case-insensitive find on CITEXT type', async function () {
         const User = this.sequelize.define('UserWithCaseInsensitiveName', {
           username: Sequelize.CITEXT
         });
 
         await User.sync({ force: true });
         await User.create({ username: 'longUserNAME' });
-        const user = await User.findOne({ where: { username: 'LONGusername' } });
+        const user = await User.findOne({
+          where: { username: 'LONGusername' }
+        });
         expect(user).to.exist;
         expect(user.username).to.equal('longUserNAME');
       });
 
       // Reason: CockroachDB does not yet support TSVECTOR
       // Seen here: https://github.com/cockroachdb/cockroach/issues/41288
-      it.skip('should allow case-sensitive find on TSVECTOR type', async function() {
+      it.skip('should allow case-sensitive find on TSVECTOR type', async function () {
         const User = this.sequelize.define('UserWithCaseInsensitiveName', {
           username: Sequelize.TSVECTOR
         });
@@ -140,11 +148,13 @@ describe('Model', () => {
       // Edited test
       // Reason: This test uses originally a number which is neither a valid Int or BigInt.
       // Edited the PK to be zero, so it will be not found and achieve the test purpose.
-      it('throws error when record not found by findByPk', async function() {
+      it('throws error when record not found by findByPk', async function () {
         // 4732322332323333232344334354234 originally on Sequelize test suite
-        await expect(this.User.findByPk(0, {
-          rejectOnEmpty: true
-        })).to.eventually.be.rejectedWith(Sequelize.EmptyResultError);
+        await expect(
+          this.User.findByPk(0, {
+            rejectOnEmpty: true
+          })
+        ).to.eventually.be.rejectedWith(Sequelize.EmptyResultError);
       });
     });
   });

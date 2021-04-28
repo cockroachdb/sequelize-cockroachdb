@@ -58,3 +58,4 @@ should not deadlock with concurrency duplicate entries and no outer transaction
 should make the auto incremented values available on the returned instances
 should make the auto incremented values available on the returned instances with custom fields
 should return auto increment primary key values
+reload should work

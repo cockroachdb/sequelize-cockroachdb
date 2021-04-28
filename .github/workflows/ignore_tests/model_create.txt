@@ -1,0 +1,13 @@
+should make the autoincremented values available on the returned instances
+should make the autoincremented values available on the returned instances with custom fields
+is possible to use functions as default values
+doesn't allow case-insensitive duplicated records using CITEXT
+allows the creation of a TSVECTOR field
+TSVECTOR only allow string
+doesn't allow duplicated records with unique function based indexes
+sets auto increment fields
+should return autoIncrement primary key \(create\)
+several concurrent calls
+should error correctly when defaults contain a unique key and the where clause is complex
+should work with multiple concurrent calls
+should not deadlock with concurrency duplicate entries and no outer transaction

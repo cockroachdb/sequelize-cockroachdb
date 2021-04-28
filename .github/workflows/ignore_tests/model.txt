@@ -1,0 +1,13 @@
+allows unique on column with field aliases
+allows us to map the customized error message with unique constraint name
+should allow the user to specify indexes in options
+does not set deletedAt for previously destroyed instances if paranoid is true
+can\'t find records marked as deleted with paranoid being true
+can find paranoid records if paranoid is marked as false in query
+should include deleted associated records if include has paranoid marked as false
+should be able to list schemas
+should describeTable using the default schema settings
+supports multiple async transactions
+allows us to customize the error message for unique constraint
+should not fail when array contains Sequelize.or / and
+should not overwrite a specified deletedAt \(complex query\) by setting paranoid: false

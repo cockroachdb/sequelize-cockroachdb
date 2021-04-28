@@ -1,0 +1,8 @@
+should be able to find multiple users with case-insensitive on CITEXT type
+should allow us to find IDs using capital letters
+sorts the results via id in ascending order
+sorts the results via id in descending order
+sorts the results via a date column
+handles offset and limit
+should be able to handle binary values through associations as well...
+should be able to handle false/true values through associations as well...

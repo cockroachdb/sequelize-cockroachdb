@@ -57,7 +57,7 @@ describe('Model', () => {
     // At PG expectation, indexes are ordered as: [UserWithUniqueFieldAliases_pkey, UserWithUniqueFieldAliases_user_name_key]
     // So, the CRDB primary index is not at the same array position as PG is.
     // Editing this test to the case.
-    it.only('allows unique on column with field aliases', async function () {
+    it('allows unique on column with field aliases', async function () {
       const User = this.sequelize.define('UserWithUniqueFieldAlias', {
         userName: {
           type: Sequelize.STRING,

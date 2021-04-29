@@ -445,7 +445,7 @@ describe('Model', () => {
       ]);
     });
 
-    // Skipped test: CRDB does not work with nextval. It uses unique_rowid() function instead.
+    // Skipped test: CRDB does not use nextval function in this case. It uses unique_rowid() function instead.
     // PG responds: nextval('special."Publics_id_seq"'::regclass)
     // CRDB responds: unique_rowid()
     it.skip('should describeTable using the default schema settings', async function () {

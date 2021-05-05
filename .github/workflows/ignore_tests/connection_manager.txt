@@ -1,0 +1,2 @@
+should fetch regular dynamic oids and create parsers
+should fetch range dynamic oids and create parsers

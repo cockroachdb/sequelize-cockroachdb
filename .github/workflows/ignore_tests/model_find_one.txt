@@ -1,0 +1,7 @@
+returns a single dao
+returns a single dao given a string id
+should make aliased attributes available
+should allow us to find IDs using capital letters
+should allow case-insensitive find on CITEXT type
+should allow case-sensitive find on TSVECTOR type
+throws error when record not found by findByPk

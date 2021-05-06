@@ -1,0 +1,2 @@
+automagically uses the transaction in all calls
+automagically uses the transaction in all calls with async\/await

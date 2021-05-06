@@ -1,0 +1,2 @@
+using scope to set associations
+updating association via set associations with scope

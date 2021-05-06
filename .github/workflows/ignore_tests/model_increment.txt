@@ -1,0 +1,2 @@
+with timestamps set to true
+with timestamps set to true and options.silent set to true

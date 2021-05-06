@@ -1,0 +1,6 @@
+maps attributes from a grouped limit to models
+maps attributes from a grouped limit to models with include
+works with computed order
+works with multiple orders
+works with paranoid junction models
+Applies limit and order correctly

@@ -1,0 +1,2 @@
+should correctly group with attributes, #3009
+should not add primary key when grouping using a belongsTo association

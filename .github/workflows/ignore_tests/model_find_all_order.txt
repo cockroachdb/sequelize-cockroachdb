@@ -1,0 +1,1 @@
+should not throw with on NULLS LAST/NULLS FIRST

@@ -6,7 +6,7 @@ const _ = require('lodash');
 
 // Skip reason:
 // CRDB does not have CREATE FUNCTION syntax.
-describe.only('[POSTGRES Specific] QueryInterface', () => {
+describe.skip('[POSTGRES Specific] QueryInterface', () => {
   beforeEach(function () {
     this.sequelize.options.quoteIdenifiers = true;
     this.queryInterface = this.sequelize.getQueryInterface();

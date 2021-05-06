@@ -4,8 +4,10 @@ const { expect } = require('chai');
 
 describe('[POSTGRES Specific] Data Types', () => {
   describe('DATE SQL', () => {
+    // Skip reason: There is a known issue with CRDB to treat correctly Infinity in DATE Type.
+    // https://github.com/cockroachdb/cockroach/issues/41564
     // create dummy user
-    it('should be able to create and update records with Infinity/-Infinity', async function () {
+    it.skip('should be able to create and update records with Infinity/-Infinity', async function () {
       this.sequelize.options.typeValidation = true;
 
       const date = new Date();

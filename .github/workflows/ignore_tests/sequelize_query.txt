@@ -1,0 +1,2 @@
+properly bind parameters on extra retries
+add parameters in log sql

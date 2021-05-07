@@ -1,0 +1,2 @@
+truncates all models
+correctly handles multiple transactions

@@ -1,0 +1,3 @@
+should be able to include a required model. Result rows should match count
+should correctly filter, limit and sort when multiple includes and types of associations are present.
+should properly work with sequelize.function

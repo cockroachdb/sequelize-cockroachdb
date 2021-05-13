@@ -90,7 +90,8 @@ describe('Sequelize', () => {
       });
 
       // Skip reason:
-      // CRDB allows only one transaction per node.
+      // CRDB transactions have stronger locking restrictions so that a transaction
+      // writing will block reads on the same object from a different transaction.
       it.skip('correctly handles multiple transactions', async function () {
         const TransactionTest = this.sequelizeWithTransaction.define(
           'TransactionTest',

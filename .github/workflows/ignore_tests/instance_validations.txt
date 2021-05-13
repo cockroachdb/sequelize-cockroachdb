@@ -1,0 +1,4 @@
+should allow us to update specific columns without tripping the validations
+should enforce a unique constraint
+should allow a custom unique constraint error message
+should handle multiple unique messages correctly

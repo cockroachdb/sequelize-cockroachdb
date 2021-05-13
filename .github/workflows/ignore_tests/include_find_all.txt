@@ -1,0 +1,2 @@
+should be possible to select on columns inside a through table
+should be possible to select on columns inside a through table and a limit

@@ -55,9 +55,17 @@ if (semver.satisfies(sequelizeVersion, '5.x')) {
 
 //// [2] Disable `EXCEPTION` support
 
-// This prevents, for example, usage of CREATE/REPLACE FUNCTION when using Model.findOrCreate()
 const PostgresDialect = require('sequelize/lib/dialects/postgres');
+// This prevents, for example, usage of CREATE/REPLACE FUNCTION when using Model.findOrCreate()
 PostgresDialect.prototype.supports.EXCEPTION = false;
+
+//// [2.1] Disable lock features support
+// lockOuterJoinFailure is not supported.
+PostgresDialect.prototype.supports.lockOuterJoinFailure = false;
+// skipLocked is not supported.
+PostgresDialect.prototype.supports.skipLocked = false;
+// lockKey is not supported.
+PostgresDialect.prototype.supports.lockKey = false;
 
 //// [3] Tell Sequelize to accept large numbers as strings
 

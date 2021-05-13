@@ -1,1 +1,4 @@
 supports transactions
+does not try to rollback a transaction that failed upon committing with SERIALIZABLE isolation level \(#3689\)
+should read the most recent committed rows when using the READ COMMITTED isolation level
+supports for share \(i.e. `SELECT ... LOCK IN SHARE MODE`\)

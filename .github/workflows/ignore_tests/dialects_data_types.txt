@@ -1,0 +1,1 @@
+should be able to create and update records with Infinity/-Infinity

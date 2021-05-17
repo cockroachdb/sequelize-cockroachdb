@@ -5,27 +5,8 @@ require('./helper');
 const { expect } = require('chai'),
   { Sequelize, DataTypes } = require('../source'),
   sinon = require('sinon'),
+  Support = require('./support'),
   Op = Sequelize.Op;
-
-const Support = {
-  dropTestSchemas: async function (sequelize) {
-    const queryInterface = sequelize.getQueryInterface();
-    if (!queryInterface.queryGenerator._dialect.supports.schemas) {
-      return this.sequelize.drop({});
-    }
-
-    const schemas = await sequelize.showAllSchemas();
-    const schemasPromise = [];
-    schemas.forEach(schema => {
-      const schemaName = schema.name ? schema.name : schema;
-      if (schemaName !== sequelize.config.database) {
-        schemasPromise.push(sequelize.dropSchema(schemaName));
-      }
-    });
-
-    await Promise.all(schemasPromise.map(p => p.catch(e => e)));
-  }
-};
 
 describe('Model', () => {
   before(function () {

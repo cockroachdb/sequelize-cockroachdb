@@ -299,6 +299,12 @@ Model.findOrCreate = async function findOrCreate(options) {
   }
 };
 
+// [7] GEOGRAPHY type
+// Got to explicitly cast it is a GEOGRAPHY type.
+DataTypes.postgres.GEOGRAPHY.prototype.bindParam = (value, options) => {
+  return `ST_GeomFromGeoJSON(${options.bindParam(value)}::json)::geography`;
+}
+
 //// Done!
 
 Sequelize.supportsCockroachDB = true;

@@ -2,12 +2,14 @@ const { isDeepStrictEqual } = require('util');
 const Sequelize = require('../source');
 
 const Support = {
-  createSequelizeInstance: function () {
+  createSequelizeInstance: function (options = {}) {
     return new Sequelize('sequelize_test', 'root', '', {
       dialect: 'postgres',
       port: process.env.COCKROACH_PORT || 26257,
       logging: console.log,
-      typeValidation: true
+      typeValidation: true,
+      minifyAliases: options.minifyAliases || false,
+      ...options
     });
   },
 

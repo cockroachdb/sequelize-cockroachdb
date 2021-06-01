@@ -1,0 +1,1 @@
+returns a response that can be stringified

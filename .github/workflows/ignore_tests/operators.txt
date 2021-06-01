@@ -1,0 +1,2 @@
+should properly escape regular expressions
+should work with a case-insensitive not regexp where

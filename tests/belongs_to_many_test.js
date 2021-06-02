@@ -36,7 +36,8 @@ var Support = {
       typeValidation: true,
       define: {
         paranoid: true
-      }
+      },
+      dialectOptions: {cockroachdbTelemetryDisabled : true},
     });
   }
 };

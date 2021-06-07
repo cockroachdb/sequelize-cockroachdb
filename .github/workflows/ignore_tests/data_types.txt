@@ -1,0 +1,15 @@
+calls parse and stringify for JSON
+calls parse and bindParam for HSTORE
+calls parse and bindParam for RANGE
+calls parse and stringify for INTEGER
+calls parse and stringify for CIDR
+calls parse and stringify for CITEXT
+calls parse and stringify for MACADDR
+calls parse and stringify for TSVECTOR
+should return Int4 range properly #5747
+should allow date ranges to be generated with default bounds inclusion #8176
+should allow date ranges to be generated using a single range expression to define bounds inclusion #8176
+should allow date ranges to be generated using a composite range expression #8176
+should correctly return ranges when using predicates that define bounds inclusion #8176
+calls parse and bindParam for GEOMETRY
+should store and parse IEEE floating point literals \(NaN and Infinity\)

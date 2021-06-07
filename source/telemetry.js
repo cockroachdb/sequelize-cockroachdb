@@ -10,7 +10,11 @@ Sequelize.addHook('afterInit', async (connection) => {
             return 
         }
  
+<<<<<<< HEAD
         if (!version_helper.IsCockroachVersion21_1Plus(connection)) {
+=======
+        if (!IsCockroachVersion21_1Plus(connection)) {
+>>>>>>> cb33215 (Only run geometry test on versions >= 21.2)
             return
         }
         var sequelizeVersion = version_helper.GetSequelizeVersion()

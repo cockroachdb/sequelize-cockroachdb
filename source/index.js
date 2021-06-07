@@ -27,16 +27,10 @@ const { Sequelize, DataTypes, Model } = require('sequelize');
 const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
 
 // Ensure Sequelize version compatibility.
+var version_helper = require ('./version_helper.js')
 const semver = require('semver');
-const { version, release } = require('sequelize/package.json');
-// In v4 and v5 package.json files, have a property 'release: { branch: 'v5' }'
-// but in v6 it has 'release: { branches: ['v6'] }'
-const branchVersion = release.branches ? release.branches[0] : release.branch;
-// When executing the tests on Github Actions the version it gets from sequelize is from the repository which has a development version '0.0.0-development'
-// in that case we fallback to a branch version
-const sequelizeVersion = semver.coerce(
-  version === '0.0.0-development' ? branchVersion : version
-);
+
+const sequelizeVersion = version_helper.GetSequelizeVersion()
 
 if (semver.satisfies(sequelizeVersion, '<=4')) {
   throw new Error(
@@ -44,8 +38,9 @@ if (semver.satisfies(sequelizeVersion, '<=4')) {
   );
 }
 
-//// [1] Override the `upsert` query method from Sequelize v5 to make it work with CockroachDB
+require('./telemetry.js')
 
+//// [1] Override the `upsert` query method from Sequelize v5 to make it work with CockroachDB
 if (semver.satisfies(sequelizeVersion, '5.x')) {
   require('./patch-upsert-v5');
   require('./patches-v5');

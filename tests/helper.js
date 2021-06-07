@@ -51,7 +51,8 @@ before(function () {
     dialect: 'postgres',
     port: process.env.COCKROACH_PORT || 26257,
     logging: false,
-    typeValidation: true
+    typeValidation: true,
+    dialectOptions: {cockroachdbTelemetryDisabled : true},
   });
 });
 

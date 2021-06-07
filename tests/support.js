@@ -22,6 +22,19 @@ const Support = {
   getPoolMax: function () {
     // sequelize.config.pool.max default is 5.
     return 5;
+  },
+
+  dropTestSchemas: async function (sequelize) {
+    const schemas = await sequelize.showAllSchemas();
+    const schemasPromise = [];
+    schemas.forEach(schema => {
+      const schemaName = schema.name ? schema.name : schema;
+      if (schemaName !== sequelize.config.database) {
+        schemasPromise.push(sequelize.dropSchema(schemaName));
+      }
+    });
+
+    await Promise.all(schemasPromise.map(p => p.catch(e => e)));
   }
 }
 

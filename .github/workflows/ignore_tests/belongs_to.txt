@@ -1,2 +1,1 @@
-should tell me that a column is json
 should set foreignKey on foreign table

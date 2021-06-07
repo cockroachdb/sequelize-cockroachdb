@@ -1,8 +1,1 @@
-renameFunction
-creates a stored procedure
-treats options as optional
-overrides a function
-uses declared variables
-can drop a function
-supports newlines
-adds, reads and removes a named functional index to the table
+\[POSTGRES Specific\] QueryInterface

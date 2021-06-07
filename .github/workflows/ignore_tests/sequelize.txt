@@ -1,2 +1,3 @@
 truncates all models
 correctly handles multiple transactions
+fails with incorrect database credentials \(1\)

@@ -47,13 +47,7 @@ async function cleanupDatabase(sequelize) {
 }
 
 before(function () {
-  this.sequelize = new Sequelize('sequelize_test', 'root', '', {
-    dialect: 'postgres',
-    port: process.env.COCKROACH_PORT || 26257,
-    logging: false,
-    typeValidation: true,
-    dialectOptions: {cockroachdbTelemetryDisabled : true},
-  });
+  this.sequelize = makeTestSequelizeInstance();
 });
 
 afterEach(async function () {
@@ -64,4 +58,14 @@ after(async function () {
   await this.sequelize.close();
 });
 
-module.exports = { cleanupDatabase };
+function makeTestSequelizeInstance() {
+  return new Sequelize('sequelize_test', 'root', '', {
+    dialect: 'postgres',
+    port: process.env.COCKROACH_PORT || 26257,
+    logging: false,
+    typeValidation: true,
+    dialectOptions: {cockroachdbTelemetryDisabled : true},
+  });
+}
+
+module.exports = { makeTestSequelizeInstance };

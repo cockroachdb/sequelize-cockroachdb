@@ -10,7 +10,7 @@ Sequelize.addHook('afterInit', async (connection) => {
             return 
         }
  
-        if (!CockroachVersionGreaterThan21_1(connection)) {
+        if (!IsCockroachVersion21_1Plus(connection)) {
             return
         }
         var sequelizeVersion = version_helper.GetSequelizeVersion()

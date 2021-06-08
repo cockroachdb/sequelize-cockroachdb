@@ -1,0 +1,3 @@
+do not rollback if already committed
+supports for share
+"after each" hook for "supports for share"

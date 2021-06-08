@@ -27,7 +27,7 @@ const { Sequelize, DataTypes, Model } = require('sequelize');
 const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
 
 // Ensure Sequelize version compatibility.
-var version_helper = require ('./version_helper.js')
+const version_helper = require ('./version_helper.js')
 const semver = require('semver');
 
 const sequelizeVersion = version_helper.GetSequelizeVersion()

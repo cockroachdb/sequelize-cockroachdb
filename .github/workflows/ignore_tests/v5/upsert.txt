@@ -1,0 +1,15 @@
+works with upsert on id
+works with upsert on a composite key
+works with upsert on a composite primary key
+works with BLOBs
+works with .field
+works with primary key using .field
+works with database functions
+does not update when setting current values
+works when two separate uniqueKeys are passed
+works when indexes are created via indexes array
+works when composite indexes are created via indexes array
+should return default value set by the database (upsert)
+works with upsert on id
+works for table with custom primary key field
+works for non incrementing primaryKey

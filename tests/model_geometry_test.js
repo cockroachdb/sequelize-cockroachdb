@@ -8,199 +8,98 @@ const { expect } = require('chai'),
   semver = require('semver');
 
 const version_helper = require('../source/version_helper.js')
-const { makeTestSequelizeInstance } = require('./helper.js')
 
-function shouldSkip(test, isCRDBVersion21_2Plus) {
-  if (!isCRDBVersion21_2Plus) {
-    test.skip()
-  }
-}
+const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
+const isCRDBVersion21_2Plus =  crdbVersion ? semver.gte(crdbVersion, "21.1.2") : false
 
 // Edited test:
 // It is expected to have CRS field in GEOMETRY fields.
 // Geometry is only supported in versions 21.2+. We only run this if 
 // we're on a version of CockroachDB equal or greater to 21.2.
-describe('TestGeometryIfOn21.2Plus', async function () {
-  let isCRDBVersion21_2Plus = false
-  before(async () => {
-    const connection = makeTestSequelizeInstance()
-    if (await version_helper.IsCockroachVersion21_2Plus(connection)) {
-      isCRDBVersion21_2Plus = true
-    }
-  })
-
-  describe('Model', () => {
-    describe('GEOMETRY', () => {
-      beforeEach(async function () {
-        this.User = this.sequelize.define('User', {
-          username: DataTypes.STRING,
-          geometry: DataTypes.GEOMETRY
-        });
-
-        await this.User.sync({ force: true });
+describe('Model', () => {
+  describe('GEOMETRY', () => {
+    beforeEach(async function () {
+      this.User = this.sequelize.define('User', {
+        username: DataTypes.STRING,
+        geometry: DataTypes.GEOMETRY
       });
 
-      it('works with aliases fields', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const Pub = this.sequelize.define(
-            'Pub',
-            {
-              location: { field: 'coordinates', type: DataTypes.GEOMETRY }
-            },
-            { timestamps: false }
-          ),
-          point = { type: 'Point', coordinates: [39.807222, -76.984722] };
+      await this.User.sync({ force: true });
+    });
 
-        await Pub.sync({ force: true });
-        const pub = await Pub.create({ location: point });
-
-        expect(pub).not.to.be.null;
-        expect(pub.location).to.be.deep.eql({
-          ...point,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
-      });
-
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point = { type: 'Point', coordinates: [39.807222, -76.984722] };
-
-        const newUser = await User.create({
-          username: 'username',
-          geometry: point
-        });
-        expect(newUser).not.to.be.null;
-        expect(newUser.geometry).to.be.deep.eql({
-          ...point,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
-      });
-
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point1 = { type: 'Point', coordinates: [39.807222, -76.984722] },
-          point2 = { type: 'Point', coordinates: [49.807222, -86.984722] };
-        const props = { username: 'username', geometry: point1 };
-
-        await User.create(props);
-        await User.update(
-          { geometry: point2 },
-          { where: { username: props.username } }
-        );
-        const user = await User.findOne({ where: { username: props.username } });
-        expect(user.geometry).to.be.deep.eql({
-          ...point2,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
-      });
-
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const Pub = this.sequelize.define('Pub', {
+    (isCRDBVersion21_2Plus ? it : it.skip)('works with aliases fields', async function () {
+          const Pub = this.sequelize.define(
+          'Pub',
+          {
             location: { field: 'coordinates', type: DataTypes.GEOMETRY }
-          }),
-          point = {
-            type: 'Point',
-            coordinates: [39.807222, -76.984722],
-            crs: {
-              type: 'name',
-              properties: {
-                name: 'EPSG:4326'
-              }
-            }
-          };
+          },
+          { timestamps: false }
+        ),
+        point = { type: 'Point', coordinates: [39.807222, -76.984722] };
 
-        await Pub.sync({ force: true });
-        const pub = await Pub.create({ location: point });
-        expect(pub).not.to.be.null;
-        expect(pub.location).to.be.deep.eql({
-          ...point,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
+      await Pub.sync({ force: true });
+      const pub = await Pub.create({ location: point });
+
+      expect(pub).not.to.be.null;
+      expect(pub.location).to.be.deep.eql({
+        ...point,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
       });
     });
 
-    describe('GEOMETRY(POINT)', () => {
-      beforeEach(async function () {
-        this.User = this.sequelize.define('User', {
-          username: DataTypes.STRING,
-          geometry: DataTypes.GEOMETRY('POINT')
-        });
+    (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
+      const User = this.User;
+      const point = { type: 'Point', coordinates: [39.807222, -76.984722] };
 
-        await this.User.sync({ force: true });
+      const newUser = await User.create({
+        username: 'username',
+        geometry: point
       });
-
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point = { type: 'Point', coordinates: [39.807222, -76.984722] };
-
-        const newUser = await User.create({
-          username: 'username',
-          geometry: point
-        });
-        expect(newUser).not.to.be.null;
-        expect(newUser.geometry).to.be.deep.eql({
-          ...point,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
+      expect(newUser).not.to.be.null;
+      expect(newUser.geometry).to.be.deep.eql({
+        ...point,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
       });
+    });
 
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point1 = { type: 'Point', coordinates: [39.807222, -76.984722] },
-          point2 = { type: 'Point', coordinates: [49.807222, -86.984722] };
-        const props = { username: 'username', geometry: point1 };
+    (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
+      const User = this.User;
+      const point1 = { type: 'Point', coordinates: [39.807222, -76.984722] },
+        point2 = { type: 'Point', coordinates: [49.807222, -86.984722] };
+      const props = { username: 'username', geometry: point1 };
 
-        await User.create(props);
-        await User.update(
-          { geometry: point2 },
-          { where: { username: props.username } }
-        );
-        const user = await User.findOne({ where: { username: props.username } });
-        expect(user.geometry).to.be.deep.eql({
-          ...point2,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
+      await User.create(props);
+      await User.update(
+        { geometry: point2 },
+        { where: { username: props.username } }
+      );
+      const user = await User.findOne({ where: { username: props.username } });
+      expect(user.geometry).to.be.deep.eql({
+        ...point2,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
       });
+    });
 
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point = {
+    (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
+      const Pub = this.sequelize.define('Pub', {
+          location: { field: 'coordinates', type: DataTypes.GEOMETRY }
+        }),
+        point = {
           type: 'Point',
           coordinates: [39.807222, -76.984722],
           crs: {
@@ -211,128 +110,273 @@ describe('TestGeometryIfOn21.2Plus', async function () {
           }
         };
 
-        const newUser = await User.create({
-          username: 'username',
-          geometry: point
-        });
-        expect(newUser).not.to.be.null;
-        expect(newUser.geometry).to.be.deep.eql(point);
+      await Pub.sync({ force: true });
+      const pub = await Pub.create({ location: point });
+      expect(pub).not.to.be.null;
+      expect(pub.location).to.be.deep.eql({
+        ...point,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
+      });
+    });
+  });
+
+  describe('GEOMETRY(POINT)', () => {
+    beforeEach(async function () {
+      this.User = this.sequelize.define('User', {
+        username: DataTypes.STRING,
+        geometry: DataTypes.GEOMETRY('POINT')
+      });
+
+      await this.User.sync({ force: true });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
+      const User = this.User;
+      const point = { type: 'Point', coordinates: [39.807222, -76.984722] };
+
+      const newUser = await User.create({
+        username: 'username',
+        geometry: point
+      });
+      expect(newUser).not.to.be.null;
+      expect(newUser.geometry).to.be.deep.eql({
+        ...point,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
       });
     });
 
-    describe('GEOMETRY(LINESTRING)', () => {
-      beforeEach(async function () {
-        this.User = this.sequelize.define('User', {
-          username: DataTypes.STRING,
-          geometry: DataTypes.GEOMETRY('LINESTRING')
-        });
+    (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
+      const User = this.User;
+      const point1 = { type: 'Point', coordinates: [39.807222, -76.984722] },
+        point2 = { type: 'Point', coordinates: [49.807222, -86.984722] };
+      const props = { username: 'username', geometry: point1 };
 
-        await this.User.sync({ force: true });
+      await User.create(props);
+      await User.update(
+        { geometry: point2 },
+        { where: { username: props.username } }
+      );
+      const user = await User.findOne({ where: { username: props.username } });
+      expect(user.geometry).to.be.deep.eql({
+        ...point2,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
+      });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
+      const User = this.User;
+      const point = {
+        type: 'Point',
+        coordinates: [39.807222, -76.984722],
+        crs: {
+          type: 'name',
+          properties: {
+            name: 'EPSG:4326'
+          }
+        }
+      };
+
+      const newUser = await User.create({
+        username: 'username',
+        geometry: point
+      });
+      expect(newUser).not.to.be.null;
+      expect(newUser.geometry).to.be.deep.eql(point);
+    });
+  });
+
+  describe('GEOMETRY(LINESTRING)', () => {
+    beforeEach(async function () {
+      this.User = this.sequelize.define('User', {
+        username: DataTypes.STRING,
+        geometry: DataTypes.GEOMETRY('LINESTRING')
       });
 
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point = {
+      await this.User.sync({ force: true });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
+      const User = this.User;
+      const point = {
+        type: 'LineString',
+        coordinates: [
+          [100.0, 0.0],
+          [101.0, 1.0]
+        ]
+      };
+
+      const newUser = await User.create({
+        username: 'username',
+        geometry: point
+      });
+      expect(newUser).not.to.be.null;
+      expect(newUser.geometry).to.be.deep.eql({
+        ...point,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
+      });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
+      const User = this.User;
+      const point1 = {
           type: 'LineString',
           coordinates: [
             [100.0, 0.0],
             [101.0, 1.0]
           ]
-        };
-
-        const newUser = await User.create({
-          username: 'username',
-          geometry: point
-        });
-        expect(newUser).not.to.be.null;
-        expect(newUser.geometry).to.be.deep.eql({
-          ...point,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
-      });
-
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point1 = {
-            type: 'LineString',
-            coordinates: [
-              [100.0, 0.0],
-              [101.0, 1.0]
-            ]
-          },
-          point2 = {
-            type: 'LineString',
-            coordinates: [
-              [101.0, 0.0],
-              [102.0, 1.0]
-            ]
-          };
-        const props = { username: 'username', geometry: point1 };
-
-        await User.create(props);
-        await User.update(
-          { geometry: point2 },
-          { where: { username: props.username } }
-        );
-        const user = await User.findOne({ where: { username: props.username } });
-        expect(user.geometry).to.be.deep.eql({
-          ...point2,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
-      });
-
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point = {
+        },
+        point2 = {
           type: 'LineString',
           coordinates: [
-            [100.0, 0.0],
-            [101.0, 1.0]
-          ],
-          crs: {
-            type: 'name',
-            properties: {
-              name: 'EPSG:4326'
-            }
-          }
+            [101.0, 0.0],
+            [102.0, 1.0]
+          ]
         };
+      const props = { username: 'username', geometry: point1 };
 
-        const newUser = await User.create({
-          username: 'username',
-          geometry: point
-        });
-        expect(newUser).not.to.be.null;
-        expect(newUser.geometry).to.be.deep.eql(point);
+      await User.create(props);
+      await User.update(
+        { geometry: point2 },
+        { where: { username: props.username } }
+      );
+      const user = await User.findOne({ where: { username: props.username } });
+      expect(user.geometry).to.be.deep.eql({
+        ...point2,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
       });
     });
 
-    describe('GEOMETRY(POLYGON)', () => {
-      beforeEach(async function () {
-        this.User = this.sequelize.define('User', {
-          username: DataTypes.STRING,
-          geometry: DataTypes.GEOMETRY('POLYGON')
-        });
+    (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
+      const User = this.User;
+      const point = {
+        type: 'LineString',
+        coordinates: [
+          [100.0, 0.0],
+          [101.0, 1.0]
+        ],
+        crs: {
+          type: 'name',
+          properties: {
+            name: 'EPSG:4326'
+          }
+        }
+      };
 
-        await this.User.sync({ force: true });
+      const newUser = await User.create({
+        username: 'username',
+        geometry: point
+      });
+      expect(newUser).not.to.be.null;
+      expect(newUser.geometry).to.be.deep.eql(point);
+    });
+  });
+
+  describe('GEOMETRY(POLYGON)', () => {
+    beforeEach(async function () {
+      this.User = this.sequelize.define('User', {
+        username: DataTypes.STRING,
+        geometry: DataTypes.GEOMETRY('POLYGON')
       });
 
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point = {
+      await this.User.sync({ force: true });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
+      const User = this.User;
+      const point = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [100.0, 0.0],
+            [101.0, 0.0],
+            [101.0, 1.0],
+            [100.0, 1.0],
+            [100.0, 0.0]
+          ]
+        ]
+      };
+
+      const newUser = await User.create({
+        username: 'username',
+        geometry: point
+      });
+      expect(newUser).not.to.be.null;
+      expect(newUser.geometry).to.be.deep.eql({
+        ...point,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
+      });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
+      const User = this.User;
+      const point = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [100.0, 0.0],
+            [101.0, 0.0],
+            [101.0, 1.0],
+            [100.0, 1.0],
+            [100.0, 0.0]
+          ]
+        ],
+        crs: {
+          type: 'name',
+          properties: {
+            name: 'EPSG:4326'
+          }
+        }
+      };
+
+      const newUser = await User.create({
+        username: 'username',
+        geometry: point
+      });
+      expect(newUser).not.to.be.null;
+      expect(newUser.geometry).to.be.deep.eql({
+        ...point,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
+          },
+          type: 'name'
+        }
+      });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
+      const User = this.User;
+      const polygon1 = {
           type: 'Polygon',
           coordinates: [
             [
@@ -343,144 +387,71 @@ describe('TestGeometryIfOn21.2Plus', async function () {
               [100.0, 0.0]
             ]
           ]
-        };
-
-        const newUser = await User.create({
-          username: 'username',
-          geometry: point
-        });
-        expect(newUser).not.to.be.null;
-        expect(newUser.geometry).to.be.deep.eql({
-          ...point,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
-      });
-
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const point = {
+        },
+        polygon2 = {
           type: 'Polygon',
           coordinates: [
             [
               [100.0, 0.0],
-              [101.0, 0.0],
-              [101.0, 1.0],
+              [102.0, 0.0],
+              [102.0, 1.0],
               [100.0, 1.0],
               [100.0, 0.0]
             ]
-          ],
-          crs: {
-            type: 'name',
-            properties: {
-              name: 'EPSG:4326'
-            }
-          }
+          ]
         };
+      const props = { username: 'username', geometry: polygon1 };
 
-        const newUser = await User.create({
-          username: 'username',
-          geometry: point
-        });
-        expect(newUser).not.to.be.null;
-        expect(newUser.geometry).to.be.deep.eql({
-          ...point,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
-      });
-
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const User = this.User;
-        const polygon1 = {
-            type: 'Polygon',
-            coordinates: [
-              [
-                [100.0, 0.0],
-                [101.0, 0.0],
-                [101.0, 1.0],
-                [100.0, 1.0],
-                [100.0, 0.0]
-              ]
-            ]
+      await User.create(props);
+      await User.update(
+        { geometry: polygon2 },
+        { where: { username: props.username } }
+      );
+      const user = await User.findOne({ where: { username: props.username } });
+      expect(user.geometry).to.be.deep.eql({
+        ...polygon2,
+        crs: {
+          properties: {
+            name: 'EPSG:4326'
           },
-          polygon2 = {
-            type: 'Polygon',
-            coordinates: [
-              [
-                [100.0, 0.0],
-                [102.0, 0.0],
-                [102.0, 1.0],
-                [100.0, 1.0],
-                [100.0, 0.0]
-              ]
-            ]
-          };
-        const props = { username: 'username', geometry: polygon1 };
+          type: 'name'
+        }
+      });
+    });
+  });
 
-        await User.create(props);
-        await User.update(
-          { geometry: polygon2 },
-          { where: { username: props.username } }
-        );
-        const user = await User.findOne({ where: { username: props.username } });
-        expect(user.geometry).to.be.deep.eql({
-          ...polygon2,
-          crs: {
-            properties: {
-              name: 'EPSG:4326'
-            },
-            type: 'name'
-          }
-        });
+  describe('sql injection attacks', () => {
+    beforeEach(async function () {
+      this.Model = this.sequelize.define('Model', {
+        location: DataTypes.GEOMETRY
+      });
+      await this.sequelize.sync({ force: true });
+    });
+
+    (isCRDBVersion21_2Plus ? it : it.skip)('should properly escape the single quotes', async function () {
+      await this.Model.create({
+        location: {
+          type: 'Point',
+          properties: {
+            exploit: "'); DELETE YOLO INJECTIONS; -- "
+          },
+          coordinates: [39.807222, -76.984722]
+        }
       });
     });
 
-    describe('sql injection attacks', () => {
-      beforeEach(async function () {
-        this.Model = this.sequelize.define('Model', {
-          location: DataTypes.GEOMETRY
-        });
-        await this.sequelize.sync({ force: true });
-      });
-
-      it('should properly escape the single quotes', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        await this.Model.create({
+    (isCRDBVersion21_2Plus ? it : it.skip)('should properly escape the single quotes in coordinates', async function () {
+      expect(
+        this.Model.create({
           location: {
             type: 'Point',
             properties: {
               exploit: "'); DELETE YOLO INJECTIONS; -- "
             },
-            coordinates: [39.807222, -76.984722]
+            coordinates: [39.807222, "'); DELETE YOLO INJECTIONS; --"]
           }
-        });
-      });
-
-      it('should properly escape the single quotes in coordinates', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        expect(
-          this.Model.create({
-            location: {
-              type: 'Point',
-              properties: {
-                exploit: "'); DELETE YOLO INJECTIONS; -- "
-              },
-              coordinates: [39.807222, "'); DELETE YOLO INJECTIONS; --"]
-            }
-          })
-        ).to.eventually.throw();
-      });
+        })
+      ).to.eventually.throw();
     });
   });
 });

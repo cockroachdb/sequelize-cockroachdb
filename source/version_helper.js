@@ -17,11 +17,9 @@ module.exports = {
 
     return semver.gte(semver.coerce(cockroachDBVersion), "21.1.0")
   },
-  IsCockroachVersion21_2Plus: async function(connection) {
-    const versionRow = await connection.query("SELECT version() AS version", { type: QueryTypes.SELECT });
-    const cockroachDBVersion = versionRow[0]["version"]
-
-    return semver.gte(semver.coerce(cockroachDBVersion), "21.2.0")
+  GetCockroachDBVersionFromEnvConfig: function() {
+    const crdbVersion = process.env['crdb_version'] 
+    return semver.coerce(crdbVersion)
   }
 };
 

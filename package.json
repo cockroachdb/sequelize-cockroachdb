@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "lint": "prettier --write .",
-    "test": "mocha --check-leaks --colors -t 300000 --reporter spec \"tests/*_test.js\""
+    "test": "env crdb_version=$npm_config_crdb_version mocha --check-leaks --colors -t 300000 --reporter spec \"tests/*_test.js\""
   },
   "dependencies": {
     "lodash": "^4.17.20",

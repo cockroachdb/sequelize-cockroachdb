@@ -10,17 +10,11 @@ const { expect } = require('chai'),
 const version_helper = require('../source/version_helper.js')
 const { makeTestSequelizeInstance } = require('./helper.js')
 
-function shouldSkip(test, isCRDBVersion21_2Plus) {
-  if (!isCRDBVersion21_2Plus) {
-    test.skip()
-  }
-}
-
 // Edited test:
 // It is expected to have CRS field in GEOMETRY fields.
 // Geometry is only supported in versions 21.2+. We only run this if 
 // we're on a version of CockroachDB equal or greater to 21.2.
-describe.skip('TestGeometryIfOn21.2Plus', async function () {
+describe('TestGeometryIfOn21.2Plus', async function () {
   let isCRDBVersion21_2Plus = false
   before(async () => {
     const connection = makeTestSequelizeInstance()
@@ -40,9 +34,8 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         await this.User.sync({ force: true });
       });
 
-      it('works with aliases fields', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
-        const Pub = this.sequelize.define(
+      (isCRDBVersion21_2Plus ? it : it.skip)('works with aliases fields', async function () {
+            const Pub = this.sequelize.define(
             'Pub',
             {
               location: { field: 'coordinates', type: DataTypes.GEOMETRY }
@@ -66,8 +59,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
         const User = this.User;
         const point = { type: 'Point', coordinates: [39.807222, -76.984722] };
 
@@ -87,8 +79,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
         const User = this.User;
         const point1 = { type: 'Point', coordinates: [39.807222, -76.984722] },
           point2 = { type: 'Point', coordinates: [49.807222, -86.984722] };
@@ -111,8 +102,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
         const Pub = this.sequelize.define('Pub', {
             location: { field: 'coordinates', type: DataTypes.GEOMETRY }
           }),
@@ -152,8 +142,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         await this.User.sync({ force: true });
       });
 
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
         const User = this.User;
         const point = { type: 'Point', coordinates: [39.807222, -76.984722] };
 
@@ -173,8 +162,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
         const User = this.User;
         const point1 = { type: 'Point', coordinates: [39.807222, -76.984722] },
           point2 = { type: 'Point', coordinates: [49.807222, -86.984722] };
@@ -197,8 +185,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
         const User = this.User;
         const point = {
           type: 'Point',
@@ -230,8 +217,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         await this.User.sync({ force: true });
       });
 
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
         const User = this.User;
         const point = {
           type: 'LineString',
@@ -257,8 +243,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
         const User = this.User;
         const point1 = {
             type: 'LineString',
@@ -293,8 +278,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
         const User = this.User;
         const point = {
           type: 'LineString',
@@ -329,8 +313,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         await this.User.sync({ force: true });
       });
 
-      it('should create a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should create a geometry object', async function () {
         const User = this.User;
         const point = {
           type: 'Polygon',
@@ -361,8 +344,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('works with crs field', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('works with crs field', async function () {
         const User = this.User;
         const point = {
           type: 'Polygon',
@@ -399,8 +381,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('should update a geometry object', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should update a geometry object', async function () {
         const User = this.User;
         const polygon1 = {
             type: 'Polygon',
@@ -454,8 +435,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         await this.sequelize.sync({ force: true });
       });
 
-      it('should properly escape the single quotes', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should properly escape the single quotes', async function () {
         await this.Model.create({
           location: {
             type: 'Point',
@@ -467,8 +447,7 @@ describe.skip('TestGeometryIfOn21.2Plus', async function () {
         });
       });
 
-      it('should properly escape the single quotes in coordinates', async function () {
-        shouldSkip(this, isCRDBVersion21_2Plus)
+      (isCRDBVersion21_2Plus ? it : it.skip)('should properly escape the single quotes in coordinates', async function () {
         expect(
           this.Model.create({
             location: {

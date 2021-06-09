@@ -14,7 +14,10 @@ const { makeTestSequelizeInstance } = require('./helper.js')
 // It is expected to have CRS field in GEOMETRY fields.
 // Geometry is only supported in versions 21.2+. We only run this if 
 // we're on a version of CockroachDB equal or greater to 21.2.
-describe('TestGeometryIfOn21.2Plus', async function () {
+describe.only('TestGeometryIfOn21.2Plus', async function () {
+  console.log(process.argv)
+  console.log(process.env)
+  
   let isCRDBVersion21_2Plus = false
   before(async () => {
     const connection = makeTestSequelizeInstance()

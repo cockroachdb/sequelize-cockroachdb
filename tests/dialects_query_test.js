@@ -13,7 +13,8 @@ const Support = {
       port: process.env.COCKROACH_PORT || 26257,
       logging: false,
       typeValidation: true,
-      minifyAliases: options.minifyAliases || false
+      minifyAliases: options.minifyAliases || false,
+      dialectOptions: {cockroachdbTelemetryDisabled : true}
     });
   }
 };

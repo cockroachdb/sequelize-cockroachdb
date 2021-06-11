@@ -5,11 +5,14 @@ const version_helper = require('./version_helper.js')
 //// Log telemetry for Sequelize ORM.
 Sequelize.addHook('afterInit', async (connection) => {
     try {
-        var telemetryDisabled = connection.options.dialectOptions.cockroachdbTelemetryDisabled
-        if (telemetryDisabled) {
-            return 
+        if (connection.options.dialectOptions) {
+            var telemetryDisabled = connection.options.dialectOptions.cockroachdbTelemetryDisabled
+            if (telemetryDisabled) {
+                return 
+            }
         }
  
+        // crdb_internal.increment_feature_counter is only available on 21.1 and above.
         if (!version_helper.IsCockroachVersion21_1Plus(connection)) {
             return
         }

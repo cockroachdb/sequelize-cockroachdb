@@ -17,7 +17,8 @@ Sequelize.addHook('afterInit', async (connection) => {
             return
         }
         var sequelizeVersion = version_helper.GetSequelizeVersion()
-        await connection.query(`SELECT crdb_internal.increment_feature_counter('Sequelize ${sequelizeVersion.version}')`, { type: QueryTypes.SELECT });
+        await connection.query(`SELECT crdb_internal.increment_feature_counter(concat('Sequelize ', :SequelizeVersion))`,  
+        { replacements: { SequelizeVersion: sequelizeVersion.version  }, type: QueryTypes.SELECT })
     } catch (error) {
         console.info("Could not record telemetry.\n" + error)
     }

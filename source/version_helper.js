@@ -11,6 +11,10 @@ module.exports = {
       // in that case we fallback to a branch version
       return semver.coerce(version === '0.0.0-development' ? branchVersion : version);
   },
+  GetAdapterVersion: function() {
+    const pkgVersion = require('../package.json').version;
+    return semver.coerce(pkgVersion);
+  },
   IsCockroachVersion21_1Plus: async function(connection) {
     const versionRow = await connection.query("SELECT version() AS version", { type: QueryTypes.SELECT });
     const cockroachDBVersion = versionRow[0]["version"]

@@ -23,6 +23,7 @@ try {
   );
 }
 
+const util = require('util');
 const { Sequelize, DataTypes, Model } = require('sequelize');
 const QueryGenerator = require('sequelize/lib/dialects/postgres/query-generator');
 

@@ -10,7 +10,7 @@ const { expect } = require('chai'),
 const version_helper = require('../source/version_helper.js')
 
 const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
-const isCRDBVersion21_2Plus =  crdbVersion ? semver.gte(crdbVersion, "21.1.2") : false
+const isCRDBVersion21_2Plus =  crdbVersion ? semver.gte(crdbVersion, "21.2.0") : false
 
 // Edited test:
 // It is expected to have CRS field in GEOMETRY fields.

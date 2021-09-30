@@ -1,3 +1,11 @@
+# Version 6.0.2
+Released September 30, 2021
+* Fix a missing import that would cause an error when validating datatypes.
+
+# Version 6.0.1
+Released July 14, 2021
+* Record telemetry for sequelize-cockroachdb version in addition to the sequelize version.
+
 # Version 6.0.0
 Released June 14, 2021
 * Initial support for Sequelize 6.0
@@ -16,7 +24,3 @@ Released June 14, 2021
         logging: false,
     });
     ```
-
-# Version 6.0.1
-Released July 14, 2021
-* Record telemetry for sequelize-cockroachdb version in addition to the sequelize version.

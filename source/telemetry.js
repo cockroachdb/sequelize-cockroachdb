@@ -17,8 +17,10 @@ Sequelize.addHook('afterInit', async (connection) => {
             return
         }
         var sequelizeVersion = version_helper.GetSequelizeVersion()
-        await connection.query(`SELECT crdb_internal.increment_feature_counter(concat('Sequelize ', :SequelizeVersion))`,  
-        { replacements: { SequelizeVersion: sequelizeVersion.version  }, type: QueryTypes.SELECT })
+        var sequelizeVersionSeries = version_helper.GetVersionSeries(sequelizeVersion.version)
+        var sequelizeVersionStr = (sequelizeVersionSeries===null)?sequelizeVersion:sequelizeVersionSeries
+        await connection.query(`SELECT crdb_internal.increment_feature_counter(concat('Sequelize ', :SequelizeVersionString))`,  
+        { replacements: { SequelizeVersionString: sequelizeVersionStr }, type: QueryTypes.SELECT })
 
         var adapterVersion = version_helper.GetAdapterVersion()
         await connection.query(`SELECT crdb_internal.increment_feature_counter(concat('sequelize-cockroachdb ', :AdapterVersion))`,  

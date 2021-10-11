@@ -24,6 +24,16 @@ module.exports = {
   GetCockroachDBVersionFromEnvConfig: function() {
     const crdbVersion = process.env['CRDB_VERSION'] 
     return semver.coerce(crdbVersion)
+  },
+  GetVersionSeries: function(versionStr) {
+    // Get the version series from a version string.
+    // E.g. "6.0.1" is of series "6.0".
+    const regExp=/(\d+\.\d+)(\.|$)/mg
+    let match = regExp.exec(versionStr);
+    if (match === null || match.length < 3) {
+      return null
+    }
+    return match[1]
   }
 };
 

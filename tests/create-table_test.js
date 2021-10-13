@@ -8,7 +8,6 @@ const dialect = 'postgres';
 const semver = require('semver');
 const version_helper = require('../source/version_helper.js')
 const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
-const isCRDBVersion21_1 =  crdbVersion ? semver.satisfies(crdbVersion, ">=21.1.0 <21.2.0") : false
 
 describe('QueryInterface', () => {
   beforeEach(function () {
@@ -115,9 +114,7 @@ describe('QueryInterface', () => {
     });
 
     describe('enums', () => {
-      // Skip if CRDB Version is 21.1.
-      // Reason: value2 appears after value3. Array is not ordered as expected.
-      (isCRDBVersion21_1 ? it.skip : it)('should work with enums (1)', async function () {
+      it('should work with enums (1)', async function () {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: DataTypes.ENUM('value1', 'value2', 'value3')
         });
@@ -130,9 +127,7 @@ describe('QueryInterface', () => {
         ]);
       });
 
-      // Skip if CRDB Version is 21.1.
-      // Reason: value2 appears after value3. Array is not ordered as expected.
-      (isCRDBVersion21_1 ? it.skip : it)('should work with enums (2)', async function () {
+      it('should work with enums (2)', async function () {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: {
             type: DataTypes.ENUM,
@@ -150,9 +145,7 @@ describe('QueryInterface', () => {
         }
       });
 
-      // Skip if CRDB Version is 21.1.
-      // Reason: value2 appears after value3. Array is not ordered as expected.
-      (isCRDBVersion21_1 ? it.skip : it)('should work with enums (3)', async function () {
+      it('should work with enums (3)', async function () {
         await this.queryInterface.createTable('SomeTable', {
           someEnum: {
             type: DataTypes.ENUM,
@@ -171,9 +164,7 @@ describe('QueryInterface', () => {
         }
       });
 
-      // Skip if CRDB Version is 21.1.
-      // Reason: value2 appears after value3. Array is not ordered as expected.
-      (isCRDBVersion21_1 ? it.skip : it)('should work with enums (4)', async function () {
+      it('should work with enums (4)', async function () {
         await this.queryInterface.createSchema('archive');
 
         await this.queryInterface.createTable(

@@ -127,6 +127,8 @@ QueryGenerator.prototype.describeTableQuery = function (...args) {
       .replace('pg_statio_all_tables', 'pg_class')
       // Change unimplemented column
       .replace('relid', 'oid')
+      // Aggregate enums in sort order
+      .replace('array_agg(e.enumlabel)', 'array_agg(e.enumlabel ORDER BY e.enumsortorder ASC)')
   );
 };
 

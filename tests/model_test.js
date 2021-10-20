@@ -2,6 +2,11 @@
 
 require('./helper');
 
+const semver = require('semver');
+const version_helper = require('../source/version_helper.js')
+const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
+const isCRDBVersion22_1Plus =  crdbVersion ? semver.gte(crdbVersion, "22.1.0") : false
+
 const { expect } = require('chai'),
   { Sequelize, DataTypes } = require('../source'),
   sinon = require('sinon'),
@@ -34,10 +39,10 @@ describe('Model', () => {
     // Edit Reason: CRDB creates its primary index named 'primary'.
     // Ref: https://www.cockroachlabs.com/docs/stable/indexes.html#creation
     // Postgres creates its primary index named something like `${nameOfTheTable}_pkey`.
-    // In this CRDB test, indexes are ordered as: [UserWithUniqueFieldAliases_user_name_key, primary]
-    // At PG expectation, indexes are ordered as: [UserWithUniqueFieldAliases_pkey, UserWithUniqueFieldAliases_user_name_key]
-    // So, the CRDB primary index is not at the same array position as PG is.
-    // Editing this test to the case.
+    // With PG, indexes are ordered as: [UserWithUniqueFieldAliases_pkey, UserWithUniqueFieldAliases_user_name_key]
+    // In CRDB before v22.1, indexes are ordered as: [UserWithUniqueFieldAliases_user_name_key, primary]
+    // So the CRDB primary index is not at the same array position as PG is. CRDB v22.1
+    // uses the tablename_pkey naming convention.
     it('allows unique on column with field aliases', async function () {
       const User = this.sequelize.define('UserWithUniqueFieldAlias', {
         userName: {
@@ -55,8 +60,10 @@ describe('Model', () => {
       let idxUnique;
 
       expect(indexes).to.have.length(2);
-      // this expected indexes[1] originally. For CRDB the index we want is at position 0.
-      idxUnique = indexes[0];
+      // This expected indexes[1] originally. In CRDB <=v21.2 the index we want is
+      // at position 0, and in v22.1 it is at position 1.
+      const pos = isCRDBVersion22_1Plus ? 1 : 0
+      idxUnique = indexes[pos];
       expect(idxUnique.primary).to.equal(false);
       expect(idxUnique.unique).to.equal(true);
       expect(idxUnique.fields).to.deep.equal([

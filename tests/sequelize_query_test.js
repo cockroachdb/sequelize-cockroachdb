@@ -4,6 +4,10 @@ const { expect } = require('chai');
 const { Sequelize, DataTypes } = require('../source');
 const dialect = 'postgres';
 const sinon = require('sinon');
+const semver = require('semver');
+const version_helper = require('../source/version_helper.js')
+const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
+const isCRDBVersion21_1Plus =  crdbVersion ? semver.gte(crdbVersion, "21.1.0") : false
 
 const qq = str => {
   if (dialect === 'postgres' || dialect === 'mssql') {
@@ -30,11 +34,6 @@ const Support = {
     });
   }
 };
-
-const semver = require('semver');
-const version_helper = require('../source/version_helper.js')
-const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
-const isCRDBVersion21_1 =  crdbVersion ? semver.satisfies(crdbVersion, ">=21.1.0 <21.2.0") : false
 
 describe('Sequelize', () => {
   describe('query', () => {
@@ -69,9 +68,7 @@ describe('Sequelize', () => {
       // CRDB does not generate Details field, so Sequelize does not describe error as
       // Validation error. Changed retry's matcher to match CRDB error.
       // https://github.com/cockroachdb/cockroach/issues/63332
-      // Skip if CRDB Version is 21.1.
-      // Reason: callCount is only 1.
-      (isCRDBVersion21_1 ? it.skip : it)('properly bind parameters on extra retries', async function () {
+      it('properly bind parameters on extra retries', async function () {
         const payload = {
           username: 'test',
           createdAt: '2010-10-10 00:00:00',
@@ -103,7 +100,11 @@ describe('Sequelize', () => {
           )
         ).to.be.rejectedWith(Sequelize.UniqueConstraintError);
 
-        expect(spy.callCount).to.eql(3);
+        if (isCRDBVersion21_1Plus) {
+            expect(spy.callCount).to.eql(1);
+        } else {
+            expect(spy.callCount).to.eql(3);
+        }
       });
     });
 

@@ -1,3 +1,8 @@
+# Version 6.0.3
+Released October 21, 2021
+* Use a deterministic ordering when introspecting enum types.
+* Version number telemetry now only reports the major/minor versions of Sequelize.
+
 # Version 6.0.2
 Released September 30, 2021
 * Fix a missing import that would cause an error when validating datatypes.

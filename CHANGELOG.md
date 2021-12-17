@@ -1,3 +1,7 @@
+# Version 6.0.4
+Released December 16, 2021
+* Fixed a bug with checking the version on startup.
+
 # Version 6.0.3
 Released October 21, 2021
 * Use a deterministic ordering when introspecting enum types.

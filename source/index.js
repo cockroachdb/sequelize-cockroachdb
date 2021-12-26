@@ -51,7 +51,7 @@ if (semver.satisfies(sequelizeVersion, '5.x')) {
 
 //// [2] Disable `EXCEPTION` support
 
-const PostgresDialect = require('sequelize/lib/dialects/postgres');
+const PostgresDialect = require('sequelize/lib/dialects/postgres/index');
 // This prevents, for example, usage of CREATE/REPLACE FUNCTION when using Model.findOrCreate()
 PostgresDialect.prototype.supports.EXCEPTION = false;
 

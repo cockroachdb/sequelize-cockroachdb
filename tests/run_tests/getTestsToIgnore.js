@@ -6,10 +6,10 @@ const semver = require('semver');
 
 const sharedIgnoredTestsPath = './../.github/workflows/ignore_tests/shared';
 
-async function parseFilesForTests(files) {
+function parseFilesForTests(files) {
   return files.map(async file => {
     const rl = readline.createInterface({
-      input: fs.createReadStream(path.join(sharedIgnoredTestsPath, file)),
+      input: fs.createReadStream(file),
       crlfDelay: Infinity
     });
 
@@ -23,20 +23,23 @@ async function parseFilesForTests(files) {
   })
 }
 
-async function getTestNames() {
-  var files = fs.readdirSync(sharedIgnoredTestsPath);
+function getTestNames() {
+  var files = fs.readdirSync(sharedIgnoredTestsPath).map(f => {
+    return path.join(sharedIgnoredTestsPath, f);
+  });
 
+  const sequelizeVersion = version_helper.GetSequelizeVersion()
   if (semver.satisfies(sequelizeVersion, '<=5')) {
-    if (version_helper.GetSequelizeVersion() == 'v5') {
-      const v5IgnoredTestsPath = './../.github/workflows/ignore_tests/shared/v5';
-      var v5files = await fs.readdirSync(v5IgnoredTestsPath)
-      files = files.concat(v5files);
-    }
+    const v5IgnoredTestsPath = './../.github/workflows/ignore_tests/v5';
+    var v5files = fs.readdirSync(v5IgnoredTestsPath)
+    files = files.concat(
+      v5files.map(f => {
+        return path.join(v5IgnoredTestsPath, f);
+      })
+    );
   }
 
-  return Promise.resolve(parseFilesForTests(files).then(
-    arr => Promise.all(arr).then(arr => arr.flat().join('|')))
-  );
+  return Promise.all(parseFilesForTests(files)).then(arr => arr.flat().join('|'))
 }
 
 module.exports = getTestNames;

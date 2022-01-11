@@ -5,7 +5,7 @@ const Mocha = require('mocha'),
   getTestsToIgnore = require('./getTestsToIgnore');
 
 async function makeMocha() {
-  const testsToIgnore = await getTestsToIgnore();
+  const testsToIgnore = getTestsToIgnore();
 
   const mocha = new Mocha({
     grep: testsToIgnore,

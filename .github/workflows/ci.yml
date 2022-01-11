@@ -109,7 +109,7 @@ jobs:
 
       - name: Install Sequelize dependencies
         working-directory: ./.downloaded-sequelize
-        run: npm install
+        run: npm install --ignore-scripts
 
       - name: Provide the `sequelize-cockroachdb` patches
         # This script needs `fs-jetpack` as an extra dependency

@@ -51,7 +51,7 @@ if (semver.satisfies(sequelizeVersion, '5.x')) {
 
 //// [2] Disable `EXCEPTION` support
 
-const PostgresDialect = require('sequelize/lib/dialects/postgres');
+const PostgresDialect = require('sequelize/lib/dialects/postgres/index');
 // This prevents, for example, usage of CREATE/REPLACE FUNCTION when using Model.findOrCreate()
 PostgresDialect.prototype.supports.EXCEPTION = false;
 
@@ -171,7 +171,7 @@ Model.findByPk = async function findByPk(param, options) {
 // Copied from: https://github.com/sequelize/sequelize/blob/29901187d9560e7d51ae1f9b5f411cf0c5d8994a/lib/model.js#L2270
 Model.findOrCreate = async function findOrCreate(options) {
   const _ = require('lodash');
-  const Utils = require('sequelize/lib/utils.js');
+  const Utils = require('sequelize/lib/utils');
   const { logger } = require('sequelize/lib/utils/logger');
   const sequelizeErrors = require('sequelize/lib/errors');
 

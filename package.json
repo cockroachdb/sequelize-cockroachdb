@@ -1,6 +1,6 @@
 {
   "name": "sequelize-cockroachdb",
-  "version": "6.0.4",
+  "version": "6.0.5",
   "description": "Support using Sequelize with CockroachDB.",
   "license": "Apache-2.0",
   "repository": "cockroachdb/sequelize-cockroachdb",

@@ -1,3 +1,8 @@
+# Version 6.0.5
+Released January 12, 2022
+* Fixed a bug with importing modules from Sequelize.
+* Updated CockroachDB versions under test (includes v21.2 now).
+
 # Version 6.0.4
 Released December 16, 2021
 * Fixed a bug with checking the version on startup.

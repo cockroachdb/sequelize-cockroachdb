@@ -246,11 +246,7 @@ describe('Model', () => {
           expect(users).to.have.length(5);
           // Changed get('id') to get('position')
           expect(users.map(u => u.get('position'))).to.deep.equal([
-            1,
-            3,
-            5,
-            7,
-            4
+            1, 3, 5, 7, 4
           ]);
         });
 
@@ -275,11 +271,7 @@ describe('Model', () => {
           expect(users0).to.have.length(5);
           // Changed get('id') to get('position')
           expect(users0.map(u => u.get('position'))).to.deep.equal([
-            1,
-            3,
-            5,
-            7,
-            4
+            1, 3, 5, 7, 4
           ]);
 
           await Promise.all([
@@ -378,9 +370,7 @@ describe('Model', () => {
           expect(byUser[userKeys[0]]).to.have.length(1);
           expect(byUser[userKeys[1]]).to.have.length(3);
           expect(_.invokeMap(byUser[userKeys[1]], 'get', 'id')).to.deep.equal([
-            4,
-            3,
-            2
+            4, 3, 2
           ]);
           expect(byUser[userKeys[2]]).to.have.length(2);
         });

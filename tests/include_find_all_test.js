@@ -9,8 +9,8 @@ const chai = require('chai'),
 
 describe('Include', () => {
   describe('findAll', () => {
-    beforeEach(function() {
-      this.fixtureA = async function() {
+    beforeEach(function () {
+      this.fixtureA = async function () {
         const User = this.sequelize.define('User', {}),
           Company = this.sequelize.define('Company', {
             name: DataTypes.STRING
@@ -30,9 +30,7 @@ describe('Include', () => {
           Group = this.sequelize.define('Group', {
             name: DataTypes.STRING
           }),
-          GroupMember = this.sequelize.define('GroupMember', {
-
-          }),
+          GroupMember = this.sequelize.define('GroupMember', {}),
           Rank = this.sequelize.define('Rank', {
             name: DataTypes.STRING,
             canInvite: {
@@ -119,12 +117,16 @@ describe('Include', () => {
             { id: i * 5 + 5, title: 'Monitor' }
           ]);
           const products = await Product.findAll();
-          const groupMembers  = [
+          const groupMembers = [
             { AccUserId: user.id, GroupId: groups[0].id, RankId: ranks[0].id },
             { AccUserId: user.id, GroupId: groups[1].id, RankId: ranks[2].id }
           ];
           if (i < 3) {
-            groupMembers.push({ AccUserId: user.id, GroupId: groups[2].id, RankId: ranks[1].id });
+            groupMembers.push({
+              AccUserId: user.id,
+              GroupId: groups[2].id,
+              RankId: ranks[1].id
+            });
           }
           await Promise.all([
             GroupMember.bulkCreate(groupMembers),
@@ -133,20 +135,11 @@ describe('Include', () => {
               products[i * 5 + 1],
               products[i * 5 + 3]
             ]),
-            products[i * 5 + 0].setTags([
-              tags[0],
-              tags[2]
-            ]),
-            products[i * 5 + 1].setTags([
-              tags[1]
-            ]),
+            products[i * 5 + 0].setTags([tags[0], tags[2]]),
+            products[i * 5 + 1].setTags([tags[1]]),
             products[i * 5 + 0].setCategory(tags[1]),
-            products[i * 5 + 2].setTags([
-              tags[0]
-            ]),
-            products[i * 5 + 3].setTags([
-              tags[0]
-            ]),
+            products[i * 5 + 2].setTags([tags[0]]),
+            products[i * 5 + 3].setTags([tags[0]]),
             products[i * 5 + 0].setCompany(companies[4]),
             products[i * 5 + 1].setCompany(companies[3]),
             products[i * 5 + 2].setCompany(companies[2]),
@@ -170,7 +163,7 @@ describe('Include', () => {
     // Edit reason: This test originally fails because it expects ProductId = 3.
     // Edited beforeEach to give it predictable ids.
     // CRDB does not guarantee that a DB entry will have sequential ids, starting by 1.
-    it('should be possible to select on columns inside a through table', async function() {
+    it('should be possible to select on columns inside a through table', async function () {
       await this.fixtureA();
 
       const products = await this.models.Product.findAll({
@@ -194,7 +187,7 @@ describe('Include', () => {
     // Edit reason: This test originally fails because it expects ProductId = 3.
     // Edited beforeEach to give it predictable ids.
     // CRDB does not guarantee that a DB entry will have sequential ids, starting by 1.
-    it('should be possible to select on columns inside a through table and a limit', async function() {
+    it('should be possible to select on columns inside a through table and a limit', async function () {
       await this.fixtureA();
 
       const products = await this.models.Product.findAll({

@@ -463,10 +463,11 @@ describe('QueryInterface', () => {
     });
 
     it('should get a list of foreign key references details for the table', async function () {
-      const references = await this.queryInterface.getForeignKeyReferencesForTable(
-        'hosts',
-        this.sequelize.options
-      );
+      const references =
+        await this.queryInterface.getForeignKeyReferencesForTable(
+          'hosts',
+          this.sequelize.options
+        );
       expect(references).to.have.length(3);
       for (const ref of references) {
         expect(ref.tableName).to.equal('hosts');

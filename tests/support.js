@@ -1,17 +1,45 @@
 const { isDeepStrictEqual } = require('util');
 const Sequelize = require('../source');
 
+const fs = require('fs');
+
 const Support = {
   createSequelizeInstance: function (options = {}) {
-    return new Sequelize('sequelize_test', 'root', '', {
-      dialect: 'postgres',
-      port: process.env.COCKROACH_PORT || 26257,
-      logging: console.log,
-      typeValidation: true,
-      minifyAliases: options.minifyAliases || false,
-      dialectOptions: {cockroachdbTelemetryDisabled : true},
-      ...options
-    });
+    const dialectOptions = {
+      cockroachdbTelemetryDisabled: true,
+      ...(options.dialectOptions || {})
+    };
+    if (process.env.DB_SSL === 'true') {
+      dialectOptions.ssl = {
+        rejectUnauthorized: false,
+        require: true
+      };
+      if (process.env.CA_CERT_PATH) {
+        try {
+          dialectOptions.ssl.ca = fs
+            .readFileSync(process.env.CA_CERT_PATH)
+            .toString();
+        } catch (e) {
+          console.error('Failed to read CA certificate:', e.message);
+        }
+      }
+    }
+
+    return new Sequelize(
+      process.env.DB_NAME || 'sequelize_test',
+      process.env.DB_USER || 'root',
+      process.env.DB_PASS || '',
+      {
+        dialect: 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 26257,
+        logging: options.logging !== undefined ? options.logging : console.log,
+        typeValidation: true,
+        minifyAliases: options.minifyAliases || false,
+        dialectOptions: dialectOptions,
+        ...options
+      }
+    );
   },
 
   isDeepEqualToOneOf: function (actual, expectedOptions) {
@@ -37,7 +65,7 @@ const Support = {
 
     await Promise.all(schemasPromise.map(p => p.catch(e => e)));
   }
-}
+};
 
 Support.sequelize = Support.createSequelizeInstance();
 

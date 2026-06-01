@@ -8,14 +8,41 @@ const { expect } = require('chai'),
 const Support = {
   // Copied from helper, to attend to a specific Sequelize instance creation.
   createSequelizeInstance: options => {
-    return new Sequelize('sequelize_test', 'root', '', {
-      dialect: 'postgres',
-      port: process.env.COCKROACH_PORT || 26257,
-      logging: false,
-      typeValidation: true,
-      minifyAliases: options.minifyAliases || false,
-      dialectOptions: {cockroachdbTelemetryDisabled : true}
-    });
+    const fs = require('fs');
+    const dialectOptions = {
+      cockroachdbTelemetryDisabled: true,
+      ...(options.dialectOptions || {})
+    };
+    if (process.env.DB_SSL === 'true') {
+      dialectOptions.ssl = {
+        rejectUnauthorized: false,
+        require: true
+      };
+      if (process.env.CA_CERT_PATH) {
+        try {
+          dialectOptions.ssl.ca = fs
+            .readFileSync(process.env.CA_CERT_PATH)
+            .toString();
+        } catch (e) {
+          console.error('Failed to read CA certificate:', e.message);
+        }
+      }
+    }
+
+    return new Sequelize(
+      process.env.DB_NAME || 'sequelize_test',
+      process.env.DB_USER || 'root',
+      process.env.DB_PASS || '',
+      {
+        dialect: 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 26257,
+        logging: options.logging !== undefined ? options.logging : false,
+        typeValidation: true,
+        minifyAliases: options.minifyAliases || false,
+        dialectOptions: dialectOptions
+      }
+    );
   }
 };
 

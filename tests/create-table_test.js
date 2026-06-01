@@ -6,8 +6,8 @@ var DataTypes = Sequelize.DataTypes;
 const dialect = 'postgres';
 
 const semver = require('semver');
-const version_helper = require('../source/version_helper.js')
-const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
+const version_helper = require('../source/version_helper.js');
+const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig();
 
 describe('QueryInterface', () => {
   beforeEach(function () {

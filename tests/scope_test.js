@@ -200,21 +200,15 @@ describe('associations', () => {
 
           await this.ItemTag.sync({ force: true });
 
-          const [
-            post0,
-            image0,
-            question0,
-            tagA,
-            tagB,
-            tagC
-          ] = await Promise.all([
-            this.Post.create(),
-            this.Image.create(),
-            this.Question.create(),
-            this.Tag.create({ name: 'tagA' }),
-            this.Tag.create({ name: 'tagB' }),
-            this.Tag.create({ name: 'tagC' })
-          ]);
+          const [post0, image0, question0, tagA, tagB, tagC] =
+            await Promise.all([
+              this.Post.create(),
+              this.Image.create(),
+              this.Question.create(),
+              this.Tag.create({ name: 'tagA' }),
+              this.Tag.create({ name: 'tagB' }),
+              this.Tag.create({ name: 'tagC' })
+            ]);
 
           this.post = post0;
           this.image = image0;

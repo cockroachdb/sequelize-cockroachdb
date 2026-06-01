@@ -187,9 +187,8 @@ describe('QueryInterface', () => {
       });
 
       it('able to change column to foreign key', async function () {
-        const foreignKeys = await this.queryInterface.getForeignKeyReferencesForTable(
-          'users'
-        );
+        const foreignKeys =
+          await this.queryInterface.getForeignKeyReferencesForTable('users');
         expect(foreignKeys).to.be.an('array');
         expect(foreignKeys).to.be.empty;
 
@@ -203,9 +202,8 @@ describe('QueryInterface', () => {
           onDelete: 'cascade'
         });
 
-        const newForeignKeys = await this.queryInterface.getForeignKeyReferencesForTable(
-          'users'
-        );
+        const newForeignKeys =
+          await this.queryInterface.getForeignKeyReferencesForTable('users');
         expect(newForeignKeys).to.be.an('array');
         expect(newForeignKeys).to.have.lengthOf(1);
         expect(newForeignKeys[0].columnName).to.be.equal('level_id');
@@ -243,9 +241,8 @@ describe('QueryInterface', () => {
           allowNull: true
         });
 
-        const newForeignKeys = await this.queryInterface.getForeignKeyReferencesForTable(
-          'users'
-        );
+        const newForeignKeys =
+          await this.queryInterface.getForeignKeyReferencesForTable('users');
         expect(firstForeignKeys.length).to.be.equal(newForeignKeys.length);
         expect(firstForeignKeys[0].columnName).to.be.equal('level_id');
         expect(firstForeignKeys[0].columnName).to.be.equal(

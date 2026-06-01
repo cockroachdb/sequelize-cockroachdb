@@ -29,16 +29,40 @@ var Support = {
     await Promise.all(schemasPromise.map(p => p.catch(e => e)));
   },
   createSequelizeInstance() {
-    return new Sequelize('sequelize_test', 'root', '', {
-      dialect: 'postgres',
-      port: process.env.COCKROACH_PORT || 26257,
-      logging: m => console.log(m),
-      typeValidation: true,
-      define: {
-        paranoid: true
-      },
-      dialectOptions: {cockroachdbTelemetryDisabled : true},
-    });
+    const fs = require('fs');
+    const dialectOptions = { cockroachdbTelemetryDisabled: true };
+    if (process.env.DB_SSL === 'true') {
+      dialectOptions.ssl = {
+        rejectUnauthorized: false,
+        require: true
+      };
+      if (process.env.CA_CERT_PATH) {
+        try {
+          dialectOptions.ssl.ca = fs
+            .readFileSync(process.env.CA_CERT_PATH)
+            .toString();
+        } catch (e) {
+          console.error('Failed to read CA certificate:', e.message);
+        }
+      }
+    }
+
+    return new Sequelize(
+      process.env.DB_NAME || 'sequelize_test',
+      process.env.DB_USER || 'root',
+      process.env.DB_PASS || '',
+      {
+        dialect: 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 26257,
+        logging: m => console.log(m),
+        typeValidation: true,
+        define: {
+          paranoid: true
+        },
+        dialectOptions: dialectOptions
+      }
+    );
   }
 };
 

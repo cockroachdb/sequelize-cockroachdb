@@ -1,7 +1,7 @@
 const fs = require('fs'),
   path = require('path'),
   readline = require('readline');
-const version_helper = require ('../../source/version_helper.js')
+const version_helper = require('../../source/version_helper.js');
 const semver = require('semver');
 
 const sharedIgnoredTestsPath = './../.github/workflows/ignore_tests/shared';
@@ -20,7 +20,7 @@ function parseFilesForTests(files) {
     }
 
     return arr;
-  })
+  });
 }
 
 function getTestNames() {
@@ -28,10 +28,10 @@ function getTestNames() {
     return path.join(sharedIgnoredTestsPath, f);
   });
 
-  const sequelizeVersion = version_helper.GetSequelizeVersion()
+  const sequelizeVersion = version_helper.GetSequelizeVersion();
   if (semver.satisfies(sequelizeVersion, '<=5')) {
     const v5IgnoredTestsPath = './../.github/workflows/ignore_tests/v5';
-    var v5files = fs.readdirSync(v5IgnoredTestsPath)
+    var v5files = fs.readdirSync(v5IgnoredTestsPath);
     files = files.concat(
       v5files.map(f => {
         return path.join(v5IgnoredTestsPath, f);
@@ -39,7 +39,9 @@ function getTestNames() {
     );
   }
 
-  return Promise.all(parseFilesForTests(files)).then(arr => arr.flat().join('|'))
+  return Promise.all(parseFilesForTests(files)).then(arr =>
+    arr.flat().join('|')
+  );
 }
 
 module.exports = getTestNames;

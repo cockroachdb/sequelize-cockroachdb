@@ -7,7 +7,8 @@ const delay = require('delay');
 const Support = require('./support');
 
 function assertSameConnection(newConnection, oldConnection) {
-  expect(oldConnection.processID).to.be.equal(newConnection.processID).and.to.be.ok;
+  expect(oldConnection.processID).to.be.equal(newConnection.processID).and.to.be
+    .ok;
 }
 
 function assertNewConnection(newConnection, oldConnection) {
@@ -24,11 +25,11 @@ function attachMSSQLUniqueId(connection) {
 describe.skip('Pooling', () => {
   if (dialect === 'sqlite' || process.env.DIALECT === 'postgres-native') return;
 
-  beforeEach(function() {
+  beforeEach(function () {
     this.sinon = sinon.createSandbox();
   });
 
-  afterEach(function() {
+  afterEach(function () {
     this.sinon.restore();
   });
 

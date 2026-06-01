@@ -294,7 +294,12 @@ describe('DataTypes', function () {
   it.skip('calls parse and bindParam for GEOMETRY', async function () {
     const Type = new Sequelize.GEOMETRY();
 
-    console.log(this.sequelize)
-    await testSuccess(this.sequelize, Type, { type: 'Point', coordinates: [125.6, 10.1] }, { useBindParam: true });
+    console.log(this.sequelize);
+    await testSuccess(
+      this.sequelize,
+      Type,
+      { type: 'Point', coordinates: [125.6, 10.1] },
+      { useBindParam: true }
+    );
   });
 });

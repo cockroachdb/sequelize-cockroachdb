@@ -609,9 +609,8 @@ const postgresQueryPatches = {
                     attribute.fieldName === key || attribute.field === key
                 );
 
-                this.instance.dataValues[
-                  (attr && attr.fieldName) || key
-                ] = record;
+                this.instance.dataValues[(attr && attr.fieldName) || key] =
+                  record;
               }
             }
           }

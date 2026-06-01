@@ -5,9 +5,11 @@ const { Sequelize, DataTypes } = require('../source');
 const dialect = 'postgres';
 const sinon = require('sinon');
 const semver = require('semver');
-const version_helper = require('../source/version_helper.js')
-const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
-const isCRDBVersion21_1Plus =  crdbVersion ? semver.gte(crdbVersion, "21.1.0") : false
+const version_helper = require('../source/version_helper.js');
+const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig();
+const isCRDBVersion21_1Plus = crdbVersion
+  ? semver.gte(crdbVersion, '21.1.0')
+  : false;
 
 const qq = str => {
   if (dialect === 'postgres' || dialect === 'mssql') {
@@ -22,16 +24,43 @@ const qq = str => {
 const Support = {
   // Copied from helper, to attend to a specific Sequelize instance creation.
   createSequelizeInstance: options => {
-    return new Sequelize('sequelize_test', 'root', '', {
-      dialect: 'postgres',
-      port: process.env.COCKROACH_PORT || 26257,
-      logging: false,
-      typeValidation: true,
-      benchmark: options.benchmark || false,
-      logQueryParameters: options.logQueryParameters || false,
-      minifyAliases: options.minifyAliases || false,
-      dialectOptions: {cockroachdbTelemetryDisabled : true}
-    });
+    const fs = require('fs');
+    const dialectOptions = {
+      cockroachdbTelemetryDisabled: true,
+      ...(options.dialectOptions || {})
+    };
+    if (process.env.DB_SSL === 'true') {
+      dialectOptions.ssl = {
+        rejectUnauthorized: false,
+        require: true
+      };
+      if (process.env.CA_CERT_PATH) {
+        try {
+          dialectOptions.ssl.ca = fs
+            .readFileSync(process.env.CA_CERT_PATH)
+            .toString();
+        } catch (e) {
+          console.error('Failed to read CA certificate:', e.message);
+        }
+      }
+    }
+
+    return new Sequelize(
+      process.env.DB_NAME || 'sequelize_test',
+      process.env.DB_USER || 'root',
+      process.env.DB_PASS || '',
+      {
+        dialect: 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 26257,
+        logging: options.logging !== undefined ? options.logging : false,
+        typeValidation: true,
+        benchmark: options.benchmark || false,
+        logQueryParameters: options.logQueryParameters || false,
+        minifyAliases: options.minifyAliases || false,
+        dialectOptions: dialectOptions
+      }
+    );
   }
 };
 
@@ -101,9 +130,9 @@ describe('Sequelize', () => {
         ).to.be.rejectedWith(Sequelize.UniqueConstraintError);
 
         if (isCRDBVersion21_1Plus) {
-            expect(spy.callCount).to.eql(1);
+          expect(spy.callCount).to.eql(1);
         } else {
-            expect(spy.callCount).to.eql(3);
+          expect(spy.callCount).to.eql(3);
         }
       });
     });

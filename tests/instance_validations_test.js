@@ -9,7 +9,7 @@ const chai = require('chai'),
 describe('InstanceValidator', () => {
   describe('#update', () => {
     // Edited test. Changed findByPk parameter.
-    it('should allow us to update specific columns without tripping the validations', async function() {
+    it('should allow us to update specific columns without tripping the validations', async function () {
       const User = this.sequelize.define('model', {
         username: Sequelize.STRING,
         email: {
@@ -24,10 +24,12 @@ describe('InstanceValidator', () => {
       });
 
       await User.sync({ force: true });
-      const user = await User.create({ username: 'bob', email: 'hello@world.com' });
+      const user = await User.create({
+        username: 'bob',
+        email: 'hello@world.com'
+      });
 
-      await User
-        .update({ username: 'toni' }, { where: { id: user.id } });
+      await User.update({ username: 'toni' }, { where: { id: user.id } });
 
       // Edited PK. It was 1, now it is dynamically obtained.
       const user0 = await User.findByPk(user.id);
@@ -37,7 +39,7 @@ describe('InstanceValidator', () => {
     // Reason: Errors array need DB-level details to be generated. Since it doesn't,
     // this test lacks details for its expectations.
     // https://github.com/cockroachdb/cockroach/issues/63332
-    it.skip('should enforce a unique constraint', async function() {
+    it.skip('should enforce a unique constraint', async function () {
       const Model = this.sequelize.define('model', {
         uniqueName: { type: Sequelize.STRING, unique: 'uniqueName' }
       });
@@ -50,8 +52,10 @@ describe('InstanceValidator', () => {
       expect(instance0).to.be.ok;
       const instance = await Model.create(records[1]);
       expect(instance).to.be.ok;
-      await Model.update(records[0], { where: { id: instance.id } })
-      const err = await expect(Model.update(records[0], { where: { id: instance.id } })).to.be.rejected;
+      await Model.update(records[0], { where: { id: instance.id } });
+      const err = await expect(
+        Model.update(records[0], { where: { id: instance.id } })
+      ).to.be.rejected;
       console.log(err);
       expect(err).to.be.an.instanceOf(Error);
       expect(err.errors).to.have.length(1);
@@ -62,7 +66,7 @@ describe('InstanceValidator', () => {
     // Reason: Errors array need DB-level details to be generated. Since it doesn't,
     // this test lacks details for its expectations.
     // https://github.com/sequelize/sequelize/blob/main/lib/dialects/postgres/query.js#L319
-    it.skip('should allow a custom unique constraint error message', async function() {
+    it.skip('should allow a custom unique constraint error message', async function () {
       const Model = this.sequelize.define('model', {
         uniqueName: {
           type: Sequelize.STRING,
@@ -78,7 +82,9 @@ describe('InstanceValidator', () => {
       expect(instance0).to.be.ok;
       const instance = await Model.create(records[1]);
       expect(instance).to.be.ok;
-      const err = await expect(Model.update(records[0], { where: { id: instance.id } })).to.be.rejected;
+      const err = await expect(
+        Model.update(records[0], { where: { id: instance.id } })
+      ).to.be.rejected;
       expect(err).to.be.an.instanceOf(Error);
       expect(err.errors).to.have.length(1);
       expect(err.errors[0].path).to.include('uniqueName');
@@ -88,7 +94,7 @@ describe('InstanceValidator', () => {
     // Reason: Errors array need DB-level details to be generated. Since it doesn't,
     // this test lacks details for its expectations.
     // https://github.com/sequelize/sequelize/blob/main/lib/dialects/postgres/query.js#L319
-    it.skip('should handle multiple unique messages correctly', async function() {
+    it.skip('should handle multiple unique messages correctly', async function () {
       const Model = this.sequelize.define('model', {
         uniqueName1: {
           type: Sequelize.STRING,

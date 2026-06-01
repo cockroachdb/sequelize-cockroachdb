@@ -28,24 +28,24 @@
     "test": "env CRDB_VERSION=$npm_config_crdb_version mocha --check-leaks --colors -t 300000 --reporter spec \"tests/*_test.js\""
   },
   "dependencies": {
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "p-settle": "^4.1.1",
-    "pg": "^8.4.1",
-    "semver": "^7.3.2"
+    "pg": "^8.21.0",
+    "semver": "^7.6.2"
   },
   "devDependencies": {
-    "assert": "^2.0.0",
-    "chai": "^4.2.0",
-    "chai-as-promised": "^7.1.1",
-    "chai-datetime": "^1.7.0",
+    "assert": "^2.1.0",
+    "chai": "^4.4.1",
+    "chai-as-promised": "^7.1.2",
+    "chai-datetime": "^1.8.0",
     "cls-hooked": "^4.2.2",
     "delay": "^5.0.0",
-    "mocha": "^8.2.0",
+    "mocha": "^10.4.0",
     "p-timeout": "^4.1.0",
-    "prettier": "2.2.1",
-    "sequelize": "^6.13.0",
-    "sinon": "^9.2.4",
-    "sinon-chai": "^3.5.0"
+    "prettier": "^2.8.8",
+    "sequelize": "^6.37.8",
+    "sinon": "^17.0.1",
+    "sinon-chai": "^3.7.0"
   },
   "peerDependencies": {
     "sequelize": "5 - 6"

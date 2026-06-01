@@ -3,9 +3,11 @@
 require('./helper');
 
 const semver = require('semver');
-const version_helper = require('../source/version_helper.js')
-const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig()
-const isCRDBVersion22_1Plus =  crdbVersion ? semver.gte(crdbVersion, "22.1.0") : false
+const version_helper = require('../source/version_helper.js');
+const crdbVersion = version_helper.GetCockroachDBVersionFromEnvConfig();
+const isCRDBVersion22_1Plus = crdbVersion
+  ? semver.gte(crdbVersion, '22.1.0')
+  : false;
 
 const { expect } = require('chai'),
   { Sequelize, DataTypes } = require('../source'),
@@ -62,7 +64,7 @@ describe('Model', () => {
       expect(indexes).to.have.length(2);
       // This expected indexes[1] originally. In CRDB <=v21.2 the index we want is
       // at position 0, and in v22.1 it is at position 1.
-      const pos = isCRDBVersion22_1Plus ? 1 : 0
+      const pos = isCRDBVersion22_1Plus ? 1 : 0;
       idxUnique = indexes[pos];
       expect(idxUnique.primary).to.equal(false);
       expect(idxUnique.unique).to.equal(true);

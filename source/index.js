@@ -303,6 +303,35 @@ DataTypes.postgres.GEOGRAPHY.prototype.bindParam = (value, options) => {
   return `ST_GeomFromGeoJSON(${options.bindParam(value)}::json)::geography`;
 }
 
+// [8] ENUM creation
+// Newer versions of Sequelize v6 create ENUM types inside a
+// `DO ... EXCEPTION WHEN duplicate_object` block to ignore types that already
+// exist. CockroachDB does not support CREATE TYPE inside a function body, so
+// use CREATE TYPE IF NOT EXISTS instead.
+QueryGenerator.prototype.pgEnum = function (
+  tableName,
+  attr,
+  dataType,
+  options
+) {
+  const enumName = this.pgEnumName(tableName, attr, options);
+  let values;
+
+  if (dataType.values) {
+    values = `ENUM(${dataType.values
+      .map(value => this.escape(value))
+      .join(', ')})`;
+  } else {
+    values = dataType.toString().match(/^ENUM\(.+\)/)[0];
+  }
+
+  let sql = `CREATE TYPE IF NOT EXISTS ${enumName} AS ${values};`;
+  if (!!options && options.force === true) {
+    sql = this.pgEnumDrop(tableName, attr) + sql;
+  }
+  return sql;
+};
+
 //// Done!
 
 Sequelize.supportsCockroachDB = true;

@@ -35,4 +35,18 @@ describe('Enum', function () {
       '"C" is not a valid choice in ["A","B"]'
     );
   });
+
+  it('does not fail if the enum type already exists', async function () {
+    const queryInterface = this.sequelize.getQueryInterface();
+    // Sequelize v5 calls this QueryGenerator.
+    const queryGenerator =
+      queryInterface.queryGenerator || queryInterface.QueryGenerator;
+    const createEnum = queryGenerator.pgEnum(
+      'bars',
+      'enum',
+      DataTypes.ENUM('A', 'B')
+    );
+    expect(createEnum).to.include('CREATE TYPE IF NOT EXISTS');
+    await this.sequelize.query(createEnum);
+  });
 });

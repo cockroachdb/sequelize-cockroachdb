@@ -14,7 +14,6 @@ const Support = {
       logging: false,
       typeValidation: true,
       minifyAliases: options.minifyAliases || false,
-      dialectOptions: {cockroachdbTelemetryDisabled : true}
     });
   }
 };

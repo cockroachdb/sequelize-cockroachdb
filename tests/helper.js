@@ -64,7 +64,6 @@ function makeTestSequelizeInstance() {
     port: process.env.COCKROACH_PORT || 26257,
     logging: false,
     typeValidation: true,
-    dialectOptions: {cockroachdbTelemetryDisabled : true},
   });
 }
 

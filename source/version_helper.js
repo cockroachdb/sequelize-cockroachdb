@@ -1,6 +1,5 @@
 const semver = require('semver');
 const { version, release } = require('sequelize/package.json');
-const { QueryTypes } = require('sequelize');
 
 module.exports = {
   GetSequelizeVersion: function() {
@@ -11,29 +10,9 @@ module.exports = {
       // in that case we fallback to a branch version
       return semver.coerce(version === '0.0.0-development' ? branchVersion : version);
   },
-  GetAdapterVersion: function() {
-    const pkgVersion = require('../package.json').version;
-    return semver.coerce(pkgVersion);
-  },
-  IsCockroachVersion21_1Plus: async function(connection) {
-    const versionRow = await connection.query("SELECT version() AS version", { type: QueryTypes.SELECT });
-    const cockroachDBVersion = versionRow[0]["version"]
-
-    return semver.gte(semver.coerce(cockroachDBVersion), "21.1.0")
-  },
   GetCockroachDBVersionFromEnvConfig: function() {
     const crdbVersion = process.env['CRDB_VERSION'] 
     return semver.coerce(crdbVersion)
-  },
-  GetVersionSeries: function(versionStr) {
-    // Get the version series from a version string.
-    // E.g. "6.0.1" is of series "6.0".
-    const regExp=/(\d+\.\d+)(\.|$)/mg
-    let match = regExp.exec(versionStr);
-    if (match === null || match.length < 3) {
-      return null
-    }
-    return match[1]
   }
 };
 

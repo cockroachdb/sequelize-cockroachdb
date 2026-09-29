@@ -37,7 +37,6 @@ var Support = {
       define: {
         paranoid: true
       },
-      dialectOptions: {cockroachdbTelemetryDisabled : true},
     });
   }
 };

@@ -9,7 +9,6 @@ const Support = {
       logging: console.log,
       typeValidation: true,
       minifyAliases: options.minifyAliases || false,
-      dialectOptions: {cockroachdbTelemetryDisabled : true},
       ...options
     });
   },

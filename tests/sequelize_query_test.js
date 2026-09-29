@@ -30,7 +30,6 @@ const Support = {
       benchmark: options.benchmark || false,
       logQueryParameters: options.logQueryParameters || false,
       minifyAliases: options.minifyAliases || false,
-      dialectOptions: {cockroachdbTelemetryDisabled : true}
     });
   }
 };

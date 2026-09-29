@@ -24,7 +24,12 @@ jobs:
         # TODO(richardjcai): Re-enable tests for v5 after we get v6 suite passing.
         # Focus on getting tests passing for v6 test suite.
         sequelize-version: [5, 6]
-        cockroachdb-docker-version: ["cockroachdb/cockroach:v21.2.4", "cockroachdb/cockroach:v21.1.13"]
+        # Test the regular (non-innovation) releases that are still supported.
+        cockroachdb-docker-version:
+          - "cockroachdb/cockroach:latest-v24.3"
+          - "cockroachdb/cockroach:latest-v25.2"
+          - "cockroachdb/cockroach:latest-v25.4"
+          - "cockroachdb/cockroach:latest-v26.2"
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -81,10 +86,10 @@ jobs:
       SEQ_PW: ''
       SEQ_DB: sequelize_test
     steps:
-      - name: Start a single CockroachDB instance (v21.2.4) with docker
+      - name: Start a single CockroachDB instance (latest-v26.2) with docker
         run: |
-          docker pull cockroachdb/cockroach:v21.2.4
-          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 cockroachdb/cockroach:v21.2.4 start-single-node --insecure
+          docker pull cockroachdb/cockroach:latest-v26.2
+          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 cockroachdb/cockroach:latest-v26.2 start-single-node --insecure
           sudo apt update && sudo apt install wait-for-it -y
           wait-for-it -h localhost -p 26257
           docker exec roach bash -c 'echo "CREATE DATABASE sequelize_test;" | cockroach sql --insecure'

@@ -171,5 +171,145 @@ describe('Model', () => {
         expect(ms[0].id < ms[1].id).to.be.true;
       });
     });
+
+    // CockroachDB does not return the rows of INSERT ... ON CONFLICT DO UPDATE
+    // ... RETURNING in the order of the VALUES list; rows that were updated
+    // can come back before rows that were inserted. Sequelize assigns the
+    // returned rows to instances by position, so the adapter must reorder them.
+    describe('updateOnDuplicate return values', () => {
+      // Checks that each returned instance matches both its input and the
+      // row that is stored in the database under the instance's primary key.
+      async function expectInstancesMatchRows(Model, input, results, fields) {
+        expect(results).to.have.length(input.length);
+        const pk = Model.primaryKeyAttribute;
+        const rows = await Model.findAll({ paranoid: false });
+        const rowsByPk = new Map(rows.map(row => [String(row[pk]), row]));
+        results.forEach((result, i) => {
+          for (const field of fields) {
+            expect(result[field]).to.eql(input[i][field]);
+          }
+          const row = rowsByPk.get(String(result[pk]));
+          expect(row, `row for ${pk}=${result[pk]}`).to.be.ok;
+          for (const field of fields) {
+            expect(row[field]).to.eql(result[field]);
+          }
+        });
+      }
+
+      it('should match rows to instances when the primary key conflicts', async function () {
+        await this.Student.bulkCreate([
+          { no: 2, name: 'old 2' },
+          { no: 4, name: 'old 4' }
+        ]);
+
+        const input = [1, 2, 3, 4, 5, 6].map(no => ({ no, name: `new ${no}` }));
+        const results = await this.Student.bulkCreate(input, {
+          updateOnDuplicate: ['name']
+        });
+
+        await expectInstancesMatchRows(this.Student, input, results, [
+          'no',
+          'name'
+        ]);
+      });
+
+      it('should match rows to instances when a unique key conflicts', async function () {
+        const existing = await this.User.bulkCreate([
+          { uniqueName: 'b', username: 'old b' },
+          { uniqueName: 'd', username: 'old d' }
+        ]);
+
+        const input = ['a', 'b', 'c', 'd', 'e'].map(uniqueName => ({
+          uniqueName,
+          username: `new ${uniqueName}`
+        }));
+        const results = await this.User.bulkCreate(input, {
+          updateOnDuplicate: ['username']
+        });
+
+        await expectInstancesMatchRows(this.User, input, results, [
+          'uniqueName',
+          'username'
+        ]);
+        // Updated rows keep their original primary keys.
+        expect(results[1].id).to.eql(existing[0].id);
+        expect(results[3].id).to.eql(existing[1].id);
+      });
+
+      it('should match rows to instances when some rows omit the conflict key', async function () {
+        const [existing] = await this.Account.bulkCreate([
+          { accountName: 'old' }
+        ]);
+
+        const input = [
+          { accountName: 'new 1' },
+          { id: existing.id, accountName: 'updated' },
+          { accountName: 'new 2' },
+          { accountName: 'new 3' }
+        ];
+        const results = await this.Account.bulkCreate(input, {
+          updateOnDuplicate: ['accountName']
+        });
+
+        await expectInstancesMatchRows(this.Account, input, results, [
+          'accountName'
+        ]);
+        expect(results[1].id).to.eql(existing.id);
+      });
+
+      it('should match rows to instances with a partial unique index and conflictWhere', async function () {
+        const Memberships = this.sequelize.define(
+          'memberships',
+          {
+            user_id: DataTypes.INTEGER,
+            foreign_id: DataTypes.INTEGER,
+            time_deleted: DataTypes.DATE
+          },
+          {
+            createdAt: false,
+            updatedAt: false,
+            deletedAt: 'time_deleted',
+            indexes: [
+              {
+                fields: ['user_id', 'foreign_id'],
+                unique: true,
+                where: { time_deleted: null }
+              }
+            ]
+          }
+        );
+        await Memberships.sync({ force: true });
+        const options = {
+          conflictWhere: { time_deleted: null },
+          conflictAttributes: ['user_id', 'foreign_id'],
+          updateOnDuplicate: ['user_id', 'foreign_id', 'time_deleted']
+        };
+
+        // Odd rows are soft-deleted, so they are not covered by the partial
+        // unique index and will be inserted again below.
+        await Memberships.bulkCreate(
+          new Array(10).fill().map((_, i) => ({
+            user_id: i + 1,
+            foreign_id: i + 20,
+            time_deleted: i % 2 ? new Date() : null
+          })),
+          options
+        );
+
+        const input = new Array(10).fill().map((_, i) => ({
+          user_id: i + 1,
+          foreign_id: i + 20,
+          time_deleted: null
+        }));
+        const results = await Memberships.bulkCreate(input, options);
+
+        await expectInstancesMatchRows(Memberships, input, results, [
+          'user_id',
+          'foreign_id',
+          'time_deleted'
+        ]);
+        expect(await Memberships.count({ paranoid: false })).to.eq(15);
+      });
+    });
   });
 });

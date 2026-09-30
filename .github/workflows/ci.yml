@@ -18,12 +18,9 @@ on: [push, pull_request]
 jobs:
   test:
     # Execute our own tests
-    name: Main - CRDB ${{ matrix.cockroachdb-docker-version }}, Sequelize v${{ matrix.sequelize-version }}
+    name: Main - CRDB ${{ matrix.cockroachdb-docker-version }}
     strategy:
       matrix:
-        # TODO(richardjcai): Re-enable tests for v5 after we get v6 suite passing.
-        # Focus on getting tests passing for v6 test suite.
-        sequelize-version: [5, 6]
         # Test the regular (non-innovation) releases that are still supported.
         cockroachdb-docker-version:
           - "cockroachdb/cockroach:latest-v24.3"
@@ -55,28 +52,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Sequelize v${{ matrix.sequelize-version }}
-        run: npm install --save sequelize@^${{ matrix.sequelize-version }}
-
       - name: Run tests
         run: npm test --crdb_version=${{ matrix.cockroachdb-docker-version }}
 
   sequelize-postgres-integration-tests:
     # Execute Sequelize integration tests for postgres
-    # This one will spawn 219 jobs
+    # This one will spawn 110 jobs
     if: ${{ !endsWith(github.event.head_commit.message, '[[skip sequelize integration tests]]') }}
     name: (${{ matrix.sequelize-branch }}) ${{ matrix.test-path }}
     strategy:
       matrix:
-        # TODO(richardjcai): Re-enable tests for v5 after we get v6 suite passing.
-        # Focus on getting tests passing for v6 test suite.
-        sequelize-branch: [v5, v6]
-        test-path: [associations/alias, associations/belongs-to-many, associations/belongs-to, associations/has-many, associations/has-one, associations/multiple-level-filters, associations/scope, associations/self, cls, configuration, data-types, dialects/abstract/connection-manager, dialects/postgres/associations, dialects/postgres/connection-manager, dialects/postgres/dao, dialects/postgres/data-types, dialects/postgres/error, dialects/postgres/hstore, dialects/postgres/query-interface, dialects/postgres/query, dialects/postgres/range, dialects/postgres/regressions, error, hooks/associations, hooks/bulkOperation, hooks/count, hooks/create, hooks/destroy, hooks/find, hooks/hooks, hooks/restore, hooks/updateAttributes, hooks/upsert, hooks/validate, include/findAll, include/findAndCountAll, include/findOne, include/limit, include/paranoid, include/schema, include/separate, include, instance/decrement, instance/destroy, instance/increment, instance/reload, instance/save, instance/to-json, instance/update, instance/values, instance, instance.validations, json, model/attributes/field, model/attributes/types, model/attributes, model/bulk-create/include, model/bulk-create, model/count, model/create/include, model/create, model/findAll/group, model/findAll/groupedLimit, model/findAll/order, model/findAll/separate, model/findAll, model/findOne, model/findOrBuild, model/geography, model/geometry, model/increment, model/json, model/optimistic_locking, model/paranoid, model/schema, model/scope/aggregate, model/scope/associations, model/scope/count, model/scope/destroy, model/scope/find, model/scope/findAndCountAll, model/scope/merge, model/scope/update, model/scope, model/searchPath, model/sum, model/sync, model/update, model/upsert, model, operators, pool, query-interface/changeColumn, query-interface/createTable, query-interface/describeTable, query-interface/dropEnum, query-interface/removeColumn, query-interface, replication, schema, sequelize/deferrable, sequelize/log, sequelize, sequelize.transaction, timezone, transaction, trigger, utils, vectors]
-        include:
-          -
-            # Luckily the test files are the same in v5 and v6, except for one extra file in v6:
-            sequelize-branch: v6
-            test-path: sequelize/query
+        sequelize-branch: [v6]
+        test-path: [associations/alias, associations/belongs-to-many, associations/belongs-to, associations/has-many, associations/has-one, associations/multiple-level-filters, associations/scope, associations/self, cls, configuration, data-types, dialects/abstract/connection-manager, dialects/postgres/associations, dialects/postgres/connection-manager, dialects/postgres/dao, dialects/postgres/data-types, dialects/postgres/error, dialects/postgres/hstore, dialects/postgres/query-interface, dialects/postgres/query, dialects/postgres/range, dialects/postgres/regressions, error, hooks/associations, hooks/bulkOperation, hooks/count, hooks/create, hooks/destroy, hooks/find, hooks/hooks, hooks/restore, hooks/updateAttributes, hooks/upsert, hooks/validate, include/findAll, include/findAndCountAll, include/findOne, include/limit, include/paranoid, include/schema, include/separate, include, instance/decrement, instance/destroy, instance/increment, instance/reload, instance/save, instance/to-json, instance/update, instance/values, instance, instance.validations, json, model/attributes/field, model/attributes/types, model/attributes, model/bulk-create/include, model/bulk-create, model/count, model/create/include, model/create, model/findAll/group, model/findAll/groupedLimit, model/findAll/order, model/findAll/separate, model/findAll, model/findOne, model/findOrBuild, model/geography, model/geometry, model/increment, model/json, model/optimistic_locking, model/paranoid, model/schema, model/scope/aggregate, model/scope/associations, model/scope/count, model/scope/destroy, model/scope/find, model/scope/findAndCountAll, model/scope/merge, model/scope/update, model/scope, model/searchPath, model/sum, model/sync, model/update, model/upsert, model, operators, pool, query-interface/changeColumn, query-interface/createTable, query-interface/describeTable, query-interface/dropEnum, query-interface/removeColumn, query-interface, replication, schema, sequelize/deferrable, sequelize/log, sequelize, sequelize.transaction, sequelize/query, timezone, transaction, trigger, utils, vectors]
       fail-fast: false
     runs-on: ubuntu-latest
     env:

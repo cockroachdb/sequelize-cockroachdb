@@ -5,10 +5,10 @@ const Mocha = require('mocha'),
   getTestsToIgnore = require('./getTestsToIgnore');
 
 async function makeMocha() {
-  const testsToIgnore = getTestsToIgnore();
+  const testsToIgnore = await getTestsToIgnore();
 
   const mocha = new Mocha({
-    grep: testsToIgnore,
+    grep: new RegExp(testsToIgnore),
     checkLeaks: true,
     reporter: 'spec',
     timeout: 30000,
@@ -25,8 +25,13 @@ async function makeMocha() {
 }
 
 // Run the tests.
-makeMocha().then(mocha =>
-  mocha.run(function (failures) {
-    process.exit(failures ? 1 : 0); // exit with non-zero status if there were failures
-  })
-);
+makeMocha()
+  .then(mocha =>
+    mocha.run(function (failures) {
+      process.exit(failures ? 1 : 0); // exit with non-zero status if there were failures
+    })
+  )
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });

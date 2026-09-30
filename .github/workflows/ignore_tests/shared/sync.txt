@@ -1,1 +1,2 @@
 should change a column if it exists in the model but is different in the database
+updates the deferrable property of a foreign key

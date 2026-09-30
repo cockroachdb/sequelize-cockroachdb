@@ -1,0 +1,2 @@
+custom logging with benchmarking has correct CLS context
+executes a query with global benchmarking option and custom logger

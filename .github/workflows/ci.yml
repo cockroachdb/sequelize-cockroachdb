@@ -36,10 +36,10 @@ jobs:
         run: |
           echo $CONTAINER_ENTRYPOINT
           docker pull ${{ matrix.cockroachdb-docker-version }}
-          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 ${{ matrix.cockroachdb-docker-version }} start-single-node --insecure
+          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 ${{ matrix.cockroachdb-docker-version }} start-single-node --insecure --store=type=mem,size=2GiB
           sudo apt update && sudo apt install wait-for-it -y
           wait-for-it -h localhost -p 26257
-          docker exec roach bash -c "echo 'CREATE DATABASE sequelize_test;' | $CONTAINER_ENTRYPOINT sql --insecure"
+          docker exec roach $CONTAINER_ENTRYPOINT sql --insecure -e "SET CLUSTER SETTING sql.stats.automatic_collection.enabled = false" -e "SET CLUSTER SETTING kv.range_merge.queue.enabled = false" -e "SET CLUSTER SETTING diagnostics.reporting.enabled = false" -e "CREATE DATABASE sequelize_test"
 
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -76,10 +76,10 @@ jobs:
       - name: Start a single CockroachDB instance (latest-v26.2) with docker
         run: |
           docker pull cockroachdb/cockroach:latest-v26.2
-          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 cockroachdb/cockroach:latest-v26.2 start-single-node --insecure
+          docker run -d --name roach --hostname roach -p 26257:26257 -p 8080:8080 cockroachdb/cockroach:latest-v26.2 start-single-node --insecure --store=type=mem,size=2GiB
           sudo apt update && sudo apt install wait-for-it -y
           wait-for-it -h localhost -p 26257
-          docker exec roach bash -c 'echo "CREATE DATABASE sequelize_test;" | cockroach sql --insecure'
+          docker exec roach cockroach sql --insecure -e "SET CLUSTER SETTING sql.stats.automatic_collection.enabled = false" -e "SET CLUSTER SETTING kv.range_merge.queue.enabled = false" -e "SET CLUSTER SETTING diagnostics.reporting.enabled = false" -e "CREATE DATABASE sequelize_test"
 
       - name: Checkout `sequelize-cockroachdb` repository
         uses: actions/checkout@v4

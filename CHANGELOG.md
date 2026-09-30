@@ -1,3 +1,10 @@
+# Version 6.0.6
+Released September 30, 2026
+* Fixed creating ENUM types with recent versions of Sequelize v6.
+* Removed telemetry. Creating a Sequelize instance no longer runs any queries, so it no longer logs an error when the database is not reachable. The `cockroachdbTelemetryDisabled` dialect option is still accepted, but has no effect.
+* Updated CockroachDB versions under test (v24.3, v25.2, v25.4, and v26.2).
+* Sequelize v5 is no longer tested.
+
 # Version 6.0.5
 Released January 12, 2022
 * Fixed a bug with importing modules from Sequelize.

@@ -1,3 +1,4 @@
 should make the auto incremented values available on the returned instances
 should make the auto incremented values available on the returned instances with custom fields
 should return auto increment primary key values
+should upsert existing memberships

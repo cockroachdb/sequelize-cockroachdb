@@ -1,2 +1,3 @@
 supports schemas
 should fetch associations for multiple instances with limit and order and a belongsTo relation
+should ignore group from ancestor on deep separated query

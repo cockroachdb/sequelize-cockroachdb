@@ -99,9 +99,11 @@ jobs:
           mv temp-unzip-out/* .downloaded-sequelize
           rmdir temp-unzip-out
 
-      - name: Install Sequelize dependencies
+      - name: Install Sequelize dependencies and build Sequelize
         working-directory: ./.downloaded-sequelize
-        run: npm install --ignore-scripts
+        run: |
+          npm install --ignore-scripts
+          node build.js
 
       - name: Provide the `sequelize-cockroachdb` patches
         # This script needs `fs-jetpack` as an extra dependency

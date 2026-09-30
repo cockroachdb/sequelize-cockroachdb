@@ -1,1 +1,2 @@
 should throw due to alias being truncated
+reuses connection after statement timeout

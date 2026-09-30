@@ -56,8 +56,6 @@ const PostgresDialect = require('sequelize/lib/dialects/postgres/index');
 PostgresDialect.prototype.supports.EXCEPTION = false;
 
 //// [2.1] Disable lock features support
-// lockOuterJoinFailure is not supported.
-PostgresDialect.prototype.supports.lockOuterJoinFailure = false;
 // skipLocked is not supported.
 PostgresDialect.prototype.supports.skipLocked = false;
 // lockKey is not supported.
